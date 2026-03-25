@@ -44,8 +44,8 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
           <h1 className={s.title}>Rehearsal <span>Calendar</span></h1>
         </div>
         <div className={s.headerBtns}>
-          <button className={s.exportBtn} onClick={() => downloadCalendar(events)}>📥 Import to Phone</button>
-          {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>}
+          <button className={s.exportBtn} onClick={() => downloadCalendar(events)}>Subscribe to Calendar</button>
+          {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>Add Event</button>}
         </div>
       </div>
 

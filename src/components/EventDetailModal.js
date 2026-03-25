@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import s from './EventDetailModal.module.css';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -16,8 +16,6 @@ function attSummary(ev) {
 }
 
 export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete }) {
-  const [isEditing, setIsEditing] = useState(false);
-
   if (!open || !event) return null;
 
   const d = new Date(event.date + 'T12:00:00');

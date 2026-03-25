@@ -1,0 +1,164 @@
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  overflow: hidden;
+  animation: fadeIn 0.4s ease;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(26,122,110,0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 80%, rgba(232,101,58,0.2) 0%, transparent 50%),
+    var(--ink);
+}
+
+/* Floating musical notes */
+.waves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.waves span {
+  position: absolute;
+  font-size: 2rem;
+  color: rgba(26,122,110,0.12);
+  animation: float 8s ease-in-out infinite;
+}
+.waves span:nth-child(1) { left: 8%;  top: 15%; animation-delay: 0s;    font-size: 1.6rem; }
+.waves span:nth-child(2) { left: 78%; top: 22%; animation-delay: 1.5s;  font-size: 2.4rem; color: rgba(232,101,58,0.1); }
+.waves span:nth-child(3) { left: 20%; top: 72%; animation-delay: 3s;    font-size: 1.2rem; }
+.waves span:nth-child(4) { left: 88%; top: 65%; animation-delay: 0.8s;  font-size: 2rem;   color: rgba(232,101,58,0.08); }
+.waves span:nth-child(5) { left: 50%; top: 88%; animation-delay: 2.2s;  font-size: 1.4rem; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(-5deg); }
+  50%       { transform: translateY(-18px) rotate(5deg); }
+}
+
+.card {
+  position: relative;
+  background: rgba(15, 78, 70, 0.45);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(82,197,181,0.25);
+  border-radius: 20px;
+  padding: 52px 48px 44px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(82,197,181,0.1) inset;
+  animation: fadeUp 0.5s ease 0.1s both;
+}
+
+.logoWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logoCircle {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 28px rgba(232,101,58,0.45);
+}
+
+.logoNote {
+  font-size: 2rem;
+  color: white;
+  line-height: 1;
+}
+
+.title {
+  font-family: 'Righteous', sans-serif;
+  font-size: 2.6rem;
+  line-height: 1.1;
+  color: var(--warm-white);
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.title span { color: var(--teal-light); }
+
+.tagline {
+  font-size: 0.82rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted-light);
+  margin-bottom: 36px;
+  font-weight: 600;
+}
+
+.inputWrap { margin-bottom: 18px; }
+
+.input {
+  width: 100%;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(82,197,181,0.3);
+  border-radius: 10px;
+  color: var(--warm-white);
+  font-size: 1.05rem;
+  padding: 13px 18px;
+  outline: none;
+  text-align: center;
+  letter-spacing: 0.12em;
+  transition: border-color 0.25s, background 0.25s;
+}
+
+.input:focus {
+  border-color: var(--teal-light);
+  background: rgba(82,197,181,0.08);
+}
+
+.input::placeholder { color: var(--muted); letter-spacing: 0.08em; }
+
+.btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Righteous', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  padding: 14px;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 6px 20px rgba(232,101,58,0.4);
+}
+
+.btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(232,101,58,0.45);
+}
+
+.btn:active { transform: scale(0.98); }
+
+.error {
+  margin-top: 14px;
+  color: #f4a07a;
+  font-size: 0.88rem;
+  min-height: 20px;
+  font-style: italic;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-9px); }
+  40%       { transform: translateX(9px); }
+  60%       { transform: translateX(-6px); }
+  80%       { transform: translateX(4px); }
+}
+
+.shake { animation: shake 0.4s ease; }

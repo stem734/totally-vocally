@@ -1,0 +1,155 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 18, 17, 0.82);
+  backdrop-filter: blur(6px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: var(--ink-mid);
+  border: 1.5px solid var(--teal);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(82,197,181,0.1) inset;
+  animation: fadeUp 0.25s ease both;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--teal-dark);
+  background: linear-gradient(135deg, var(--teal-dark), var(--ink-mid));
+}
+
+.modalTitle {
+  font-family: 'Righteous', sans-serif;
+  font-size: 1.4rem;
+  color: var(--warm-white);
+  letter-spacing: 0.02em;
+}
+
+.closeBtn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted-light);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+.closeBtn:hover { background: rgba(232,101,58,0.2); border-color: var(--coral); color: var(--coral-light); }
+
+.body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+}
+
+.opt {
+  font-weight: 400;
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(82,197,181,0.2);
+  border-radius: 9px;
+  color: var(--warm-white);
+  font-size: 0.97rem;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.22s, background 0.22s;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--teal-light);
+  background: rgba(82,197,181,0.06);
+}
+
+.field input::placeholder,
+.field textarea::placeholder { color: var(--muted); }
+
+.field select option { background: var(--ink-mid); }
+
+/* Date/time inputs colour fix for dark mode */
+.field input[type="date"],
+.field input[type="time"] {
+  color-scheme: dark;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.footer {
+  display: flex;
+  gap: 10px;
+  padding: 0 28px 24px;
+}
+
+.cancelBtn {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  color: var(--muted-light);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 10px;
+  transition: all 0.18s;
+}
+.cancelBtn:hover { background: rgba(255,255,255,0.09); color: var(--warm-white); }
+
+.saveBtn {
+  flex: 2;
+  background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+  border: none;
+  color: white;
+  font-family: 'Righteous', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  padding: 12px;
+  border-radius: 10px;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 16px rgba(232,101,58,0.35);
+}
+.saveBtn:hover { opacity: 0.9; transform: translateY(-1px); }
+.saveBtn:active { transform: scale(0.98); }

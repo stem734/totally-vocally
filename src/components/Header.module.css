@@ -1,0 +1,111 @@
+.header {
+  background: var(--ink-mid);
+  border-bottom: 2px solid var(--teal-dark);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 66px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 16px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.brandDot {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 3px 12px rgba(232,101,58,0.4);
+  flex-shrink: 0;
+}
+
+.brandName {
+  font-family: 'Righteous', sans-serif;
+  font-size: 1.25rem;
+  color: var(--warm-white);
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+.brandName strong {
+  color: var(--teal-light);
+  font-weight: 400;
+}
+
+.nav {
+  display: flex;
+  gap: 2px;
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: color 0.18s, background 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.navIcon { font-size: 0.9rem; }
+
+.navBtn:hover {
+  color: var(--warm-white);
+  background: rgba(82,197,181,0.08);
+}
+
+.navBtn.active {
+  color: var(--teal-light);
+  background: rgba(82,197,181,0.12);
+}
+
+.logoutBtn {
+  background: none;
+  border: 1.5px solid rgba(82,197,181,0.3);
+  color: var(--muted-light);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px 16px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.logoutBtn:hover {
+  border-color: var(--teal-light);
+  color: var(--teal-light);
+  background: rgba(82,197,181,0.07);
+}
+
+@media (max-width: 640px) {
+  .header { padding: 0 12px; height: auto; flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
+  .brandName { font-size: 1rem; }
+  .navBtn { padding: 6px 9px; font-size: 0.7rem; }
+  .navLabel { display: none; }
+  .navIcon { font-size: 1.1rem; }
+  .logoutBtn { font-size: 0.7rem; padding: 5px 10px; }
+}

@@ -1,0 +1,126 @@
+.page {
+  padding: 44px 36px;
+  max-width: 1000px;
+  margin: 0 auto;
+  animation: fadeUp 0.3s ease both;
+}
+
+.pageHeader {
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--teal-dark);
+}
+
+.title {
+  font-family: 'Righteous', sans-serif;
+  font-size: 2.8rem;
+  color: var(--warm-white);
+  line-height: 1.1;
+}
+.title span { color: var(--coral); }
+
+.hero {
+  background: linear-gradient(135deg, var(--teal-dark) 0%, var(--ink-soft) 100%);
+  border: 1.5px solid var(--teal);
+  border-radius: 16px;
+  padding: 36px 36px 36px 36px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.heroText { flex: 1; position: relative; z-index: 1; }
+
+.heroText h2 {
+  font-family: 'Righteous', sans-serif;
+  font-size: 1.6rem;
+  color: var(--warm-white);
+  margin-bottom: 12px;
+  letter-spacing: 0.01em;
+}
+
+.heroText p {
+  font-size: 0.97rem;
+  color: var(--muted-light);
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+
+.heroText p:last-child { margin-bottom: 0; }
+
+.heroText strong { color: var(--teal-light); font-weight: 700; }
+
+.heroNotes {
+  font-size: 3.5rem;
+  color: rgba(82,197,181,0.12);
+  letter-spacing: 0.2em;
+  flex-shrink: 0;
+  line-height: 1.4;
+  user-select: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.card {
+  background: var(--ink-mid);
+  border: 1.5px solid var(--teal-dark);
+  border-radius: 14px;
+  padding: 26px;
+  transition: background 0.18s, transform 0.18s;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal-mid), transparent);
+}
+
+.card:hover { background: rgba(26,122,110,0.1); transform: translateY(-2px); }
+
+.cardIcon { font-size: 1.75rem; margin-bottom: 10px; }
+
+.cardTitle {
+  font-family: 'Righteous', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: var(--teal-light);
+  margin-bottom: 10px;
+}
+
+.cardText {
+  font-size: 0.9rem;
+  color: var(--muted-light);
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+.list {
+  padding-left: 16px;
+  list-style: disc;
+}
+
+.list li {
+  font-size: 0.9rem;
+  color: var(--muted-light);
+  line-height: 1.8;
+  margin-bottom: 2px;
+}
+
+@media (max-width: 640px) {
+  .page { padding: 24px 14px; }
+  .title { font-size: 1.9rem; }
+  .grid { grid-template-columns: 1fr; }
+  .hero { flex-direction: column; padding: 24px; }
+  .heroNotes { font-size: 2rem; }
+}

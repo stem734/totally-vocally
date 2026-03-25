@@ -13,8 +13,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(26,122,110,0.35) 0%, transparent 55%),
-    radial-gradient(ellipse at 75% 80%, rgba(232,101,58,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 20%, rgba(193,60,133,0.3) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 80%, rgba(78,171,216,0.2) 0%, transparent 50%),
     var(--ink);
 }
 
@@ -29,13 +29,13 @@
 .waves span {
   position: absolute;
   font-size: 2rem;
-  color: rgba(26,122,110,0.12);
+  color: rgba(193,60,133,0.12);
   animation: float 8s ease-in-out infinite;
 }
 .waves span:nth-child(1) { left: 8%;  top: 15%; animation-delay: 0s;    font-size: 1.6rem; }
-.waves span:nth-child(2) { left: 78%; top: 22%; animation-delay: 1.5s;  font-size: 2.4rem; color: rgba(232,101,58,0.1); }
+.waves span:nth-child(2) { left: 78%; top: 22%; animation-delay: 1.5s;  font-size: 2.4rem; color: rgba(78,171,216,0.12); }
 .waves span:nth-child(3) { left: 20%; top: 72%; animation-delay: 3s;    font-size: 1.2rem; }
-.waves span:nth-child(4) { left: 88%; top: 65%; animation-delay: 0.8s;  font-size: 2rem;   color: rgba(232,101,58,0.08); }
+.waves span:nth-child(4) { left: 88%; top: 65%; animation-delay: 0.8s;  font-size: 2rem;   color: rgba(78,171,216,0.08); }
 .waves span:nth-child(5) { left: 50%; top: 88%; animation-delay: 2.2s;  font-size: 1.4rem; }
 
 @keyframes float {
@@ -45,15 +45,15 @@
 
 .card {
   position: relative;
-  background: rgba(15, 78, 70, 0.45);
+  background: rgba(18, 18, 28, 0.85);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(82,197,181,0.25);
+  border: 1px solid rgba(193,60,133,0.3);
   border-radius: 20px;
   padding: 52px 48px 44px;
   width: 90%;
   max-width: 420px;
   text-align: center;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(82,197,181,0.1) inset;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(193,60,133,0.1) inset;
   animation: fadeUp 0.5s ease 0.1s both;
 }
 
@@ -63,33 +63,11 @@
   margin-bottom: 20px;
 }
 
-.logoCircle {
-  width: 72px;
-  height: 72px;
-  background: linear-gradient(135deg, var(--coral), var(--coral-dark));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 28px rgba(232,101,58,0.45);
+.logoImg {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
 }
-
-.logoNote {
-  font-size: 2rem;
-  color: white;
-  line-height: 1;
-}
-
-.title {
-  font-family: 'Righteous', sans-serif;
-  font-size: 2.6rem;
-  line-height: 1.1;
-  color: var(--warm-white);
-  letter-spacing: 0.03em;
-  margin-bottom: 6px;
-}
-
-.title span { color: var(--teal-light); }
 
 .tagline {
   font-size: 0.82rem;
@@ -105,7 +83,7 @@
 .input {
   width: 100%;
   background: rgba(255,255,255,0.07);
-  border: 1.5px solid rgba(82,197,181,0.3);
+  border: 1.5px solid rgba(78,171,216,0.3);
   border-radius: 10px;
   color: var(--warm-white);
   font-size: 1.05rem;
@@ -117,15 +95,15 @@
 }
 
 .input:focus {
-  border-color: var(--teal-light);
-  background: rgba(82,197,181,0.08);
+  border-color: var(--blue-light);
+  background: rgba(78,171,216,0.08);
 }
 
 .input::placeholder { color: var(--muted); letter-spacing: 0.08em; }
 
 .btn {
   width: 100%;
-  background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
   color: white;
   border: none;
   border-radius: 10px;
@@ -134,13 +112,13 @@
   letter-spacing: 0.08em;
   padding: 14px;
   transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 6px 20px rgba(232,101,58,0.4);
+  box-shadow: 0 6px 20px rgba(193,60,133,0.4);
 }
 
 .btn:hover {
   opacity: 0.92;
   transform: translateY(-1px);
-  box-shadow: 0 10px 28px rgba(232,101,58,0.45);
+  box-shadow: 0 10px 28px rgba(193,60,133,0.45);
 }
 
 .btn:active { transform: scale(0.98); }

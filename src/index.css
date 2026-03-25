@@ -1,31 +1,43 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  /* Totally Vocally brand palette */
-  --teal:        #1a7a6e;
-  --teal-dark:   #0f4f46;
-  --teal-deep:   #0b3530;
-  --teal-mid:    #2a9d8f;
-  --teal-light:  #52c5b5;
-  --teal-pale:   #d4f0ec;
+  /* Totally Vocally brand palette — pink, blue & black */
+  --pink:        #c13c85;
+  --pink-dark:   #9a2e6a;
+  --pink-deep:   #6e1f4b;
+  --pink-mid:    #d64f9a;
+  --pink-light:  #e87ab8;
+  --pink-pale:   #f8d6ea;
 
-  --coral:       #e8653a;
-  --coral-dark:  #c44d24;
-  --coral-light: #f0845f;
-  --coral-pale:  #fde8df;
+  --blue:        #4eabd8;
+  --blue-dark:   #2e7fa8;
+  --blue-light:  #7ac4e6;
+  --blue-pale:   #d4eef8;
 
-  --warm-white:  #fdf8f2;
-  --cream:       #f5ede0;
-  --sand:        #e8d9c4;
+  --warm-white:  #f5f0f5;
+  --cream:       #f0e8f0;
+  --sand:        #e0d0e0;
 
-  --ink:         #0b1f1d;
-  --ink-mid:     #122a27;
-  --ink-soft:    #1c3d39;
-  --mid:         #2e5c56;
-  --muted:       #7aada6;
-  --muted-light: #a8cec9;
+  --ink:         #0a0a0f;
+  --ink-mid:     #121218;
+  --ink-soft:    #1c1c28;
+  --mid:         #3a3a52;
+  --muted:       #8888a8;
+  --muted-light: #b0b0c8;
 
   --white: #ffffff;
+
+  /* Aliases for backwards compat in component CSS */
+  --teal:        var(--blue-dark);
+  --teal-dark:   #1a1a28;
+  --teal-deep:   #0e0e18;
+  --teal-mid:    var(--blue);
+  --teal-light:  var(--blue-light);
+  --teal-pale:   var(--blue-pale);
+  --coral:       var(--pink);
+  --coral-dark:  var(--pink-dark);
+  --coral-light: var(--pink-light);
+  --coral-pale:  var(--pink-pale);
 }
 
 body {

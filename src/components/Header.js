@@ -12,8 +12,7 @@ export default function Header({ activePage, onNavigate, onLogout }) {
   return (
     <header className={s.header}>
       <div className={s.brand} onClick={() => onNavigate('calendar')}>
-        <div className={s.brandDot}>♫</div>
-        <span className={s.brandName}>Totally <strong>Vocally</strong></span>
+        <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Totally Vocally" className={s.brandLogo} />
       </div>
 
       <nav className={s.nav}>

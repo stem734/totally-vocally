@@ -41,7 +41,7 @@
   padding: 10px 22px;
   border-radius: 8px;
   transition: background 0.2s, transform 0.15s;
-  box-shadow: 0 4px 14px rgba(232,101,58,0.35);
+  box-shadow: 0 4px 14px rgba(193,60,133,0.35);
 }
 .addBtn:hover { background: var(--coral-light); transform: translateY(-1px); }
 
@@ -66,7 +66,7 @@
   gap: 18px;
   transition: background 0.18s, transform 0.18s;
 }
-.card:hover { background: rgba(26,122,110,0.1); transform: translateX(2px); }
+.card:hover { background: rgba(193,60,133,0.08); transform: translateX(2px); }
 .card.cardReh { border-left-color: var(--teal-mid); }
 
 .dateBadge {
@@ -82,7 +82,7 @@
 }
 .dateBadge.dateBadgeReh {
   background: linear-gradient(160deg, var(--teal-mid), var(--teal));
-  box-shadow: 0 4px 14px rgba(42,157,143,0.3);
+  box-shadow: 0 4px 14px rgba(78,171,216,0.3);
 }
 
 .dayNum {
@@ -115,8 +115,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(232,101,58,0.15);
-  border: 1px solid rgba(232,101,58,0.35);
+  background: rgba(193,60,133,0.15);
+  border: 1px solid rgba(193,60,133,0.35);
   color: var(--coral-light);
   font-size: 0.72rem;
   font-weight: 700;
@@ -127,8 +127,8 @@
 }
 
 .typePill.pillReh {
-  background: rgba(42,157,143,0.12);
-  border-color: rgba(82,197,181,0.3);
+  background: rgba(78,171,216,0.12);
+  border-color: rgba(78,171,216,0.3);
   color: var(--teal-light);
 }
 
@@ -141,7 +141,7 @@
   border-radius: 4px;
   transition: color 0.18s, background 0.18s;
 }
-.delBtn:hover { color: var(--coral); background: rgba(232,101,58,0.12); }
+.delBtn:hover { color: var(--coral); background: rgba(193,60,133,0.12); }
 
 .evTitle {
   font-family: 'Righteous', sans-serif;

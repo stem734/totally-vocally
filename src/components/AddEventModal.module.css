@@ -51,7 +51,7 @@
   justify-content: center;
   transition: all 0.18s;
 }
-.closeBtn:hover { background: rgba(232,101,58,0.2); border-color: var(--coral); color: var(--coral-light); }
+.closeBtn:hover { background: rgba(193,60,133,0.2); border-color: var(--coral); color: var(--coral-light); }
 
 .body {
   padding: 24px 28px;
@@ -85,7 +85,7 @@
 .field select,
 .field textarea {
   background: rgba(255,255,255,0.05);
-  border: 1.5px solid rgba(82,197,181,0.2);
+  border: 1.5px solid rgba(78,171,216,0.2);
   border-radius: 9px;
   color: var(--warm-white);
   font-size: 0.97rem;
@@ -99,7 +99,7 @@
 .field select:focus,
 .field textarea:focus {
   border-color: var(--teal-light);
-  background: rgba(82,197,181,0.06);
+  background: rgba(78,171,216,0.06);
 }
 
 .field input::placeholder,
@@ -149,7 +149,7 @@
   padding: 12px;
   border-radius: 10px;
   transition: opacity 0.2s, transform 0.15s;
-  box-shadow: 0 4px 16px rgba(232,101,58,0.35);
+  box-shadow: 0 4px 16px rgba(193,60,133,0.35);
 }
 .saveBtn:hover { opacity: 0.9; transform: translateY(-1px); }
 .saveBtn:active { transform: scale(0.98); }

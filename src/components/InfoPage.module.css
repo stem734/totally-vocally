@@ -55,7 +55,7 @@
 
 .heroNotes {
   font-size: 3.5rem;
-  color: rgba(82,197,181,0.12);
+  color: rgba(78,171,216,0.12);
   letter-spacing: 0.2em;
   flex-shrink: 0;
   line-height: 1.4;
@@ -86,7 +86,7 @@
   background: linear-gradient(90deg, var(--teal-mid), transparent);
 }
 
-.card:hover { background: rgba(26,122,110,0.1); transform: translateY(-2px); }
+.card:hover { background: rgba(193,60,133,0.08); transform: translateY(-2px); }
 
 .cardIcon { font-size: 1.75rem; margin-bottom: 10px; }
 

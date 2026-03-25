@@ -27,11 +27,8 @@ export default function Login({ onLogin }) {
       </div>
       <div className={`${s.card} ${shake ? s.shake : ''}`}>
         <div className={s.logoWrap}>
-          <div className={s.logoCircle}>
-            <span className={s.logoNote}>♫</span>
-          </div>
+          <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Totally Vocally" className={s.logoImg} />
         </div>
-        <h1 className={s.title}>Totally<br /><span>Vocally</span></h1>
         <p className={s.tagline}>Members Portal</p>
         <div className={s.inputWrap}>
           <input
@@ -45,7 +42,7 @@ export default function Login({ onLogin }) {
           />
         </div>
         <button className={s.btn} onClick={attempt}>Enter the Choir Room</button>
-        <p className={s.error}>{error}\u00a0</p>
+        <p className={s.error}>{error || '\u00a0'}</p>
       </div>
     </div>
   );

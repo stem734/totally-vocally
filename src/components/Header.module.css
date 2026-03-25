@@ -1,6 +1,6 @@
 .header {
   background: var(--ink-mid);
-  border-bottom: 2px solid var(--teal-dark);
+  border-bottom: 2px solid rgba(193,60,133,0.3);
   padding: 0 28px;
   display: flex;
   align-items: center;
@@ -16,36 +16,14 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
   cursor: pointer;
   flex-shrink: 0;
   text-decoration: none;
 }
 
-.brandDot {
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(135deg, var(--coral), var(--coral-dark));
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  box-shadow: 0 3px 12px rgba(232,101,58,0.4);
-  flex-shrink: 0;
-}
-
-.brandName {
-  font-family: 'Righteous', sans-serif;
-  font-size: 1.25rem;
-  color: var(--warm-white);
-  white-space: nowrap;
-  font-weight: 400;
-}
-
-.brandName strong {
-  color: var(--teal-light);
-  font-weight: 400;
+.brandLogo {
+  height: 40px;
+  width: auto;
 }
 
 .nav {
@@ -73,17 +51,17 @@
 
 .navBtn:hover {
   color: var(--warm-white);
-  background: rgba(82,197,181,0.08);
+  background: rgba(193,60,133,0.1);
 }
 
 .navBtn.active {
-  color: var(--teal-light);
-  background: rgba(82,197,181,0.12);
+  color: var(--pink-light);
+  background: rgba(193,60,133,0.15);
 }
 
 .logoutBtn {
   background: none;
-  border: 1.5px solid rgba(82,197,181,0.3);
+  border: 1.5px solid rgba(78,171,216,0.3);
   color: var(--muted-light);
   font-size: 0.75rem;
   font-weight: 700;
@@ -96,9 +74,9 @@
 }
 
 .logoutBtn:hover {
-  border-color: var(--teal-light);
-  color: var(--teal-light);
-  background: rgba(82,197,181,0.07);
+  border-color: var(--blue-light);
+  color: var(--blue-light);
+  background: rgba(78,171,216,0.07);
 }
 
 @media (max-width: 640px) {

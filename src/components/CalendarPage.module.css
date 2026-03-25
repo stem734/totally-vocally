@@ -94,9 +94,9 @@
   background: var(--ink-mid);
   transition: background 0.15s;
 }
-.cell:hover { background: rgba(26,122,110,0.12); }
+.cell:hover { background: rgba(193,60,133,0.1); }
 .other { opacity: 0.28; pointer-events: none; }
-.today { background: rgba(26,122,110,0.18) !important; outline: 2px solid var(--teal) inset; }
+.today { background: rgba(78,171,216,0.15) !important; outline: 2px solid var(--teal) inset; }
 
 .num {
   display: block;

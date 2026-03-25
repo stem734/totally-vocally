@@ -1,6 +1,18 @@
 import React from 'react';
 import s from './EventDetailModal.module.css';
 
+const ClockIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '1.2em', height: '1.2em', display: 'inline', marginRight: '0.4em', verticalAlign: 'middle'}}>
+    <path d="M11.99 5C9.35 5 7 7.35 7 9.99s2.35 5 5 5 5-2.35 5-5-2.35-5-5-5zm.5 8h-1v-6h1v6z"/>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '1.1em', height: '1.1em', marginRight: '0.3em', verticalAlign: 'middle'}}>
+    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+  </svg>
+);
+
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function attSummary(ev) {
@@ -43,13 +55,20 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
 
             {event.time && (
               <p className={s.meta}>
-                <span>⏰ {event.time}</span>
+                <span><ClockIcon /> {event.time}</span>
               </p>
             )}
 
             {event.location && (
               <p className={s.meta}>
-                <span>📍 {event.location}</span>
+                <a
+                  href={`https://www.google.com/maps/search/${encodeURIComponent(event.location)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{color: 'inherit', textDecoration: 'underline', cursor: 'pointer'}}
+                >
+                  {event.location}
+                </a>
               </p>
             )}
 
@@ -63,7 +82,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
                 <button
                   className={`${s.attBtn} ${myAtt === 'yes' ? s.attYes : ''}`}
                   onClick={() => onSetAttendance(event.id, 'yes')}
-                >✔ Coming</button>
+                ><CheckIcon /> Coming</button>
                 <button
                   className={`${s.attBtn} ${myAtt === 'maybe' ? s.attMaybe : ''}`}
                   onClick={() => onSetAttendance(event.id, 'maybe')}

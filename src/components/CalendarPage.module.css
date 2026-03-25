@@ -25,6 +25,27 @@
 }
 .title span { color: var(--coral); }
 
+.headerBtns {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.exportBtn {
+  background: var(--teal);
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  padding: 10px 22px;
+  border-radius: 8px;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 4px 14px rgba(78,171,216,0.35);
+}
+.exportBtn:hover { background: var(--teal-light); transform: translateY(-1px); }
+
 .addBtn {
   background: var(--coral);
   border: none;

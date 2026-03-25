@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import s from './CalendarPage.module.css';
 import EventDetailModal from './EventDetailModal';
+import { downloadCalendar } from '../calendarExport';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -42,7 +43,10 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
         <div>
           <h1 className={s.title}>Rehearsal <span>Calendar</span></h1>
         </div>
-        {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>}
+        <div className={s.headerBtns}>
+          <button className={s.exportBtn} onClick={() => downloadCalendar(events)}>📥 Import to Phone</button>
+          {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>}
+        </div>
       </div>
 
       <div className={s.nav}>

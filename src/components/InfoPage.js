@@ -3,7 +3,7 @@ import s from './InfoPage.module.css';
 
 const CARDS = [
   {
-    icon: '🎤',
+    icon: '♫',
     title: 'Choir Director',
     text: 'Abi Moore\nabi@totallyvocally.com\n\nVisit: acapellawithabi.com',
   },
@@ -13,7 +13,7 @@ const CARDS = [
     text: 'Hockley, Nottingham\n\nMonday Evenings: 6:45 – 8:45pm\nTuesday Evenings: 7:00 – 9:00pm\nWednesday Evenings: 6:00 – 8:00pm',
   },
   {
-    icon: '📋',
+    icon: '✓',
     title: 'Choir Guidelines',
     list: [
       'Please arrive on time and warmed up',
@@ -24,17 +24,17 @@ const CARDS = [
     ],
   },
   {
-    icon: '💰',
+    icon: '$',
     title: 'Membership & Fees',
     text: '[Subscription / term fee details here]\n\nPayments by [method] to [details].',
   },
   {
-    icon: '📱',
+    icon: '☎',
     title: 'Social Media',
     text: 'Follow us and share the love!\n\nFacebook: /totallyvocally\nInstagram: @totallyvocally\nYouTube: Totally Vocally Channel',
   },
   {
-    icon: '📢',
+    icon: '📣',
     title: 'Group Chat',
     text: 'Join our members WhatsApp group for quick updates and announcements.\n\nGroup link: [Insert WhatsApp link here]',
   },
@@ -49,7 +49,7 @@ export default function InfoPage() {
 
       <div className={s.hero}>
         <div className={s.heroText}>
-          <h2>Welcome to Totally Vocally! 🎵</h2>
+          <h2>Welcome to Totally Vocally!</h2>
           <p>
             An awesome, independent acappella choir of Nottingham-based singers who tear up every
             stage with joyful harmonies &amp; percussive rhythms. Led by <strong>Abi Moore</strong>,
@@ -60,7 +60,7 @@ export default function InfoPage() {
             everything you need to stay connected with your fellow singers.
           </p>
         </div>
-        <div className={s.heroNotes} aria-hidden="true">♪ ♫ ♩ ♬</div>
+        <div className={s.heroNotes} aria-hidden="true"></div>
       </div>
 
       <div className={s.grid}>

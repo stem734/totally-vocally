@@ -26,7 +26,7 @@ export default function Login({ onLogin }) {
     <div className={s.screen}>
       <div className={s.bg} />
       <div className={s.waves} aria-hidden="true">
-        <span>♪</span><span>♫</span><span>♩</span><span>♬</span><span>♪</span>
+        <span></span><span></span><span></span><span></span><span></span>
       </div>
       <div className={`${s.card} ${shake ? s.shake : ''}`}>
         <div className={s.logoWrap}>

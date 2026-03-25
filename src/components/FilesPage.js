@@ -12,9 +12,9 @@ export default function FilesPage() {
       </div>
 
       <div className={s.hero}>
-        <div className={s.bigNote} aria-hidden="true">♬</div>
+        <div className={s.bigNote} aria-hidden="true"></div>
         <div className={s.content}>
-          <div className={s.icon}>📁</div>
+          <div className={s.icon}>📂</div>
           <h2 className={s.heroTitle}>Sheet Music &amp; Resources</h2>
           <p className={s.heroDesc}>
             All choir files — sheet music, recordings, newsletters, and documents — live in our

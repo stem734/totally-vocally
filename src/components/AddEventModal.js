@@ -36,7 +36,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
       <div className={s.modal}>
         <div className={s.modalHeader}>
           <h2 className={s.modalTitle}>Add New Event</h2>
-          <button className={s.closeBtn} onClick={onClose} aria-label="Close">✕</button>
+          <button className={s.closeBtn} onClick={onClose} aria-label="Close">×</button>
         </div>
 
         <div className={s.body}>
@@ -53,8 +53,8 @@ export default function AddEventModal({ open, onClose, onSave }) {
           <div className={s.field}>
             <label>Type</label>
             <select value={form.type} onChange={set('type')}>
-              <option value="rehearsal">🎵 Rehearsal</option>
-              <option value="event">🎤 Performance / Event</option>
+              <option value="rehearsal">Rehearsal</option>
+              <option value="event">Performance / Event</option>
             </select>
           </div>
 

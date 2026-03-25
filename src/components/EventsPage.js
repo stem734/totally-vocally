@@ -30,7 +30,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
 
       {sorted.length === 0 ? (
         <div className={s.empty}>
-          <span>🎵</span>
+          <span>♪</span>
           <p>No events yet — add one above!</p>
         </div>
       ) : (
@@ -50,19 +50,19 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
                 <div className={s.body}>
                   <div className={s.topRow}>
                     <span className={`${s.typePill} ${isReh ? s.pillReh : ''}`}>
-                      {isReh ? '🎵 Rehearsal' : '🎤 Performance'}
+                      {isReh ? 'Rehearsal' : 'Performance'}
                     </span>
-                    <button
+                    {isAdmin && <button
                       className={s.delBtn}
                       onClick={() => window.confirm('Remove this event?') && onDeleteEvent(ev.id)}
                       title="Delete"
-                    >✕</button>
+                    >×</button>}
                   </div>
 
                   <h2 className={s.evTitle}>{ev.title}</h2>
 
                   <p className={s.meta}>
-                    {ev.time && <span>🕐 {ev.time}</span>}
+                    {ev.time && <span>⏰ {ev.time}</span>}
                     {ev.location && <span>📍 {ev.location}</span>}
                   </p>
 
@@ -74,15 +74,15 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
                       <button
                         className={`${s.attBtn} ${myAtt === 'yes' ? s.attYes : ''}`}
                         onClick={() => onSetAttendance(ev.id, 'yes')}
-                      >✓ Coming</button>
+                      >✔ Coming</button>
                       <button
                         className={`${s.attBtn} ${myAtt === 'maybe' ? s.attMaybe : ''}`}
                         onClick={() => onSetAttendance(ev.id, 'maybe')}
-                      >~ Maybe</button>
+                      >? Maybe</button>
                       <button
                         className={`${s.attBtn} ${myAtt === 'no' ? s.attNo : ''}`}
                         onClick={() => onSetAttendance(ev.id, 'no')}
-                      >✕ Can't make it</button>
+                      >× Can't make it</button>
                     </div>
                     <p className={s.attCount}>{attSummary(ev)}</p>
                   </div>

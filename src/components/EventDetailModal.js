@@ -27,7 +27,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
       <div className={s.modal}>
         <div className={s.modalHeader}>
           <h2 className={s.modalTitle}>{event.title}</h2>
-          <button className={s.closeBtn} onClick={onClose} aria-label="Close">✕</button>
+          <button className={s.closeBtn} onClick={onClose} aria-label="Close">×</button>
         </div>
 
         <div className={s.body}>
@@ -38,12 +38,12 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
 
           <div className={s.content}>
             <span className={`${s.typePill} ${isReh ? s.pillReh : ''}`}>
-              {isReh ? '🎵 Rehearsal' : '🎤 Performance'}
+              {isReh ? 'Rehearsal' : 'Performance'}
             </span>
 
             {event.time && (
               <p className={s.meta}>
-                <span>🕐 {event.time}</span>
+                <span>⏰ {event.time}</span>
               </p>
             )}
 
@@ -63,15 +63,15 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
                 <button
                   className={`${s.attBtn} ${myAtt === 'yes' ? s.attYes : ''}`}
                   onClick={() => onSetAttendance(event.id, 'yes')}
-                >✓ Coming</button>
+                >✔ Coming</button>
                 <button
                   className={`${s.attBtn} ${myAtt === 'maybe' ? s.attMaybe : ''}`}
                   onClick={() => onSetAttendance(event.id, 'maybe')}
-                >~ Maybe</button>
+                >? Maybe</button>
                 <button
                   className={`${s.attBtn} ${myAtt === 'no' ? s.attNo : ''}`}
                   onClick={() => onSetAttendance(event.id, 'no')}
-                >✕ Can't make it</button>
+                >× Can't make it</button>
               </div>
               <p className={s.attCount}>{attSummary(event)}</p>
             </div>

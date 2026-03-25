@@ -120,6 +120,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.chip:hover {
+  opacity: 0.8;
 }
 
 .chip.chipReh {

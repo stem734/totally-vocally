@@ -10,13 +10,14 @@ import { useEvents } from './useEvents';
 
 export default function App() {
   const [loggedIn, setLoggedIn]     = useState(false);
+  const [isAdmin, setIsAdmin]       = useState(false);
   const [page, setPage]             = useState('calendar');
   const [modalOpen, setModalOpen]   = useState(false);
 
   const { events, addEvent, deleteEvent, setAttendance } = useEvents();
 
   if (!loggedIn) {
-    return <Login onLogin={() => setLoggedIn(true)} />;
+    return <Login onLogin={(admin) => { setLoggedIn(true); setIsAdmin(admin); }} />;
   }
 
   const navigate = (p) => setPage(p);
@@ -28,20 +29,24 @@ export default function App() {
       <Header
         activePage={page}
         onNavigate={navigate}
-        onLogout={() => { setLoggedIn(false); setPage('calendar'); }}
+        onLogout={() => { setLoggedIn(false); setIsAdmin(false); setPage('calendar'); }}
       />
 
       {page === 'calendar' && (
         <CalendarPage
           key="calendar"
           events={events}
+          isAdmin={isAdmin}
           onAddEvent={openModal}
+          onDeleteEvent={deleteEvent}
+          onSetAttendance={setAttendance}
         />
       )}
       {page === 'events' && (
         <EventsPage
           key="events"
           events={events}
+          isAdmin={isAdmin}
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
           onSetAttendance={setAttendance}

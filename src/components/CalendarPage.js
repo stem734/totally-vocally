@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import s from './CalendarPage.module.css';
+import EventDetailModal from './EventDetailModal';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-export default function CalendarPage({ events, onAddEvent }) {
+export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance }) {
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const prev = () => { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); };
   const next = () => { if (month === 11) { setMonth(0);  setYear(y => y + 1); } else setMonth(m => m + 1); };
@@ -40,7 +42,7 @@ export default function CalendarPage({ events, onAddEvent }) {
         <div>
           <h1 className={s.title}>Rehearsal <span>Calendar</span></h1>
         </div>
-        <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>
+        {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>}
       </div>
 
       <div className={s.nav}>
@@ -58,7 +60,12 @@ export default function CalendarPage({ events, onAddEvent }) {
             <div key={i} className={`${s.cell} ${cell.other ? s.other : ''} ${cell.isToday ? s.today : ''}`}>
               <span className={s.num}>{cell.d}</span>
               {evs.map(ev => (
-                <div key={ev.id} className={`${s.chip} ${ev.type === 'rehearsal' ? s.chipReh : ''}`} title={`${ev.time ? ev.time+' — ' : ''}${ev.title}`}>
+                <div
+                  key={ev.id}
+                  className={`${s.chip} ${ev.type === 'rehearsal' ? s.chipReh : ''}`}
+                  onClick={() => setSelectedEvent(ev)}
+                  title={`${ev.time ? ev.time+' — ' : ''}${ev.title}`}
+                >
                   {ev.title}
                 </div>
               ))}
@@ -71,6 +78,15 @@ export default function CalendarPage({ events, onAddEvent }) {
         <span className={`${s.dot} ${s.dotEvent}`} /> Performance / Event
         <span className={`${s.dot} ${s.dotReh}`} /> Rehearsal
       </div>
+
+      <EventDetailModal
+        open={selectedEvent !== null}
+        event={selectedEvent}
+        isAdmin={isAdmin}
+        onClose={() => setSelectedEvent(null)}
+        onSetAttendance={onSetAttendance}
+        onDelete={onDeleteEvent}
+      />
     </div>
   );
 }

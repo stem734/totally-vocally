@@ -15,7 +15,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventsPage({ events, onAddEvent, onDeleteEvent, onSetAttendance }) {
+export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance }) {
   const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
 
   return (
@@ -25,7 +25,7 @@ export default function EventsPage({ events, onAddEvent, onDeleteEvent, onSetAtt
           <h1 className={s.title}>Upcoming <span>Events</span></h1>
           <p className={s.sub}>Let us know if you're coming!</p>
         </div>
-        <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>
+        {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>}
       </div>
 
       {sorted.length === 0 ? (

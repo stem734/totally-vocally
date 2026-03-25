@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import s from './Login.module.css';
 
 const PASSWORD = '5inging';
+const ADMIN_PASSWORD = 'admin5ng';
 
 export default function Login({ onLogin }) {
   const [pw, setPw] = useState('');
@@ -9,8 +10,10 @@ export default function Login({ onLogin }) {
   const [shake, setShake] = useState(false);
 
   const attempt = () => {
-    if (pw === PASSWORD) {
-      onLogin();
+    if (pw === ADMIN_PASSWORD) {
+      onLogin(true);
+    } else if (pw === PASSWORD) {
+      onLogin(false);
     } else {
       setError('Incorrect password — please try again.');
       setPw('');

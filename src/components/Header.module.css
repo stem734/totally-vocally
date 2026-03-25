@@ -47,7 +47,8 @@
   gap: 5px;
 }
 
-.navIcon { font-size: 0.9rem; }
+.navIcon { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; }
+.navIcon svg { width: 100%; height: 100%; }
 
 .navBtn:hover {
   color: var(--warm-white);

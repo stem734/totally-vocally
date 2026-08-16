@@ -9,36 +9,44 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
-
-const JOIN_CODE = 'sing2026'; // Choir join code for self-registration
 
 export function useAuth() {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Check if user is already logged in
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubscribeProfile = () => {};
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      unsubscribeProfile();
       if (firebaseUser) {
         setUser(firebaseUser);
-        // Fetch user role from Firestore
-        try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        // Keep approval and role changes in sync while the user is logged in.
+        unsubscribeProfile = onSnapshot(doc(db, 'users', firebaseUser.uid), (userDoc) => {
           if (userDoc.exists()) {
-            setIsAdmin(userDoc.data().role === 'admin');
+            const profileData = userDoc.data();
+            setProfile(profileData);
+            setIsAdmin(profileData.role === 'admin');
+          } else {
+            setProfile(null);
+            setIsAdmin(false);
           }
-        } catch (err) {
+          setLoading(false);
+        }, (err) => {
           console.error('Failed to fetch user role:', err);
-        }
+          setLoading(false);
+        });
       } else {
         setUser(null);
+        setProfile(null);
         setIsAdmin(false);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     // Handle email link login after redirect from email
@@ -60,7 +68,10 @@ export function useAuth() {
       }
     }
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      unsubscribeProfile();
+    };
   }, []);
 
   const signIn = useCallback(async (email, password) => {
@@ -77,13 +88,6 @@ export function useAuth() {
   const signUp = useCallback(async (email, password, displayName, voicePart) => {
     setError('');
     try {
-      // Validate join code
-      const code = window.prompt('Enter the choir join code:');
-      if (code !== JOIN_CODE) {
-        setError('Invalid join code. Please contact the choir director for access.');
-        return false;
-      }
-
       // Create user account
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -93,18 +97,21 @@ export function useAuth() {
       }
 
       // Create user document in Firestore
-      await setDoc(doc(db, 'users', userCred.user.uid), {
+      const newProfile = {
         email,
         displayName: displayName || '',
         voicePart: voicePart || '',
         role: 'member',
+        status: 'pending',
         createdAt: new Date().toISOString(),
-      });
+      };
+      await setDoc(doc(db, 'users', userCred.user.uid), newProfile);
+      setProfile(newProfile);
 
       return true;
     } catch (err) {
       setError(err.message);
-      return false;
+      throw err;
     }
   }, []);
 
@@ -128,6 +135,7 @@ export function useAuth() {
     try {
       await signOut(auth);
       setUser(null);
+      setProfile(null);
       setIsAdmin(false);
     } catch (err) {
       setError(err.message);
@@ -136,7 +144,9 @@ export function useAuth() {
 
   return {
     user,
+    profile,
     isAdmin,
+    isApproved: isAdmin || profile?.status === 'approved',
     loading,
     error,
     signIn,

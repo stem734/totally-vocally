@@ -7,6 +7,8 @@ import FilesPage from './components/FilesPage';
 import AddEventModal from './components/AddEventModal';
 import LoginFirebase from './components/LoginFirebase';
 import AuthModal from './components/AuthModal';
+import PendingApproval from './components/PendingApproval';
+import MembersPage from './components/MembersPage';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 
@@ -29,8 +31,8 @@ function getAuthErrorMessage(error) {
 }
 
 export default function App() {
-  const { user, isAdmin, loading, signIn, resetPassword, logout } = useAuth();
-  const { events, addEvent, deleteEvent, setAttendance } = useEventsFirestore(user?.uid);
+  const { user, profile, isAdmin, isApproved, loading, signIn, signUp, resetPassword, logout } = useAuth();
+  const { events, addEvent, deleteEvent, setAttendance } = useEventsFirestore(isApproved ? user?.uid : null);
 
   const [page, setPage] = useState('calendar');
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,7 +41,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  const handleAuth = async (email, password) => {
+  const handleAuth = async (email, password, displayName, voicePart) => {
     setAuthLoading(true);
     setAuthError('');
     try {
@@ -49,6 +51,9 @@ export default function App() {
         if (success) {
           setAuthModalOpen(false);
         }
+      } else if (authMode === 'signup') {
+        success = await signUp(email, password, displayName, voicePart);
+        if (success) setAuthModalOpen(false);
       } else if (authMode === 'forgotPassword') {
         success = await resetPassword(email);
         if (success) {
@@ -79,6 +84,7 @@ export default function App() {
       <>
         <LoginFirebase
           onLoginClick={() => { setAuthMode('signin'); setAuthModalOpen(true); }}
+          onSignUpClick={() => { setAuthMode('signup'); setAuthModalOpen(true); }}
         />
         <AuthModal
           open={authModalOpen}
@@ -93,6 +99,10 @@ export default function App() {
     );
   }
 
+  if (!isApproved) {
+    return <PendingApproval profile={profile} onLogout={logout} />;
+  }
+
   // Logged in
   const navigate = (p) => setPage(p);
   const openModal = () => setModalOpen(true);
@@ -104,6 +114,7 @@ export default function App() {
         activePage={page}
         onNavigate={navigate}
         onLogout={logout}
+        isAdmin={isAdmin}
       />
 
       {page === 'calendar' && (
@@ -128,6 +139,7 @@ export default function App() {
       )}
       {page === 'info' && <InfoPage key="info" />}
       {page === 'files' && <FilesPage key="files" />}
+      {page === 'members' && isAdmin && <MembersPage key="members" />}
 
       <AddEventModal
         open={modalOpen}

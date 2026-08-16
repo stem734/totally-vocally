@@ -5,7 +5,7 @@ import { ClockIcon, CheckIcon, MusicIcon } from '../icons';
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function attSummary(ev) {
-  const vals = Object.values(ev.attendance);
+  const vals = Object.values(ev.attendance || {});
   const yes   = vals.filter(v => v === 'yes').length;
   const maybe = vals.filter(v => v === 'maybe').length;
   const no    = vals.filter(v => v === 'no').length;
@@ -41,7 +41,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
         <div className={s.list}>
           {sorted.map(ev => {
             const d = new Date(ev.date + 'T12:00:00');
-            const myAtt = ev.attendance['me'] || null;
+            const myAtt = ev.myAttendance || null;
             const isReh = ev.type === 'rehearsal';
 
             return (

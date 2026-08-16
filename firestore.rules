@@ -11,32 +11,37 @@ service cloud.firestore {
       return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    function isApproved() {
+      return isAdmin() || (isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved');
+    }
+
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
     // Users collection - profile data
     match /users/{userId} {
-      // Anyone can read users (for member lists, rosters)
-      allow read: if isSignedIn();
+      // Members can read their own application; admins can manage the directory.
+      allow read: if isOwner(userId) || isAdmin();
 
-      // Users can create their own profile (on signup)
-      allow create: if isOwner(userId);
+      // New accounts can only create a pending, non-admin application.
+      allow create: if isOwner(userId)
+        && request.resource.data.role == 'member'
+        && request.resource.data.status == 'pending';
 
-      // Users can update/delete their own profile
-      allow update, delete: if isOwner(userId);
+      // Members may edit basic profile fields but cannot approve or promote themselves.
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'voicePart']);
 
-      // Admins can read any user profile
-      allow read: if isAdmin();
-
-      // Admins can write any user profile
+      // Admins can review applications and manage profiles.
       allow write: if isAdmin();
     }
 
     // Events collection
     match /events/{eventId} {
-      // Anyone can read events
-      allow read: if isSignedIn();
+      // Only approved members can see choir events.
+      allow read: if isApproved();
 
       // Only admins can create events
       allow create: if isAdmin();
@@ -47,11 +52,11 @@ service cloud.firestore {
 
     // Attendance collection - nested under events
     match /events/{eventId}/attendance/{userId} {
-      // Anyone can read attendance (for rosters)
-      allow read: if isSignedIn();
+      // Only approved members can see attendance.
+      allow read: if isApproved();
 
-      // Users can write their own attendance
-      allow write: if isOwner(userId);
+      // Approved users can write their own attendance.
+      allow write: if isApproved() && isOwner(userId);
 
       // Admins can write any attendance
       allow write: if isAdmin();

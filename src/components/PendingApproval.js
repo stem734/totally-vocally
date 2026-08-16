@@ -1,0 +1,20 @@
+import React from 'react';
+import s from './PendingApproval.module.css';
+
+export default function PendingApproval({ profile, onLogout }) {
+  return (
+    <main className={s.screen}>
+      <section className={s.card}>
+        <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Totally Vocally" className={s.logo} />
+        <span className={s.badge}>Request received</span>
+        <h1>Awaiting approval</h1>
+        <p>
+          Thanks{profile?.displayName ? `, ${profile.displayName}` : ''}. An administrator needs to approve
+          your membership before you can enter the portal.
+        </p>
+        {profile?.voicePart && <p className={s.voice}>Voice part: <strong>{profile.voicePart}</strong></p>}
+        <button onClick={onLogout}>Sign Out</button>
+      </section>
+    </main>
+  );
+}

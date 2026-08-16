@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   collection,
+  collectionGroup,
   query,
   orderBy,
   onSnapshot,
@@ -14,6 +15,7 @@ import { db } from './firebase';
 
 export function useEventsFirestore(userId) {
   const [events, setEvents] = useState([]);
+  const [attendanceByEvent, setAttendanceByEvent] = useState({});
   const [loading, setLoading] = useState(true);
 
   // Listen to events in real-time
@@ -38,8 +40,32 @@ export function useEventsFirestore(userId) {
       setLoading(false);
     });
 
-    return unsubscribe;
+    const unsubscribeAttendance = onSnapshot(
+      collectionGroup(db, 'attendance'),
+      (snapshot) => {
+        const nextAttendance = {};
+        snapshot.forEach((attendanceDoc) => {
+          const eventId = attendanceDoc.ref.parent.parent?.id;
+          if (!eventId) return;
+          if (!nextAttendance[eventId]) nextAttendance[eventId] = {};
+          nextAttendance[eventId][attendanceDoc.id] = attendanceDoc.data().status;
+        });
+        setAttendanceByEvent(nextAttendance);
+      },
+      (err) => console.error('Failed to fetch attendance:', err)
+    );
+
+    return () => {
+      unsubscribe();
+      unsubscribeAttendance();
+    };
   }, [userId]);
+
+  const eventsWithAttendance = useMemo(() => events.map((event) => ({
+    ...event,
+    attendance: attendanceByEvent[event.id] || {},
+    myAttendance: attendanceByEvent[event.id]?.[userId] || null,
+  })), [events, attendanceByEvent, userId]);
 
   const addEvent = useCallback(async (eventData) => {
     try {
@@ -95,7 +121,7 @@ export function useEventsFirestore(userId) {
     }
   }, [userId]);
 
-  return { events, loading, addEvent, deleteEvent, updateEvent, setAttendance };
+  return { events: eventsWithAttendance, loading, addEvent, deleteEvent, updateEvent, setAttendance };
 }
 
 // Helper to migrate from localStorage to Firestore (one-time operation)

@@ -5,7 +5,7 @@ import { ClockIcon, CheckIcon } from '../icons';
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function attSummary(ev) {
-  const vals = Object.values(ev.attendance);
+  const vals = Object.values(ev.attendance || {});
   const yes   = vals.filter(v => v === 'yes').length;
   const maybe = vals.filter(v => v === 'maybe').length;
   const no    = vals.filter(v => v === 'no').length;
@@ -20,7 +20,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
   if (!open || !event) return null;
 
   const d = new Date(event.date + 'T12:00:00');
-  const myAtt = event.attendance['me'] || null;
+  const myAtt = event.myAttendance || null;
   const isReh = event.type === 'rehearsal';
 
   return (

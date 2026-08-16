@@ -5,23 +5,27 @@ import './AuthModal.css';
 export default function AuthModal({ open, mode, onClose, onSubmit, loading, error, onForgotPassword }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [voicePart, setVoicePart] = useState('');
 
   const handleSubmit = () => {
     if (!email) return;
     if (mode !== 'forgotPassword' && !password) return;
-    onSubmit(email, password);
+    if (mode === 'signup' && (!displayName || !voicePart)) return;
+    onSubmit(email, password, displayName, voicePart);
   };
 
   if (!open) return null;
 
   const isForgotPassword = mode === 'forgotPassword';
+  const isSignUp = mode === 'signup';
 
   return (
     <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && !loading && onClose()}>
       <div className={`${s.modal} authModal`}>
         <div className={s.modalHeader}>
           <h2 className={s.modalTitle}>
-            {isForgotPassword ? 'Reset Password' : 'Sign In'}
+            {isForgotPassword ? 'Reset Password' : (isSignUp ? 'Request Access' : 'Sign In')}
           </h2>
           <button className={s.closeBtn} onClick={onClose} aria-label="Close" disabled={loading}>×</button>
         </div>
@@ -40,6 +44,19 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
             </div>
 
             {!isForgotPassword && (
+              <>
+              {isSignUp && (
+                <div className="authField">
+                  <label>Full Name</label>
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Your name"
+                    disabled={loading}
+                  />
+                </div>
+              )}
               <div className="authField">
                 <label>Password</label>
                 <input
@@ -50,6 +67,21 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
                   disabled={loading}
                 />
               </div>
+              {isSignUp && (
+                <div className="authField">
+                  <label>Voice Part</label>
+                  <select value={voicePart} onChange={(e) => setVoicePart(e.target.value)} disabled={loading}>
+                    <option value="">Choose your voice part</option>
+                    <option value="Soprano 1">Soprano 1</option>
+                    <option value="Soprano 2">Soprano 2</option>
+                    <option value="Alto">Alto</option>
+                    <option value="Tenor 1">Tenor 1</option>
+                    <option value="Tenor 2">Tenor 2</option>
+                    <option value="Bass">Bass</option>
+                  </select>
+                </div>
+              )}
+              </>
             )}
 
             {error && (
@@ -58,13 +90,13 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
 
             <button
               onClick={handleSubmit}
-              disabled={(!email || ((!isForgotPassword) && !password)) || loading}
+              disabled={(!email || ((!isForgotPassword) && !password) || (isSignUp && (!displayName || !voicePart))) || loading}
               className="authSubmitBtn"
             >
-              {loading ? 'Please wait...' : (isForgotPassword ? 'Send Reset Link' : 'Sign In')}
+              {loading ? 'Please wait...' : (isForgotPassword ? 'Send Reset Link' : (isSignUp ? 'Submit Request' : 'Sign In'))}
             </button>
 
-            {!isForgotPassword && (
+            {!isForgotPassword && !isSignUp && (
               <p className="authHint">
                 <button
                   type="button"

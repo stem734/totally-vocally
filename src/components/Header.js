@@ -2,13 +2,14 @@ import React from 'react';
 import s from './Header.module.css';
 import { CalendarIcon, EventIcon, InfoIcon, FilesIcon } from '../icons';
 
-export default function Header({ activePage, onNavigate, onLogout }) {
+export default function Header({ activePage, onNavigate, onLogout, isAdmin }) {
   const TABS = [
     { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
     { id: 'events',   label: 'Events',   icon: EventIcon },
     { id: 'info',     label: 'Info',     icon: InfoIcon },
     { id: 'files',    label: 'Files',    icon: FilesIcon },
   ];
+  if (isAdmin) TABS.push({ id: 'members', label: 'Members', icon: InfoIcon });
   return (
     <header className={s.header}>
       <div className={s.brand} onClick={() => onNavigate('calendar')}>

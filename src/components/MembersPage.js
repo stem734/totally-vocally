@@ -1,0 +1,65 @@
+import React, { useEffect, useState } from 'react';
+import { collection, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import s from './MembersPage.module.css';
+
+const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
+
+export default function MembersPage() {
+  const [members, setMembers] = useState([]);
+  const [error, setError] = useState('');
+  const [updating, setUpdating] = useState('');
+
+  useEffect(() => onSnapshot(collection(db, 'users'), (snapshot) => {
+    setMembers(snapshot.docs.map((member) => ({ id: member.id, ...member.data() })));
+  }, (err) => setError(err.message)), []);
+
+  const setStatus = async (memberId, status) => {
+    setUpdating(memberId);
+    setError('');
+    try {
+      await updateDoc(doc(db, 'users', memberId), { status, reviewedAt: new Date().toISOString() });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUpdating('');
+    }
+  };
+
+  const ordered = [...members].sort((a, b) => {
+    if ((a.status || 'approved') === 'pending' && (b.status || 'approved') !== 'pending') return -1;
+    if ((b.status || 'approved') === 'pending' && (a.status || 'approved') !== 'pending') return 1;
+    return (a.displayName || a.email || '').localeCompare(b.displayName || b.email || '');
+  });
+
+  return (
+    <main className={s.page}>
+      <header className={s.header}>
+        <div><h1>Choir <span>Members</span></h1><p>Review access requests and membership status.</p></div>
+        <span className={s.count}>{members.length} members</span>
+      </header>
+      {error && <div className={s.error}>{error}</div>}
+      <div className={s.list}>
+        {ordered.map((member) => {
+          const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
+          return (
+            <article className={s.card} key={member.id}>
+              <div className={s.identity}>
+                <strong>{member.displayName || 'Unnamed member'}</strong>
+                <span>{member.email}</span>
+                <small>{member.voicePart || 'No voice part selected'}{member.role === 'admin' ? ' · Administrator' : ''}</small>
+              </div>
+              <span className={`${s.status} ${s[status]}`}>{STATUS_LABELS[status]}</span>
+              {member.role !== 'admin' && (
+                <div className={s.actions}>
+                  {status !== 'approved' && <button className={s.approve} disabled={updating === member.id} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
+                  {status !== 'rejected' && <button className={s.reject} disabled={updating === member.id} onClick={() => setStatus(member.id, 'rejected')}>Reject</button>}
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </main>
+  );
+}

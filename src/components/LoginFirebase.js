@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './Login.module.css';
 
-export default function LoginFirebase({ onLoginClick }) {
+export default function LoginFirebase({ onLoginClick, onSignUpClick }) {
   return (
     <div className={s.screen}>
       <div className={s.bg} />
@@ -18,9 +18,12 @@ export default function LoginFirebase({ onLoginClick }) {
           <button className={s.btnPrimary} onClick={onLoginClick}>
             Sign In
           </button>
+          <button className={s.btnSecondary} onClick={onSignUpClick}>
+            Request Access
+          </button>
         </div>
 
-        <p className={s.hint}>Sign in with your email and password to access the members portal.</p>
+        <p className={s.hint}>New members can request access. An administrator must approve every account.</p>
       </div>
     </div>
   );

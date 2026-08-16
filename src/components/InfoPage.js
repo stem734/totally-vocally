@@ -28,7 +28,6 @@ const REHEARSAL_PRACTICE = [
 ];
 
 const DEFAULT_INFO = {
-  intro: 'Everything you need to get the most from rehearsals, stay up to date and feel confident in your part.',
   homePractice: 'Rehearsal alone is not enough to learn the songs securely by heart. Your Dropbox materials include learning tracks, lyrics, exercises and videos prepared to help you practise independently.',
   membershipFee: '£44 per month',
   membershipDetails: 'Membership is paid by standing order on the 5th of each month. It covers rehearsals, learning materials, arrangements, licences, planning, venue hire and the tools used to produce your resources.',
@@ -82,20 +81,6 @@ export default function InfoPage({ isAdmin }) {
           <button className={s.saveButton} onClick={saveInfo} disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>
         </section>
       )}
-      <section className={s.hero}>
-        <div className={s.heroGlow} />
-        <p className={s.eyebrow}>Totally Vocally · Member handbook</p>
-        <h1>Sing together.<br /><span>Grow together.</span></h1>
-        <p className={s.heroCopy}>{info.intro}</p>
-        <div className={s.heroActions}>
-          <a href={`mailto:${info.email}`} className={s.primary}>Email Abi</a>
-          <a href={`tel:${info.phone.replace(/\s/g, '')}`} className={s.secondary}>Call {info.phone}</a>
-        </div>
-        <div className={s.soundwave} aria-hidden="true">
-          {[28, 52, 80, 44, 68, 94, 58, 76, 36, 64, 88, 48].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}
-        </div>
-      </section>
-
       <section className={s.legacy}>
         <div><p className={s.sectionLabel}>At rehearsal</p><h2>Getting the best from our time together</h2></div>
         <div className={s.practiceGrid}>

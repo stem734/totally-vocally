@@ -70,7 +70,7 @@ export function useAuth() {
       return true;
     } catch (err) {
       setError(err.message);
-      return false;
+      throw err;
     }
   }, []);
 
@@ -119,7 +119,7 @@ export function useAuth() {
       return true;
     } catch (err) {
       setError(err.message);
-      return false;
+      throw err;
     }
   }, []);
 

@@ -10,6 +10,24 @@ import AuthModal from './components/AuthModal';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 
+function getAuthErrorMessage(error) {
+  switch (error?.code) {
+    case 'auth/invalid-credential':
+    case 'auth/invalid-login-credentials':
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+      return 'Incorrect email or password. Please try again.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/too-many-requests':
+      return 'Too many unsuccessful attempts. Please wait a moment or reset your password.';
+    case 'auth/network-request-failed':
+      return 'Unable to connect. Please check your internet connection and try again.';
+    default:
+      return error?.message || 'Unable to sign in. Please try again.';
+  }
+}
+
 export default function App() {
   const { user, isAdmin, loading, signIn, resetPassword, logout } = useAuth();
   const { events, addEvent, deleteEvent, setAttendance } = useEventsFirestore(user?.uid);
@@ -40,7 +58,7 @@ export default function App() {
         }
       }
     } catch (err) {
-      setAuthError(err.message || 'An error occurred');
+      setAuthError(getAuthErrorMessage(err));
     } finally {
       setAuthLoading(false);
     }

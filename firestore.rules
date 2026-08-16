@@ -8,7 +8,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     function isOwner(userId) {
@@ -20,8 +20,14 @@ service cloud.firestore {
       // Anyone can read users (for member lists, rosters)
       allow read: if isSignedIn();
 
-      // Users can write their own profile
-      allow write: if isOwner(userId);
+      // Users can create their own profile (on signup)
+      allow create: if isOwner(userId);
+
+      // Users can update/delete their own profile
+      allow update, delete: if isOwner(userId);
+
+      // Admins can read any user profile
+      allow read: if isAdmin();
 
       // Admins can write any user profile
       allow write: if isAdmin();

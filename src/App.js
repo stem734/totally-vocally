@@ -11,27 +11,40 @@ import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 
 export default function App() {
-  const { user, isAdmin, loading, sendMagicLink, logout } = useAuth();
+  const { user, isAdmin, loading, signIn, signUp, resetPassword, logout } = useAuth();
   const { events, addEvent, deleteEvent, setAttendance } = useEventsFirestore(user?.uid);
 
   const [page, setPage] = useState('calendar');
   const [modalOpen, setModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'signup'
+  const [authMode, setAuthMode] = useState('signin'); // 'signin', 'signup', or 'forgotPassword'
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  const handleSendMagicLink = async (email, displayName, voicePart) => {
+  const handleAuth = async (email, password, displayName, voicePart) => {
     setAuthLoading(true);
     setAuthError('');
     try {
-      const isNewMember = authMode === 'signup';
-      const success = await sendMagicLink(email, displayName, isNewMember);
-      if (success) {
-        alert(`Magic link sent to ${email}. Check your email to sign in.`);
-        setAuthModalOpen(false);
-      } else {
-        setAuthError('Failed to send magic link. Please try again.');
+      let success = false;
+      if (authMode === 'signin') {
+        success = await signIn(email, password);
+        if (success) {
+          alert('Signed in successfully!');
+          setAuthModalOpen(false);
+        }
+      } else if (authMode === 'signup') {
+        success = await signUp(email, password, displayName, voicePart);
+        if (success) {
+          alert('Account created successfully! Welcome to Totally Vocally!');
+          setAuthModalOpen(false);
+        }
+      } else if (authMode === 'forgotPassword') {
+        success = await resetPassword(email);
+        if (success) {
+          alert(`Password reset link sent to ${email}. Check your email to reset your password.`);
+          setAuthModalOpen(false);
+          setAuthMode('signin');
+        }
       }
     } catch (err) {
       setAuthError(err.message || 'An error occurred');
@@ -60,10 +73,11 @@ export default function App() {
         <AuthModal
           open={authModalOpen}
           mode={authMode}
-          onClose={() => { setAuthModalOpen(false); setAuthError(''); }}
-          onSubmit={handleSendMagicLink}
+          onClose={() => { setAuthModalOpen(false); setAuthError(''); setAuthMode('signin'); }}
+          onSubmit={handleAuth}
           loading={authLoading}
           error={authError}
+          onForgotPassword={() => setAuthMode('forgotPassword')}
         />
       </>
     );

@@ -2,25 +2,30 @@ import React, { useState } from 'react';
 import s from './EventDetailModal.module.css';
 import './AuthModal.css';
 
-export default function AuthModal({ open, mode, onClose, onSubmit, loading, error }) {
+export default function AuthModal({ open, mode, onClose, onSubmit, loading, error, onForgotPassword }) {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [voicePart, setVoicePart] = useState('');
 
   const handleSubmit = () => {
     if (!email) return;
-    onSubmit(email, displayName, voicePart);
+    if (mode !== 'forgotPassword' && !password) return;
+    onSubmit(email, password, displayName, voicePart);
   };
 
   if (!open) return null;
 
   const isSignUp = mode === 'signup';
+  const isForgotPassword = mode === 'forgotPassword';
 
   return (
     <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && !loading && onClose()}>
       <div className={`${s.modal} authModal`}>
         <div className={s.modalHeader}>
-          <h2 className={s.modalTitle}>{isSignUp ? 'Join the Choir' : 'Sign In'}</h2>
+          <h2 className={s.modalTitle}>
+            {isForgotPassword ? 'Reset Password' : (isSignUp ? 'Join the Choir' : 'Sign In')}
+          </h2>
           <button className={s.closeBtn} onClick={onClose} aria-label="Close" disabled={loading}>×</button>
         </div>
 
@@ -36,6 +41,19 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
                 disabled={loading}
               />
             </div>
+
+            {!isForgotPassword && (
+              <div className="authField">
+                <label>Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  disabled={loading}
+                />
+              </div>
+            )}
 
             {isSignUp && (
               <>
@@ -73,17 +91,32 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
 
             <button
               onClick={handleSubmit}
-              disabled={!email || loading}
+              disabled={(!email || ((!isForgotPassword) && !password)) || loading}
               className="authSubmitBtn"
             >
-              {loading ? 'Sending link...' : (isSignUp ? 'Send Join Link' : 'Send Sign-In Link')}
+              {loading ? 'Please wait...' : (isForgotPassword ? 'Send Reset Link' : (isSignUp ? 'Create Account' : 'Sign In'))}
             </button>
 
-            <p className="authHint">
-              {isSignUp
-                ? 'We\'ll send you a link to create your account'
-                : 'We\'ll send you a sign-in link — no password needed'}
-            </p>
+            {!isForgotPassword && (
+              <p className="authHint">
+                <button
+                  type="button"
+                  onClick={onForgotPassword}
+                  disabled={loading}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#7ac4e6',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: 0,
+                    font: 'inherit',
+                  }}
+                >
+                  Forgot password?
+                </button>
+              </p>
+            )}
           </div>
         </div>
       </div>

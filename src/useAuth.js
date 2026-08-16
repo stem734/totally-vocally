@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
+  updateProfile,
 } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 const JOIN_CODE = 'sing2026'; // Choir join code for self-registration
@@ -60,32 +63,59 @@ export function useAuth() {
     return unsubscribe;
   }, []);
 
-  const sendMagicLink = useCallback(async (email, displayName, isNewMember) => {
+  const signIn = useCallback(async (email, password) => {
     setError('');
     try {
-      // Validate join code for new members
-      if (isNewMember) {
-        const code = window.prompt('Enter the choir join code:');
-        if (code !== JOIN_CODE) {
-          setError('Invalid join code. Please contact Abi Moore for access.');
-          return false;
-        }
+      await signInWithEmailAndPassword(auth, email, password);
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    }
+  }, []);
+
+  const signUp = useCallback(async (email, password, displayName, voicePart) => {
+    setError('');
+    try {
+      // Validate join code
+      const code = window.prompt('Enter the choir join code:');
+      if (code !== JOIN_CODE) {
+        setError('Invalid join code. Please contact the choir director for access.');
+        return false;
       }
 
+      // Create user account
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Update profile with display name
+      if (displayName) {
+        await updateProfile(userCred.user, { displayName });
+      }
+
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', userCred.user.uid), {
+        email,
+        displayName: displayName || '',
+        voicePart: voicePart || '',
+        role: 'member',
+        createdAt: new Date().toISOString(),
+      });
+
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (email) => {
+    setError('');
+    try {
       const actionCodeSettings = {
-        url: `${window.location.origin}?email=${encodeURIComponent(email)}`,
+        url: `${window.location.origin}?mode=resetPassword`,
         handleCodeInApp: true,
       };
-
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-
-      // Save email for later verification
-      window.localStorage.setItem('emailForSignIn', email);
-      if (displayName) {
-        window.localStorage.setItem('displayNameForSignIn', displayName);
-      }
-      window.localStorage.setItem('isNewMemberForSignIn', isNewMember.toString());
-
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
       return true;
     } catch (err) {
       setError(err.message);
@@ -109,7 +139,9 @@ export function useAuth() {
     isAdmin,
     loading,
     error,
-    sendMagicLink,
+    signIn,
+    signUp,
+    resetPassword,
     logout,
   };
 }

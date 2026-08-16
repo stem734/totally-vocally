@@ -5,6 +5,7 @@ import s from './MembersPage.module.css';
 
 const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
 const VOICE_PARTS = ['Soprano 1', 'Soprano 2', 'Alto', 'Tenor 1', 'Tenor 2', 'Bass'];
+const REHEARSAL_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 
 export default function MembersPage() {
   const [members, setMembers] = useState([]);
@@ -32,6 +33,18 @@ export default function MembersPage() {
     setError('');
     try {
       await updateDoc(doc(db, 'users', memberId), { voicePart });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUpdating('');
+    }
+  };
+
+  const setRehearsalDay = async (memberId, rehearsalDay) => {
+    setUpdating(memberId);
+    setError('');
+    try {
+      await updateDoc(doc(db, 'users', memberId), { rehearsalDay });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -72,10 +85,20 @@ export default function MembersPage() {
                 <option value="">Assign voice part</option>
                 {VOICE_PARTS.map((part) => <option key={part} value={part}>{part}</option>)}
               </select>
+              <select
+                className={s.voiceSelect}
+                value={member.rehearsalDay || ''}
+                disabled={updating === member.id}
+                onChange={(event) => setRehearsalDay(member.id, event.target.value)}
+                aria-label={`Rehearsal day for ${member.displayName || member.email}`}
+              >
+                <option value="">Assign rehearsal day</option>
+                {REHEARSAL_DAYS.map((day) => <option key={day} value={day}>{day}</option>)}
+              </select>
               <span className={`${s.status} ${s[status]}`}>{STATUS_LABELS[status]}</span>
               {member.role !== 'admin' && (
                 <div className={s.actions}>
-                  {status !== 'approved' && <button className={s.approve} disabled={updating === member.id || !member.voicePart} title={!member.voicePart ? 'Assign a voice part before approval' : ''} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
+                  {status !== 'approved' && <button className={s.approve} disabled={updating === member.id || !member.voicePart || !member.rehearsalDay} title={!member.voicePart || !member.rehearsalDay ? 'Assign a voice part and rehearsal day before approval' : ''} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
                   {status !== 'rejected' && <button className={s.reject} disabled={updating === member.id} onClick={() => setStatus(member.id, 'rejected')}>Reject</button>}
                 </div>
               )}

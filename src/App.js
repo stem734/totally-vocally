@@ -127,6 +127,7 @@ export default function App() {
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
           onSetAttendance={setAttendance}
+          rehearsalDay={profile?.rehearsalDay}
           onImportTermDates={async () => {
             setImportingDates(true);
             try {
@@ -147,6 +148,7 @@ export default function App() {
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
           onSetAttendance={setAttendance}
+          rehearsalDay={profile?.rehearsalDay}
         />
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}

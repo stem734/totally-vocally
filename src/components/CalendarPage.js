@@ -6,7 +6,7 @@ import { downloadCalendar } from '../calendarExport';
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance, onImportTermDates, importingDates }) {
+export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance, onImportTermDates, importingDates, rehearsalDay }) {
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -64,16 +64,19 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
           return (
             <div key={i} className={`${s.cell} ${cell.other ? s.other : ''} ${cell.isToday ? s.today : ''}`}>
               <span className={s.num}>{cell.d}</span>
-              {evs.map(ev => (
-                <div
-                  key={ev.id}
-                  className={`${s.chip} ${ev.type === 'rehearsal' ? s.chipReh : ''}`}
-                  onClick={() => setSelectedEvent(ev)}
-                  title={`${ev.time ? ev.time+' — ' : ''}${ev.title}`}
-                >
-                  {ev.title}
-                </div>
-              ))}
+              {evs.map(ev => {
+                const isDesignated = ev.type === 'rehearsal' && rehearsalDay && (ev.groupDay === rehearsalDay || ev.title?.startsWith(rehearsalDay));
+                return (
+                  <div
+                    key={ev.id}
+                    className={`${s.chip} ${ev.type === 'rehearsal' ? s.chipReh : ''} ${isDesignated ? s.designated : ''}`}
+                    onClick={() => setSelectedEvent(ev)}
+                    title={`${ev.time ? ev.time+' — ' : ''}${ev.title}`}
+                  >
+                    {ev.title}
+                  </div>
+                );
+              })}
             </div>
           );
         })}

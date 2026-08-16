@@ -13,6 +13,7 @@ export default function PendingApproval({ profile, onLogout }) {
           your membership before you can enter the portal.
         </p>
         {profile?.voicePart && <p className={s.voice}>Voice part: <strong>{profile.voicePart}</strong></p>}
+        {profile?.rehearsalDay && <p className={s.voice}>Rehearsal group: <strong>{profile.rehearsalDay}</strong></p>}
         <button onClick={onLogout}>Sign Out</button>
       </section>
     </main>

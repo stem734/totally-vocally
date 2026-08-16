@@ -68,6 +68,13 @@
 }
 .card:hover { background: rgba(193,60,133,0.08); transform: translateX(2px); }
 .card.cardReh { border-left-color: var(--teal-mid); }
+.card.designated {
+  border: 2px solid var(--blue-light);
+  border-left-width: 7px;
+  background: linear-gradient(100deg, rgba(78,171,216,0.18), var(--ink-mid) 45%);
+  box-shadow: 0 8px 28px rgba(78,171,216,0.16);
+}
+.card.designated .evTitle { font-weight: 900; color: var(--blue-pale); }
 
 .dateBadge {
   background: linear-gradient(160deg, var(--coral), var(--coral-dark));

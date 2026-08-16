@@ -16,7 +16,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance }) {
+export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance, rehearsalDay }) {
   const today = new Date().toISOString().split('T')[0];
   const upcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
   const past = [...events].filter(e => e.date < today).sort((a, b) => b.date.localeCompare(a.date));
@@ -43,9 +43,10 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
             const d = new Date(ev.date + 'T12:00:00');
             const myAtt = ev.myAttendance || null;
             const isReh = ev.type === 'rehearsal';
+            const isDesignated = isReh && rehearsalDay && (ev.groupDay === rehearsalDay || ev.title?.startsWith(rehearsalDay));
 
             return (
-              <div key={ev.id} className={`${s.card} ${isReh ? s.cardReh : ''}`}>
+              <div key={ev.id} className={`${s.card} ${isReh ? s.cardReh : ''} ${isDesignated ? s.designated : ''}`}>
                 <div className={`${s.dateBadge} ${isReh ? s.dateBadgeReh : ''}`}>
                   <span className={s.dayNum}>{d.getDate()}</span>
                   <span className={s.monthStr}>{MONTH_SHORT[d.getMonth()]}</span>

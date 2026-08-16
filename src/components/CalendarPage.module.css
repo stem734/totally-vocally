@@ -154,6 +154,15 @@
   border-left-color: var(--teal-light);
 }
 
+.chip.designated {
+  background: var(--blue-dark);
+  border: 2px solid var(--blue-light);
+  border-left-width: 5px;
+  padding: 3px 6px;
+  font-weight: 900;
+  box-shadow: 0 0 0 2px rgba(122,196,230,0.15), 0 3px 10px rgba(0,0,0,0.35);
+}
+
 .legend {
   display: flex;
   align-items: center;

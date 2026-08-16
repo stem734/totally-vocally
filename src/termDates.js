@@ -29,7 +29,7 @@ export async function importTermDates2026(userId) {
       const eventId = `rehearsal-${date}-${group.day.toLowerCase()}`;
       batch.set(doc(db, 'events', eventId), {
         title: `${group.day} Rehearsal`, type: 'rehearsal', date, time: group.time,
-        location: VENUE, desc: `${group.day} choir weekly rehearsal`, createdBy: userId,
+        location: VENUE, desc: `${group.day} choir weekly rehearsal`, groupDay: group.day, createdBy: userId,
         source: 'term-dates-2026', updatedAt: serverTimestamp(),
       }, { merge: true });
     });

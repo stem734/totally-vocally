@@ -1,0 +1,90 @@
+.authModal {
+  max-width: 420px;
+}
+
+.authContent {
+  padding: 20px;
+}
+
+.authField {
+  margin-bottom: 16px;
+}
+
+.authField label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #b0b0c8;
+}
+
+.authField input,
+.authField select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid rgba(78, 171, 216, 0.3);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.authField input:focus,
+.authField select:focus {
+  border-color: #7ac4e6;
+  background: rgba(78, 171, 216, 0.08);
+  outline: none;
+}
+
+.authField input:disabled,
+.authField select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.authError {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(229, 62, 62, 0.15);
+  border: 1px solid #e05252;
+  border-radius: 8px;
+  color: #f49090;
+  font-size: 0.85rem;
+}
+
+.authSubmitBtn {
+  width: 100%;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  background: #c13c85;
+  color: white;
+}
+
+.authSubmitBtn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.authSubmitBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.authSubmitBtn:disabled {
+  background: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.authHint {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: #8888a8;
+  text-align: center;
+}

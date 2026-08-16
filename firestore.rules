@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users collection - profile data
+    match /users/{userId} {
+      // Anyone can read users (for member lists, rosters)
+      allow read: if isSignedIn();
+
+      // Users can write their own profile
+      allow write: if isOwner(userId);
+
+      // Admins can write any user profile
+      allow write: if isAdmin();
+    }
+
+    // Events collection
+    match /events/{eventId} {
+      // Anyone can read events
+      allow read: if isSignedIn();
+
+      // Only admins can create events
+      allow create: if isAdmin();
+
+      // Only admins can update/delete events
+      allow update, delete: if isAdmin();
+    }
+
+    // Attendance collection - nested under events
+    match /events/{eventId}/attendance/{userId} {
+      // Anyone can read attendance (for rosters)
+      allow read: if isSignedIn();
+
+      // Users can write their own attendance
+      allow write: if isOwner(userId);
+
+      // Admins can write any attendance
+      allow write: if isAdmin();
+    }
+
+  }
+}

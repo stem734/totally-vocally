@@ -1,17 +1,6 @@
 import React from 'react';
 import s from './EventDetailModal.module.css';
-
-const ClockIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '1.2em', height: '1.2em', display: 'inline', marginRight: '0.4em', verticalAlign: 'middle'}}>
-    <path d="M11.99 5C9.35 5 7 7.35 7 9.99s2.35 5 5 5 5-2.35 5-5-2.35-5-5-5zm.5 8h-1v-6h1v6z"/>
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '1.1em', height: '1.1em', marginRight: '0.3em', verticalAlign: 'middle'}}>
-    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-  </svg>
-);
+import { ClockIcon, CheckIcon } from '../icons';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 

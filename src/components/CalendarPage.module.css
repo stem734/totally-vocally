@@ -90,7 +90,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 2px;
   background: var(--teal-deep);
   border: 1px solid var(--teal-dark);
@@ -117,7 +117,7 @@
 }
 .cell:hover { background: rgba(193,60,133,0.1); }
 .other { opacity: 0.28; pointer-events: none; }
-.today { background: rgba(78,171,216,0.15) !important; outline: 2px solid var(--teal) inset; }
+.today { background: rgba(78,171,216,0.15) !important; box-shadow: inset 0 0 0 2px var(--teal); }
 
 .num {
   display: block;

@@ -1,5 +1,6 @@
 import React from 'react';
 import s from './FilesPage.module.css';
+import { DropboxLogo } from '../icons';
 
 // ── Replace with your real Dropbox folder share link ──
 const DROPBOX_URL = 'https://www.dropbox.com/your-folder-link-here';
@@ -28,13 +29,5 @@ export default function FilesPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-function DropboxLogo() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 256 256" fill="white">
-      <path d="M64 32L0 80l64 48 64-48L64 32zm128 0l-64 48 64 48 64-48-64-48zM0 176l64 48 64-48-64-48L0 176zm192-48l-64 48 64 48 64-48-64-48zm-64 54l-64 48 64 32 64-32-64-48z"/>
-    </svg>
   );
 }

@@ -1,23 +1,6 @@
 import React from 'react';
 import s from './EventsPage.module.css';
-
-const ClockIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '1.2em', height: '1.2em', display: 'inline', marginRight: '0.4em', verticalAlign: 'middle'}}>
-    <path d="M11.99 5C9.35 5 7 7.35 7 9.99s2.35 5 5 5 5-2.35 5-5-2.35-5-5-5zm.5 8h-1v-6h1v6z"/>
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '1.1em', height: '1.1em', marginRight: '0.3em', verticalAlign: 'middle'}}>
-    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-  </svg>
-);
-
-const MusicIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '1.5em', height: '1.5em'}}>
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11z"/>
-  </svg>
-);
+import { ClockIcon, CheckIcon, MusicIcon } from '../icons';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -34,7 +17,10 @@ function attSummary(ev) {
 }
 
 export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance }) {
-  const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+  const past = [...events].filter(e => e.date < today).sort((a, b) => b.date.localeCompare(a.date));
+  const sorted = [...upcoming, ...past];
 
   return (
     <div className={s.page}>

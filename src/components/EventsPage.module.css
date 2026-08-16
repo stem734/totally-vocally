@@ -208,4 +208,5 @@
   .title { font-size: 1.9rem; }
   .card { grid-template-columns: 60px 1fr; gap: 12px; padding: 16px 14px; }
   .dayNum { font-size: 1.5rem; }
+  .dateBadge { height: 70px; }
 }

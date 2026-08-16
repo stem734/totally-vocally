@@ -1,29 +1,6 @@
 import React from 'react';
 import s from './InfoPage.module.css';
-
-const MusicIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '2.5em', height: '2.5em'}}>
-    <path d="M9 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-5l7-5V2c0-1.1-.9-2-2-2s-2 .9-2 2v4l-3-2v3z"/>
-  </svg>
-);
-
-const MapIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '2.5em', height: '2.5em'}}>
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-  </svg>
-);
-
-const PhoneIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '2.5em', height: '2.5em'}}>
-    <path d="M17 10.5V7c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
-  </svg>
-);
-
-const ChatIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{width: '2.5em', height: '2.5em'}}>
-    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm13 5H6v-2h13v2zm0-4H6V8h13v2z"/>
-  </svg>
-);
+import { MusicIcon, MapPinIcon, InfoIcon, PhoneIcon, MessageSquareIcon } from '../icons';
 
 const CARDS = [
   {
@@ -32,12 +9,12 @@ const CARDS = [
     text: 'Abi Moore\nabi@totallyvocally.com\n\nVisit: acapellawithabi.com',
   },
   {
-    icon: <MapIcon />,
+    icon: <MapPinIcon />,
     title: 'Rehearsal Location',
-    text: 'Hockley, Nottingham\n\nMonday Evenings: 6:45 – 8:45pm\nTuesday Evenings: 7:00 – 9:00pm\nWednesday Evenings: 6:00 – 8:00pm',
+    text: 'Clumber Hall, High Cross Street, Nottingham, NG1 3AZ\n\nMonday Evenings: 6:45 – 8:45pm\nTuesday Evenings: 7:00 – 9:00pm',
   },
   {
-    icon: <MapIcon />,
+    icon: <InfoIcon />,
     title: 'Choir Guidelines',
     list: [
       'Please arrive on time and warmed up',
@@ -50,7 +27,7 @@ const CARDS = [
   {
     icon: '£',
     title: 'Membership & Fees',
-    text: '[Subscription / term fee details here]\n\nPayments by [method] to [details].',
+    text: 'Term membership: £35 per term (5 rehearsals)\n\nPayments via bank transfer to Totally Vocally — bank details on request.',
   },
   {
     icon: <PhoneIcon />,
@@ -58,9 +35,9 @@ const CARDS = [
     text: 'Follow us and share the love!\n\nFacebook: /totallyvocally\nInstagram: @totallyvocally\nYouTube: Totally Vocally Channel',
   },
   {
-    icon: <ChatIcon />,
+    icon: <MessageSquareIcon />,
     title: 'Group Chat',
-    text: 'Join our members WhatsApp group for quick updates and announcements.\n\nGroup link: [Insert WhatsApp link here]',
+    text: 'Join our members WhatsApp group for quick updates and announcements.\n\nGroup link: https://chat.whatsapp.com/[your-invite]',
   },
 ];
 

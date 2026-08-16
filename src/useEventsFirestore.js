@@ -9,11 +9,8 @@ import {
   doc,
   updateDoc,
   setDoc,
-  getDocs,
 } from 'firebase/firestore';
 import { db } from './firebase';
-
-const VENUE = 'Clumber Hall, High Cross Street, Nottingham, NG1 3AZ';
 
 export function useEventsFirestore(userId) {
   const [events, setEvents] = useState([]);

@@ -11,7 +11,7 @@ import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 
 export default function App() {
-  const { user, isAdmin, loading, error, sendMagicLink, logout } = useAuth();
+  const { user, isAdmin, loading, sendMagicLink, logout } = useAuth();
   const { events, addEvent, deleteEvent, setAttendance } = useEventsFirestore(user?.uid);
 
   const [page, setPage] = useState('calendar');

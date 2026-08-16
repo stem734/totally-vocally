@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import s from './Login.module.css';
 
 export default function LoginFirebase({ onLoginClick, onSignUpClick }) {

@@ -41,7 +41,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  const handleAuth = async (email, password, displayName, voicePart) => {
+  const handleAuth = async (email, password, displayName) => {
     setAuthLoading(true);
     setAuthError('');
     try {
@@ -52,7 +52,7 @@ export default function App() {
           setAuthModalOpen(false);
         }
       } else if (authMode === 'signup') {
-        success = await signUp(email, password, displayName, voicePart);
+        success = await signUp(email, password, displayName);
         if (success) setAuthModalOpen(false);
       } else if (authMode === 'forgotPassword') {
         success = await resetPassword(email);

@@ -85,7 +85,7 @@ export function useAuth() {
     }
   }, []);
 
-  const signUp = useCallback(async (email, password, displayName, voicePart) => {
+  const signUp = useCallback(async (email, password, displayName) => {
     setError('');
     try {
       // Create user account
@@ -100,7 +100,7 @@ export function useAuth() {
       const newProfile = {
         email,
         displayName: displayName || '',
-        voicePart: voicePart || '',
+        voicePart: '',
         role: 'member',
         status: 'pending',
         createdAt: new Date().toISOString(),

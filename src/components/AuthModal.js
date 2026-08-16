@@ -6,13 +6,12 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [voicePart, setVoicePart] = useState('');
 
   const handleSubmit = () => {
     if (!email) return;
     if (mode !== 'forgotPassword' && !password) return;
-    if (mode === 'signup' && (!displayName || !voicePart)) return;
-    onSubmit(email, password, displayName, voicePart);
+    if (mode === 'signup' && !displayName) return;
+    onSubmit(email, password, displayName);
   };
 
   if (!open) return null;
@@ -67,20 +66,6 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
                   disabled={loading}
                 />
               </div>
-              {isSignUp && (
-                <div className="authField">
-                  <label>Voice Part</label>
-                  <select value={voicePart} onChange={(e) => setVoicePart(e.target.value)} disabled={loading}>
-                    <option value="">Choose your voice part</option>
-                    <option value="Soprano 1">Soprano 1</option>
-                    <option value="Soprano 2">Soprano 2</option>
-                    <option value="Alto">Alto</option>
-                    <option value="Tenor 1">Tenor 1</option>
-                    <option value="Tenor 2">Tenor 2</option>
-                    <option value="Bass">Bass</option>
-                  </select>
-                </div>
-              )}
               </>
             )}
 
@@ -90,7 +75,7 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
 
             <button
               onClick={handleSubmit}
-              disabled={(!email || ((!isForgotPassword) && !password) || (isSignUp && (!displayName || !voicePart))) || loading}
+              disabled={(!email || ((!isForgotPassword) && !password) || (isSignUp && !displayName)) || loading}
               className="authSubmitBtn"
             >
               {loading ? 'Please wait...' : (isForgotPassword ? 'Send Reset Link' : (isSignUp ? 'Submit Request' : 'Sign In'))}

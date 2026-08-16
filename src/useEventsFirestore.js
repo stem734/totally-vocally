@@ -21,6 +21,11 @@ export function useEventsFirestore(userId) {
 
   // Listen to events in real-time
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     const eventsRef = collection(db, 'events');
     const q = query(eventsRef, orderBy('date', 'asc'));
 
@@ -37,7 +42,7 @@ export function useEventsFirestore(userId) {
     });
 
     return unsubscribe;
-  }, []);
+  }, [userId]);
 
   const addEvent = useCallback(async (eventData) => {
     try {

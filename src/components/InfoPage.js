@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import s from './InfoPage.module.css';
 import { MusicIcon, PhoneIcon, CheckIcon, FilesIcon } from '../icons';
 
@@ -25,6 +27,18 @@ const REHEARSAL_PRACTICE = [
   },
 ];
 
+const DEFAULT_INFO = {
+  intro: 'Everything you need to get the most from rehearsals, stay up to date and feel confident in your part.',
+  homePractice: 'Rehearsal alone is not enough to learn the songs securely by heart. Your Dropbox materials include learning tracks, lyrics, exercises and videos prepared to help you practise independently.',
+  membershipFee: '£44 per month',
+  membershipDetails: 'Membership is paid by standing order on the 5th of each month. It covers rehearsals, learning materials, arrangements, licences, planning, venue hire and the tools used to produce your resources.',
+  cancellation: 'Membership is not pay-as-you-go and remains due if you miss rehearsals. If you decide to leave, please give one month’s notice.',
+  timeAway: 'If you stop membership payments, your place cannot be held. Continuing your standing order keeps your place and learning-resource access as a virtual member. Speak to Abi before making changes.',
+  communication: 'Look out for the weekly member email or WhatsApp message with singing information, exercises and term plans.',
+  email: 'abi@totallyvocally.com',
+  phone: '07786 548337',
+};
+
 const INCLUDED = [
   'Two-hour rehearsals across 38 weeks of the year',
   'Professional learning tracks, lyrics and videos',
@@ -34,19 +48,48 @@ const INCLUDED = [
   'Concert and performance opportunities',
 ];
 
-export default function InfoPage() {
+export default function InfoPage({ isAdmin }) {
+  const [info, setInfo] = useState(DEFAULT_INFO);
+  const [draft, setDraft] = useState(DEFAULT_INFO);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => onSnapshot(doc(db, 'content', 'memberInfo'), (snapshot) => {
+    const next = { ...DEFAULT_INFO, ...(snapshot.exists() ? snapshot.data() : {}) };
+    setInfo(next);
+    if (!editing) setDraft(next);
+  }), [editing]);
+
+  const saveInfo = async () => {
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'content', 'memberInfo'), draft, { merge: true });
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <main className={s.page}>
+      {isAdmin && <div className={s.adminBar}><span>Member information</span><button onClick={() => { setDraft(info); setEditing(!editing); }}>{editing ? 'Cancel' : 'Edit page'}</button></div>}
+      {editing && (
+        <section className={s.editor}>
+          <h2>Edit member information</h2>
+          {Object.entries(draft).map(([key, value]) => (
+            <label key={key}><span>{key.replace(/([A-Z])/g, ' $1')}</span>{value.length > 60 ? <textarea rows="3" value={value} onChange={(e) => setDraft({ ...draft, [key]: e.target.value })} /> : <input value={value} onChange={(e) => setDraft({ ...draft, [key]: e.target.value })} />}</label>
+          ))}
+          <button className={s.saveButton} onClick={saveInfo} disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>
+        </section>
+      )}
       <section className={s.hero}>
         <div className={s.heroGlow} />
         <p className={s.eyebrow}>Totally Vocally · Member handbook</p>
         <h1>Sing together.<br /><span>Grow together.</span></h1>
-        <p className={s.heroCopy}>
-          Everything you need to get the most from rehearsals, stay up to date and feel confident in your part.
-        </p>
+        <p className={s.heroCopy}>{info.intro}</p>
         <div className={s.heroActions}>
-          <a href="mailto:abi@totallyvocally.com" className={s.primary}>Email Abi</a>
-          <a href="tel:07786548337" className={s.secondary}>Call 07786 548337</a>
+          <a href={`mailto:${info.email}`} className={s.primary}>Email Abi</a>
+          <a href={`tel:${info.phone.replace(/\s/g, '')}`} className={s.secondary}>Call {info.phone}</a>
         </div>
         <div className={s.soundwave} aria-hidden="true">
           {[28, 52, 80, 44, 68, 94, 58, 76, 36, 64, 88, 48].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}
@@ -69,10 +112,7 @@ export default function InfoPage() {
           <div className={s.icon}><FilesIcon /></div>
           <p className={s.sectionLabel}>Between rehearsals</p>
           <h2>Learn your part at home</h2>
-          <p>
-            Rehearsal alone is not enough to learn the songs securely by heart. Your Dropbox materials include
-            learning tracks, lyrics, exercises and videos prepared to help you practise independently.
-          </p>
+          <p>{info.homePractice}</p>
           <p>
             The better the parts are learned, the more rehearsal time we can spend on blend, movement,
             technique, dynamics and performance.
@@ -92,26 +132,26 @@ export default function InfoPage() {
       <section className={s.storyGrid}>
         <article className={s.story}>
           <p className={s.sectionLabel}>Membership</p>
-          <h2>£44 per month</h2>
-          <p>Membership is paid by standing order on the 5th of each month. It covers rehearsals, learning materials, arrangements, licences, planning, venue hire and the tools used to produce your resources.</p>
-          <p>Membership is not pay-as-you-go and remains due if you miss rehearsals. If you decide to leave, please give one month’s notice.</p>
+          <h2>{info.membershipFee}</h2>
+          <p>{info.membershipDetails}</p>
+          <p>{info.cancellation}</p>
         </article>
         <aside className={s.highlight}>
           <span className={s.quoteMark}>↻</span>
           <p>Taking time away?</p>
-          <small>If you stop membership payments, your place cannot be held. Continuing your standing order keeps your place and learning-resource access as a virtual member. Speak to Abi before making changes.</small>
+          <small>{info.timeAway}</small>
         </aside>
       </section>
 
       <section className={s.faqGrid}>
         <article><p className={s.sectionLabel}>Performances</p><h3>Are concerts compulsory?</h3><p>No. Performances and solos are always optional. You are warmly encouraged to join in, but never pressured.</p></article>
         <article><p className={s.sectionLabel}>Extra costs</p><h3>Will opportunities cost extra?</h3><p>If an outside opportunity involves a cost to singers, it will be explained in advance and participation will remain optional.</p></article>
-        <article><p className={s.sectionLabel}>Communication</p><h3>Where are updates shared?</h3><p>Look out for the weekly member email or WhatsApp message with singing information, exercises and term plans.</p></article>
+        <article><p className={s.sectionLabel}>Communication</p><h3>Where are updates shared?</h3><p>{info.communication}</p></article>
       </section>
 
       <footer className={s.footer}>
         <div><strong>Questions about choir or membership?</strong><span>Abi is the best person to help.</span></div>
-        <div className={s.footerLinks}><a href="mailto:abi@totallyvocally.com">abi@totallyvocally.com</a><a href="tel:07786548337"><PhoneIcon /> 07786 548337</a></div>
+        <div className={s.footerLinks}><a href={`mailto:${info.email}`}>{info.email}</a><a href={`tel:${info.phone.replace(/\s/g, '')}`}><PhoneIcon /> {info.phone}</a></div>
       </footer>
     </main>
   );

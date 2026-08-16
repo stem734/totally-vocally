@@ -11,6 +11,7 @@ import PendingApproval from './components/PendingApproval';
 import MembersPage from './components/MembersPage';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
+import { importTermDates2026 } from './termDates';
 
 function getAuthErrorMessage(error) {
   switch (error?.code) {
@@ -40,6 +41,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'forgotPassword'
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [importingDates, setImportingDates] = useState(false);
 
   const handleAuth = async (email, password, displayName) => {
     setAuthLoading(true);
@@ -125,6 +127,16 @@ export default function App() {
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
           onSetAttendance={setAttendance}
+          onImportTermDates={async () => {
+            setImportingDates(true);
+            try {
+              const count = await importTermDates2026(user.uid);
+              alert(`${count} term-date rehearsals imported. Existing matching dates were updated, not duplicated.`);
+            } finally {
+              setImportingDates(false);
+            }
+          }}
+          importingDates={importingDates}
         />
       )}
       {page === 'events' && (
@@ -137,7 +149,7 @@ export default function App() {
           onSetAttendance={setAttendance}
         />
       )}
-      {page === 'info' && <InfoPage key="info" />}
+      {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
       {page === 'files' && <FilesPage key="files" />}
       {page === 'members' && isAdmin && <MembersPage key="members" />}
 

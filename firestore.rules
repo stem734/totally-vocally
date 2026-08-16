@@ -62,5 +62,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Editable member-facing portal content.
+    match /content/{documentId} {
+      allow read: if isApproved();
+      allow write: if isAdmin();
+    }
+
   }
 }

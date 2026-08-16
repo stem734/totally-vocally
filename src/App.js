@@ -11,17 +11,17 @@ import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 
 export default function App() {
-  const { user, isAdmin, loading, signIn, signUp, resetPassword, logout } = useAuth();
+  const { user, isAdmin, loading, signIn, resetPassword, logout } = useAuth();
   const { events, addEvent, deleteEvent, setAttendance } = useEventsFirestore(user?.uid);
 
   const [page, setPage] = useState('calendar');
   const [modalOpen, setModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('signin'); // 'signin', 'signup', or 'forgotPassword'
+  const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'forgotPassword'
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  const handleAuth = async (email, password, displayName, voicePart) => {
+  const handleAuth = async (email, password) => {
     setAuthLoading(true);
     setAuthError('');
     try {
@@ -29,13 +29,6 @@ export default function App() {
       if (authMode === 'signin') {
         success = await signIn(email, password);
         if (success) {
-          alert('Signed in successfully!');
-          setAuthModalOpen(false);
-        }
-      } else if (authMode === 'signup') {
-        success = await signUp(email, password, displayName, voicePart);
-        if (success) {
-          alert('Account created successfully! Welcome to Totally Vocally!');
           setAuthModalOpen(false);
         }
       } else if (authMode === 'forgotPassword') {
@@ -68,7 +61,6 @@ export default function App() {
       <>
         <LoginFirebase
           onLoginClick={() => { setAuthMode('signin'); setAuthModalOpen(true); }}
-          onSignUpClick={() => { setAuthMode('signup'); setAuthModalOpen(true); }}
         />
         <AuthModal
           open={authModalOpen}

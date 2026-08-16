@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './Login.module.css';
 
-export default function LoginFirebase({ onLoginClick, onSignUpClick }) {
+export default function LoginFirebase({ onLoginClick }) {
   return (
     <div className={s.screen}>
       <div className={s.bg} />
@@ -16,14 +16,11 @@ export default function LoginFirebase({ onLoginClick, onSignUpClick }) {
 
         <div className={s.buttonGroup}>
           <button className={s.btnPrimary} onClick={onLoginClick}>
-            Sign In with Magic Link
-          </button>
-          <button className={s.btnSecondary} onClick={onSignUpClick}>
-            New Member? Sign Up
+            Sign In
           </button>
         </div>
 
-        <p className={s.hint}>We'll send you a sign-in link via email — no password needed.</p>
+        <p className={s.hint}>Sign in with your email and password to access the members portal.</p>
       </div>
     </div>
   );

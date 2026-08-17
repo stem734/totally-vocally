@@ -190,6 +190,28 @@
   color: #f5c0c0;
 }
 
+.badgeUnresponded {
+  background: #3a3a44;
+  color: #c8c8d8;
+}
+
+.copyBtn {
+  padding: 0.25rem 0.6rem;
+  background: #1a1a1f;
+  border: 1px solid #333;
+  border-radius: 0.375rem;
+  color: #a8a0a8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copyBtn:hover {
+  border-color: #d4a5a5;
+  color: #d4a5a5;
+}
+
 .groupTitle .count {
   background: #1a1a1f;
   border: 1px solid #333;

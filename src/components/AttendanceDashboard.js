@@ -13,6 +13,7 @@ export default function AttendanceDashboard({ events }) {
   const [members, setMembers] = useState({});
   const [error, setError] = useState('');
   const [filters, setFilters] = useState(getDefaultFilters());
+  const [copiedEventId, setCopiedEventId] = useState('');
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -21,8 +22,10 @@ export default function AttendanceDashboard({ events }) {
         const memberMap = {};
         snapshot.forEach((doc) => {
           const data = doc.data();
+          const approved = data.role === 'admin' || data.status === 'approved';
           memberMap[doc.id] = {
             name: data.displayName || data.email || 'Unknown',
+            approved,
           };
         });
         setMembers(memberMap);
@@ -58,6 +61,24 @@ export default function AttendanceDashboard({ events }) {
     return groups;
   };
 
+  const getNotResponded = (event) => {
+    const attendance = event.attendance || {};
+    return Object.entries(members)
+      .filter(([userId, member]) => member.approved && !(userId in attendance))
+      .map(([, member]) => member.name)
+      .sort();
+  };
+
+  const copyNotResponded = (event, names) => {
+    const text = `${event.title} (${event.date}) — yet to respond:\n${names.join('\n')}`;
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setCopiedEventId(event.id);
+        setTimeout(() => setCopiedEventId(''), 2000);
+      })
+      .catch(() => {});
+  };
+
   return (
     <div className={s.container}>
       <AdminSidebar filters={filters} onFiltersChange={setFilters} />
@@ -79,6 +100,7 @@ export default function AttendanceDashboard({ events }) {
             sortedEvents.map((event) => {
               const d = new Date(event.date + 'T12:00:00');
               const groups = getAttendanceGroups(event);
+              const notResponded = getNotResponded(event);
               const totalResponses = Object.values(groups).reduce((sum, arr) => sum + arr.length, 0);
 
               return (
@@ -153,6 +175,28 @@ export default function AttendanceDashboard({ events }) {
                         </ul>
                       ) : (
                         <p className={s.empty}>No responses</p>
+                      )}
+                    </div>
+
+                    <div className={s.group}>
+                      <h3 className={s.groupTitle}>
+                        <span className={s.statusBadge + ' ' + s.badgeUnresponded}>…</span>
+                        Yet to Respond
+                        <span className={s.count}>{notResponded.length}</span>
+                        {notResponded.length > 0 && (
+                          <button className={s.copyBtn} onClick={() => copyNotResponded(event, notResponded)}>
+                            {copiedEventId === event.id ? 'Copied!' : 'Copy list'}
+                          </button>
+                        )}
+                      </h3>
+                      {notResponded.length > 0 ? (
+                        <ul className={s.memberList}>
+                          {notResponded.map((name) => (
+                            <li key={name}>{name}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className={s.empty}>Everyone has responded</p>
                       )}
                     </div>
                   </div>

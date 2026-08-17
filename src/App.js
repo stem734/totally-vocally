@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import CalendarPage from './components/CalendarPage';
 import EventsPage from './components/EventsPage';
@@ -10,9 +10,11 @@ import AuthModal from './components/AuthModal';
 import PendingApproval from './components/PendingApproval';
 import MembersPage from './components/MembersPage';
 import AttendanceDashboard from './components/AttendanceDashboard';
+import SongsPage from './components/SongsPage';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 import { importTermDates2026 } from './termDates';
+import { seedSongs } from './seedSongs';
 
 function getAuthErrorMessage(error) {
   switch (error?.code) {
@@ -43,6 +45,10 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
   const [importingDates, setImportingDates] = useState(false);
+
+  useEffect(() => {
+    if (isAdmin) seedSongs().catch(err => console.error('Failed to seed songs:', err));
+  }, [isAdmin]);
 
   const handleAuth = async (email, password, displayName) => {
     setAuthLoading(true);
@@ -155,6 +161,7 @@ export default function App() {
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
       {page === 'files' && <FilesPage key="files" />}
       {page === 'attendance' && isAdmin && <AttendanceDashboard key="attendance" events={events} />}
+      {page === 'songs' && isAdmin && <SongsPage key="songs" />}
       {page === 'members' && isAdmin && <MembersPage key="members" />}
 
       <AddEventModal

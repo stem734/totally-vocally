@@ -11,6 +11,7 @@ export default function Header({ activePage, onNavigate, onLogout, isAdmin }) {
   ];
   if (isAdmin) {
     TABS.push({ id: 'attendance', label: 'Attendance', icon: EventIcon });
+    TABS.push({ id: 'songs', label: 'Songs', icon: InfoIcon });
     TABS.push({ id: 'members', label: 'Members', icon: InfoIcon });
   }
   return (

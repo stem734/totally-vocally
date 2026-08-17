@@ -23,7 +23,6 @@ export default function AttendanceDashboard({ events }) {
           const data = doc.data();
           memberMap[doc.id] = {
             name: data.displayName || data.email || 'Unknown',
-            voicePart: data.voicePart || 'Unassigned',
           };
         });
         setMembers(memberMap);
@@ -59,19 +58,6 @@ export default function AttendanceDashboard({ events }) {
     return groups;
   };
 
-  const getVoicePartCounts = (event) => {
-    const attendance = event.attendance || {};
-    const counts = {};
-
-    Object.entries(attendance).forEach(([userId, status]) => {
-      if (status !== 'yes') return;
-      const voicePart = members[userId]?.voicePart || 'Unassigned';
-      counts[voicePart] = (counts[voicePart] || 0) + 1;
-    });
-
-    return counts;
-  };
-
   return (
     <div className={s.container}>
       <AdminSidebar filters={filters} onFiltersChange={setFilters} />
@@ -93,7 +79,6 @@ export default function AttendanceDashboard({ events }) {
             sortedEvents.map((event) => {
               const d = new Date(event.date + 'T12:00:00');
               const groups = getAttendanceGroups(event);
-              const voicePartCounts = getVoicePartCounts(event);
               const totalResponses = Object.values(groups).reduce((sum, arr) => sum + arr.length, 0);
 
               return (
@@ -116,7 +101,7 @@ export default function AttendanceDashboard({ events }) {
                   </div>
 
                   {event.type !== 'rehearsal' && (
-                    <VoicePartBreakdown counts={voicePartCounts} checkMissing />
+                    <VoicePartBreakdown counts={event.voicePartCounts || {}} checkMissing />
                   )}
 
                   <div className={s.attendanceGroups}>

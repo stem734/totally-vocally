@@ -11,7 +11,8 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState(null);
+  const selectedEvent = events.find(e => e.id === selectedEventId) || null;
   const [rehearsalBlockModalOpen, setRehearsalBlockModalOpen] = useState(false);
   const [blockCreating, setBlockCreating] = useState(false);
 
@@ -74,7 +75,7 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
                   <div
                     key={ev.id}
                     className={`${s.chip} ${ev.type === 'rehearsal' ? s.chipReh : ''} ${isDesignated ? s.designated : ''}`}
-                    onClick={() => setSelectedEvent(ev)}
+                    onClick={() => setSelectedEventId(ev.id)}
                     title={`${ev.time ? ev.time+' — ' : ''}${ev.title}`}
                   >
                     {ev.title}
@@ -95,7 +96,7 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
         open={selectedEvent !== null}
         event={selectedEvent}
         isAdmin={isAdmin}
-        onClose={() => setSelectedEvent(null)}
+        onClose={() => setSelectedEventId(null)}
         onSetAttendance={onSetAttendance}
         onDelete={onDeleteEvent}
         onUpdate={onUpdateEvent}

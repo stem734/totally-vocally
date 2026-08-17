@@ -1,7 +1,7 @@
 export function getDefaultFilters() {
   const current = new Date().getFullYear();
   return {
-    eventTypes: ['rehearsal', 'performance'],
+    eventTypes: ['rehearsal', 'performance', 'workshop'],
     months: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     years: [current, current + 1],
   };

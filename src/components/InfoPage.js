@@ -123,8 +123,9 @@ export default function InfoPage({ isAdmin }) {
         </article>
         <aside className={s.highlight}>
           <span className={s.quoteMark}>↻</span>
-          <p>Taking time away?</p>
-          <small>{info.timeAway}</small>
+          <p className={s.sectionLabel}>Time away</p>
+          <h2>Taking time away?</h2>
+          <p className={s.highlightBody}>{info.timeAway}</p>
         </aside>
       </section>
 

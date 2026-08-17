@@ -87,7 +87,7 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
       </div>
 
       <div className={s.legend}>
-        <span className={`${s.dot} ${s.dotEvent}`} /> Performance / Event
+        <span className={`${s.dot} ${s.dotEvent}`} /> Performance / Workshop
         <span className={`${s.dot} ${s.dotReh}`} /> Rehearsal
       </div>
 

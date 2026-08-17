@@ -4,6 +4,7 @@ import AllocateSongsModal from './AllocateSongsModal';
 import EditEventModal from './EditEventModal';
 import s from './EventDetailModal.module.css';
 import { ClockIcon, CheckIcon } from '../icons';
+import { eventTypeLabel, formatDuration } from '../eventFields';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -24,6 +25,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
   const [allocateModalOpen, setAllocateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   if (!open || !event) return null;
 
@@ -47,12 +49,24 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
 
           <div className={s.content}>
             <span className={`${s.typePill} ${isReh ? s.pillReh : ''}`}>
-              {isReh ? 'Rehearsal' : 'Performance'}
+              {eventTypeLabel(event.type)}
             </span>
 
             {event.time && (
               <p className={s.meta}>
                 <span><ClockIcon /> {event.time}</span>
+              </p>
+            )}
+
+            {event.arriveBy && (
+              <p className={s.meta}>
+                <span><ClockIcon /> Arrive by {event.arriveBy}</span>
+              </p>
+            )}
+
+            {event.duration && (
+              <p className={s.meta}>
+                <span><ClockIcon /> {formatDuration(event.duration)}</span>
               </p>
             )}
 
@@ -131,12 +145,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
             >Allocate Songs</button>
             <button
               className={s.delBtn}
-              onClick={() => {
-                if (window.confirm('Remove this event?')) {
-                  onDelete(event.id);
-                  onClose();
-                }
-              }}
+              onClick={() => setConfirmingDelete(true)}
             >Delete Event</button>
           </div>
         )}
@@ -170,6 +179,25 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
             }}
             isSaving={false}
           />
+        )}
+
+        {confirmingDelete && (
+          <div className={s.confirmOverlay} onClick={() => setConfirmingDelete(false)}>
+            <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
+              <h3>Remove event?</h3>
+              <p>Are you sure you want to remove "{event.title}"?</p>
+              <div className={s.confirmActions}>
+                <button className={s.editBtn} onClick={() => setConfirmingDelete(false)}>Cancel</button>
+                <button
+                  className={s.delBtn}
+                  onClick={() => {
+                    onDelete(event.id);
+                    onClose();
+                  }}
+                >Remove</button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

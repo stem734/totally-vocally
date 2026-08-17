@@ -45,14 +45,14 @@ export default function AdminSidebar({ filters, onFiltersChange, showMonthFilter
 
   const handleResetFilters = () => {
     onFiltersChange({
-      eventTypes: ['rehearsal', 'performance'],
+      eventTypes: ['rehearsal', 'performance', 'workshop'],
       months: MONTHS.map(m => m.value),
       years: YEARS,
     });
   };
 
   const activeFilterCount =
-    (filters.eventTypes.length < 2 ? 1 : 0) +
+    (filters.eventTypes.length < 3 ? 1 : 0) +
     (filters.months.length < MONTHS.length ? 1 : 0) +
     (filters.years.length < YEARS.length ? 1 : 0);
 
@@ -85,6 +85,14 @@ export default function AdminSidebar({ filters, onFiltersChange, showMonthFilter
               onChange={() => handleEventTypeChange('performance')}
             />
             <span>Performances</span>
+          </label>
+          <label className={s.checkbox}>
+            <input
+              type="checkbox"
+              checked={filters.eventTypes.includes('workshop')}
+              onChange={() => handleEventTypeChange('workshop')}
+            />
+            <span>Workshops</span>
           </label>
         </div>
       )}

@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import AdminSidebar from './AdminSidebar';
 import VoicePartBreakdown from './VoicePartBreakdown';
 import { getDefaultFilters, filterEvents } from '../filterUtils';
+import { eventTypeLabel } from '../eventFields';
 import s from './AttendanceDashboard.module.css';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -110,11 +111,11 @@ export default function AttendanceDashboard({ events }) {
                       </div>
                     </div>
                     <span className={`${s.typePill} ${event.type === 'rehearsal' ? s.pillReh : ''}`}>
-                      {event.type === 'rehearsal' ? 'Rehearsal' : 'Performance'}
+                      {eventTypeLabel(event.type)}
                     </span>
                   </div>
 
-                  {event.type === 'performance' && (
+                  {event.type !== 'rehearsal' && (
                     <VoicePartBreakdown counts={voicePartCounts} checkMissing />
                   )}
 

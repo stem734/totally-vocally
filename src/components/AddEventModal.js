@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import s from './AddEventModal.module.css';
+import { EVENT_TYPES, DURATION_OPTIONS, formatDuration } from '../eventFields';
 
-const EMPTY = { title: '', type: 'rehearsal', date: '', time: '', location: '', desc: '' };
+const EMPTY = { title: '', type: 'rehearsal', date: '', time: '', arriveBy: '', duration: '', location: '', desc: '' };
 
 export default function AddEventModal({ open, onClose, onSave }) {
   const [form, setForm] = useState(EMPTY);
@@ -27,6 +28,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
       title: form.title.trim(),
       location: form.location.trim(),
       desc: form.desc.trim(),
+      duration: form.duration ? Number(form.duration) : '',
     });
     onClose();
   };
@@ -53,8 +55,9 @@ export default function AddEventModal({ open, onClose, onSave }) {
           <div className={s.field}>
             <label>Type</label>
             <select value={form.type} onChange={set('type')}>
-              <option value="rehearsal">Rehearsal</option>
-              <option value="event">Performance / Event</option>
+              {EVENT_TYPES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
             </select>
           </div>
 
@@ -66,6 +69,22 @@ export default function AddEventModal({ open, onClose, onSave }) {
             <div className={s.field}>
               <label>Time</label>
               <input type="time" value={form.time} onChange={set('time')} />
+            </div>
+          </div>
+
+          <div className={s.row}>
+            <div className={s.field}>
+              <label>Arrive By <span className={s.opt}>(optional)</span></label>
+              <input type="time" value={form.arriveBy} onChange={set('arriveBy')} />
+            </div>
+            <div className={s.field}>
+              <label>Duration <span className={s.opt}>(optional)</span></label>
+              <select value={form.duration} onChange={set('duration')}>
+                <option value="">—</option>
+                {DURATION_OPTIONS.map(mins => (
+                  <option key={mins} value={mins}>{formatDuration(mins)}</option>
+                ))}
+              </select>
             </div>
           </div>
 

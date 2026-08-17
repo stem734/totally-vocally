@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import s from './EditEventModal.module.css';
+import { EVENT_TYPES, DURATION_OPTIONS, formatDuration } from '../eventFields';
 
 export default function EditEventModal({ open, event, onClose, onSave, isSaving }) {
   const [title, setTitle] = useState('');
   const [type, setType] = useState('rehearsal');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [arriveBy, setArriveBy] = useState('');
+  const [duration, setDuration] = useState('');
   const [location, setLocation] = useState('');
   const [desc, setDesc] = useState('');
   const [error, setError] = useState('');
@@ -17,6 +20,8 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
       setType(event.type || 'rehearsal');
       setDate(event.date || '');
       setTime(event.time || '');
+      setArriveBy(event.arriveBy || '');
+      setDuration(event.duration || '');
       setLocation(event.location || '');
       setDesc(event.desc || '');
       setError('');
@@ -38,6 +43,8 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
         type,
         date,
         time,
+        arriveBy,
+        duration: duration ? Number(duration) : '',
         location: location.trim(),
         desc: desc.trim(),
       });
@@ -82,8 +89,9 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
                   disabled={isSaving}
                   required
                 >
-                  <option value="rehearsal">Rehearsal</option>
-                  <option value="performance">Performance</option>
+                  {EVENT_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -122,6 +130,34 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
                   disabled={isSaving}
                   placeholder="e.g., Community Hall"
                 />
+              </div>
+            </div>
+
+            <div className={s.formRow}>
+              <div className={s.formGroup}>
+                <label htmlFor="arriveBy">Arrive By</label>
+                <input
+                  id="arriveBy"
+                  type="time"
+                  value={arriveBy}
+                  onChange={(e) => setArriveBy(e.target.value)}
+                  disabled={isSaving}
+                />
+              </div>
+
+              <div className={s.formGroup}>
+                <label htmlFor="duration">Duration</label>
+                <select
+                  id="duration"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  disabled={isSaving}
+                >
+                  <option value="">—</option>
+                  {DURATION_OPTIONS.map(mins => (
+                    <option key={mins} value={mins}>{formatDuration(mins)}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

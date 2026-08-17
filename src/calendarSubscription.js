@@ -1,3 +1,5 @@
+import { eventTypeLabel } from './eventFields';
+
 export function generateICalendar(events) {
   const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
@@ -30,7 +32,7 @@ export function generateICalendar(events) {
     if (event.desc) ical += `DESCRIPTION:${escapeText(event.desc)}\r\n`;
     if (event.location) ical += `LOCATION:${escapeText(event.location)}\r\n`;
     if (event.time) ical += `X-CUSTOM-TIME:${event.time}\r\n`;
-    ical += `CATEGORIES:${event.type === 'rehearsal' ? 'Rehearsal' : 'Performance'}\r\n`;
+    ical += `CATEGORIES:${eventTypeLabel(event.type)}\r\n`;
     ical += 'END:VEVENT\r\n';
   });
 

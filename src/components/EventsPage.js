@@ -4,6 +4,7 @@ import EditEventModal from './EditEventModal';
 import AllocateSongsModal from './AllocateSongsModal';
 import s from './EventsPage.module.css';
 import { ClockIcon, CheckIcon, MusicIcon } from '../icons';
+import { eventTypeLabel, formatDuration } from '../eventFields';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -24,6 +25,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
   const [editingEventId, setEditingEventId] = useState(null);
   const [allocatingEventId, setAllocatingEventId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingEvent, setDeletingEvent] = useState(null);
 
   const today = new Date().toISOString().split('T')[0];
   const upcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
@@ -66,11 +68,11 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
                 <div className={s.body}>
                   <div className={s.topRow}>
                     <span className={`${s.typePill} ${isReh ? s.pillReh : ''}`}>
-                      {isReh ? 'Rehearsal' : 'Performance'}
+                      {eventTypeLabel(ev.type)}
                     </span>
                     {isAdmin && <button
                       className={s.delBtn}
-                      onClick={() => window.confirm('Remove this event?') && onDeleteEvent(ev.id)}
+                      onClick={() => setDeletingEvent(ev)}
                       title="Delete"
                     >×</button>}
                   </div>
@@ -79,6 +81,8 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
 
                   <p className={s.meta}>
                     {ev.time && <span><ClockIcon /> {ev.time}</span>}
+                    {ev.arriveBy && <span><ClockIcon /> Arrive by {ev.arriveBy}</span>}
+                    {ev.duration && <span><ClockIcon /> {formatDuration(ev.duration)}</span>}
                     {ev.location && (
                       <a
                         href={`https://www.google.com/maps/search/${encodeURIComponent(ev.location)}`}
@@ -179,6 +183,25 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
           }}
           isSaving={false}
         />
+      )}
+
+      {deletingEvent && (
+        <div className={s.confirmOverlay} onClick={() => setDeletingEvent(null)}>
+          <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <h3>Remove event?</h3>
+            <p>Are you sure you want to remove "{deletingEvent.title}"?</p>
+            <div className={s.confirmActions}>
+              <button className={s.editBtn} onClick={() => setDeletingEvent(null)}>Cancel</button>
+              <button
+                className={s.confirmDeleteBtn}
+                onClick={() => {
+                  onDeleteEvent(deletingEvent.id);
+                  setDeletingEvent(null);
+                }}
+              >Remove</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

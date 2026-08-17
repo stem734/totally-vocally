@@ -264,6 +264,56 @@
 .editBtn:hover { border-color: var(--coral); color: var(--coral-light); }
 .allocateBtn:hover { border-color: var(--teal-light); color: var(--teal-light); }
 
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 18, 17, 0.82);
+  backdrop-filter: blur(6px);
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.confirmModal {
+  background: var(--ink-mid);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+}
+
+.confirmModal h3 {
+  margin: 0 0 10px;
+  color: var(--warm-white);
+}
+
+.confirmModal p {
+  margin: 0 0 20px;
+  color: var(--muted-light);
+  font-size: 0.9rem;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirmDeleteBtn {
+  flex: 1;
+  background: rgba(193,60,133,0.1);
+  border: 1.5px solid rgba(193,60,133,0.3);
+  color: var(--coral-light);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.18s;
+}
+.confirmDeleteBtn:hover { background: rgba(193,60,133,0.2); border-color: var(--coral); }
+
 @media (max-width: 580px) {
   .page { padding: 24px 14px; }
   .title { font-size: 1.9rem; }

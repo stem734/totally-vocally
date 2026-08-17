@@ -15,7 +15,8 @@ export default function RehearsalBlockModal({ open, onClose, onSave, isSaving })
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedDays, setSelectedDays] = useState([1, 3, 5]); // Default: Mon, Wed, Fri
-  const [excludedDates, setExcludedDates] = useState('');
+  const [excludedDates, setExcludedDates] = useState([]);
+  const [excludeDateInput, setExcludeDateInput] = useState('');
   const [time, setTime] = useState('19:00');
   const [location, setLocation] = useState('');
   const [error, setError] = useState('');
@@ -26,6 +27,16 @@ export default function RehearsalBlockModal({ open, onClose, onSave, isSaving })
         ? selectedDays.filter(d => d !== day)
         : [...selectedDays, day]
     );
+  };
+
+  const handleAddExcludedDate = () => {
+    if (!excludeDateInput || excludedDates.includes(excludeDateInput)) return;
+    setExcludedDates([...excludedDates, excludeDateInput].sort());
+    setExcludeDateInput('');
+  };
+
+  const handleRemoveExcludedDate = (date) => {
+    setExcludedDates(excludedDates.filter(d => d !== date));
   };
 
   const handleSubmit = async (e) => {
@@ -45,17 +56,12 @@ export default function RehearsalBlockModal({ open, onClose, onSave, isSaving })
       return;
     }
 
-    const excluded = excludedDates
-      .split(',')
-      .map(d => d.trim())
-      .filter(d => d);
-
     try {
       await onSave({
         startDate,
         endDate,
         daysOfWeek: selectedDays,
-        excludedDates: excluded,
+        excludedDates,
         time,
         location,
       });
@@ -69,7 +75,8 @@ export default function RehearsalBlockModal({ open, onClose, onSave, isSaving })
     setStartDate('');
     setEndDate('');
     setSelectedDays([1, 3, 5]);
-    setExcludedDates('');
+    setExcludedDates([]);
+    setExcludeDateInput('');
     setTime('19:00');
     setLocation('');
     setError('');
@@ -156,14 +163,38 @@ export default function RehearsalBlockModal({ open, onClose, onSave, isSaving })
 
             <div className={s.formGroup}>
               <label htmlFor="excludedDates">Excluded Dates (optional)</label>
-              <textarea
-                id="excludedDates"
-                placeholder="Enter dates to exclude (breaks, holidays)&#10;Format: YYYY-MM-DD&#10;One date per line&#10;e.g., 2026-12-25&#10;2027-01-01"
-                value={excludedDates}
-                onChange={(e) => setExcludedDates(e.target.value)}
-                disabled={isSaving}
-                rows={4}
-              />
+              <div className={s.excludeRow}>
+                <input
+                  id="excludedDates"
+                  type="date"
+                  value={excludeDateInput}
+                  onChange={(e) => setExcludeDateInput(e.target.value)}
+                  disabled={isSaving}
+                />
+                <button
+                  type="button"
+                  className={s.addExcludeBtn}
+                  onClick={handleAddExcludedDate}
+                  disabled={isSaving || !excludeDateInput}
+                >
+                  Add
+                </button>
+              </div>
+              {excludedDates.length > 0 && (
+                <div className={s.excludeChips}>
+                  {excludedDates.map((date) => (
+                    <span key={date} className={s.excludeChip}>
+                      {new Date(date + 'T12:00:00').toLocaleDateString()}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExcludedDate(date)}
+                        disabled={isSaving}
+                        aria-label={`Remove ${date}`}
+                      >×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {startDate && endDate && selectedDays.length > 0 && (

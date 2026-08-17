@@ -15,8 +15,8 @@
 
 .bar {
   display: flex;
-  height: 12px;
-  border-radius: 6px;
+  height: 44px;
+  border-radius: 8px;
   overflow: hidden;
   background: #0a0a0f;
   border: 1px solid #2a2a2f;
@@ -24,35 +24,26 @@
 
 .segment {
   height: 100%;
-  transition: width 0.3s ease;
-}
-
-.legend {
+  min-width: 28px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-top: 0.6rem;
-}
-
-.legendItem {
-  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  color: #a8a0a8;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.legendItem strong {
-  color: #f5f0f5;
-  font-weight: 700;
+.segmentLabel {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
+.segmentCount {
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.85;
 }
 
 .empty {

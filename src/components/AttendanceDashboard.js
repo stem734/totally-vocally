@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import AdminSidebar from './AdminSidebar';
+import VoicePartBreakdown from './VoicePartBreakdown';
 import { getDefaultFilters, filterEvents } from '../filterUtils';
 import s from './AttendanceDashboard.module.css';
 
@@ -18,7 +19,11 @@ export default function AttendanceDashboard({ events }) {
       (snapshot) => {
         const memberMap = {};
         snapshot.forEach((doc) => {
-          memberMap[doc.id] = doc.data().displayName || doc.data().email || 'Unknown';
+          const data = doc.data();
+          memberMap[doc.id] = {
+            name: data.displayName || data.email || 'Unknown',
+            voicePart: data.voicePart || 'Unassigned',
+          };
         });
         setMembers(memberMap);
       },
@@ -40,7 +45,7 @@ export default function AttendanceDashboard({ events }) {
     };
 
     Object.entries(attendance).forEach(([userId, status]) => {
-      const memberName = members[userId] || userId;
+      const memberName = members[userId]?.name || userId;
       if (groups[status]) {
         groups[status].push(memberName);
       }
@@ -51,6 +56,19 @@ export default function AttendanceDashboard({ events }) {
     });
 
     return groups;
+  };
+
+  const getVoicePartCounts = (event) => {
+    const attendance = event.attendance || {};
+    const counts = {};
+
+    Object.entries(attendance).forEach(([userId, status]) => {
+      if (status !== 'yes') return;
+      const voicePart = members[userId]?.voicePart || 'Unassigned';
+      counts[voicePart] = (counts[voicePart] || 0) + 1;
+    });
+
+    return counts;
   };
 
   return (
@@ -74,6 +92,7 @@ export default function AttendanceDashboard({ events }) {
             sortedEvents.map((event) => {
               const d = new Date(event.date + 'T12:00:00');
               const groups = getAttendanceGroups(event);
+              const voicePartCounts = getVoicePartCounts(event);
               const totalResponses = Object.values(groups).reduce((sum, arr) => sum + arr.length, 0);
 
               return (
@@ -147,6 +166,8 @@ export default function AttendanceDashboard({ events }) {
                       )}
                     </div>
                   </div>
+
+                  <VoicePartBreakdown counts={voicePartCounts} />
 
                   <div className={s.summary}>
                     Total responses: {totalResponses}

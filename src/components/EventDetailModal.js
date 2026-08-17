@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useSongs } from '../useSongs';
+import AllocateSongsModal from './AllocateSongsModal';
 import s from './EventDetailModal.module.css';
 import { ClockIcon, CheckIcon } from '../icons';
 
@@ -16,7 +18,10 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete }) {
+export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete, onAllocateSongs }) {
+  const { songs } = useSongs();
+  const [allocateModalOpen, setAllocateModalOpen] = useState(false);
+
   if (!open || !event) return null;
 
   const d = new Date(event.date + 'T12:00:00');
@@ -65,6 +70,27 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
               <p className={s.desc}>{event.desc}</p>
             )}
 
+            {isAdmin && event.songIds && event.songIds.length > 0 && (
+              <div className={s.songsSection}>
+                <p className={s.songsLabel}>Songs Allocated</p>
+                <div className={s.songsList}>
+                  {event.songIds.map((songId) => {
+                    const song = songs.find(s => s.id === songId);
+                    return (
+                      <div key={songId} className={s.songTag}>
+                        {song?.title || 'Unknown Song'}
+                        {song?.url && (
+                          <a href={song.url} target="_blank" rel="noopener noreferrer" className={s.songLink}>
+                            🔗
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className={s.attSection}>
               <p className={s.attLabel}>Are you coming?</p>
               <div className={s.attRow}>
@@ -89,6 +115,10 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
         {isAdmin && (
           <div className={s.footer}>
             <button
+              className={s.allocateBtn}
+              onClick={() => setAllocateModalOpen(true)}
+            >Allocate Songs</button>
+            <button
               className={s.delBtn}
               onClick={() => {
                 if (window.confirm('Remove this event?')) {
@@ -98,6 +128,19 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
               }}
             >Delete Event</button>
           </div>
+        )}
+
+        {allocateModalOpen && isAdmin && onAllocateSongs && (
+          <AllocateSongsModal
+            open={allocateModalOpen}
+            event={event}
+            onClose={() => setAllocateModalOpen(false)}
+            onSave={async (songIds) => {
+              await onAllocateSongs(event.id, songIds);
+              setAllocateModalOpen(false);
+            }}
+            isSaving={false}
+          />
         )}
       </div>
     </div>

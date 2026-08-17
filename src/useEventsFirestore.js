@@ -121,7 +121,19 @@ export function useEventsFirestore(userId) {
     }
   }, [userId]);
 
-  return { events: eventsWithAttendance, loading, addEvent, deleteEvent, updateEvent, setAttendance };
+  const allocateSongs = useCallback(async (eventId, songIds) => {
+    try {
+      await updateDoc(doc(db, 'events', eventId), {
+        songIds: songIds || [],
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error('Failed to allocate songs:', err);
+      throw err;
+    }
+  }, []);
+
+  return { events: eventsWithAttendance, loading, addEvent, deleteEvent, updateEvent, setAttendance, allocateSongs };
 }
 
 // Helper to migrate from localStorage to Firestore (one-time operation)

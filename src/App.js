@@ -36,7 +36,7 @@ function getAuthErrorMessage(error) {
 
 export default function App() {
   const { user, profile, isAdmin, isApproved, loading, signIn, signUp, resetPassword, logout } = useAuth();
-  const { events, addEvent, deleteEvent, setAttendance } = useEventsFirestore(isApproved ? user?.uid : null);
+  const { events, addEvent, deleteEvent, setAttendance, allocateSongs } = useEventsFirestore(isApproved ? user?.uid : null);
 
   const [page, setPage] = useState('calendar');
   const [modalOpen, setModalOpen] = useState(false);
@@ -134,6 +134,7 @@ export default function App() {
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
           onSetAttendance={setAttendance}
+          onAllocateSongs={allocateSongs}
           rehearsalDay={profile?.rehearsalDay}
           onImportTermDates={async () => {
             setImportingDates(true);
@@ -155,6 +156,7 @@ export default function App() {
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
           onSetAttendance={setAttendance}
+          onAllocateSongs={allocateSongs}
           rehearsalDay={profile?.rehearsalDay}
         />
       )}

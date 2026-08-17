@@ -6,7 +6,7 @@ import { downloadCalendar } from '../calendarExport';
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance, onImportTermDates, importingDates, rehearsalDay }) {
+export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance, onAllocateSongs, onImportTermDates, importingDates, rehearsalDay }) {
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -94,6 +94,7 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
         onClose={() => setSelectedEvent(null)}
         onSetAttendance={onSetAttendance}
         onDelete={onDeleteEvent}
+        onAllocateSongs={onAllocateSongs}
       />
     </div>
   );

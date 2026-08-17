@@ -9,7 +9,7 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, increment, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 export function useAuth() {
@@ -77,7 +77,16 @@ export function useAuth() {
   const signIn = useCallback(async (email, password) => {
     setError('');
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      try {
+        await updateDoc(doc(db, 'users', cred.user.uid), {
+          loginCount: increment(1),
+          lastLoginAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        // Don't fail sign-in over a login-stats write issue.
+        console.error('Failed to record login stats:', err);
+      }
       return true;
     } catch (err) {
       setError(err.message);
@@ -104,6 +113,8 @@ export function useAuth() {
         role: 'member',
         status: 'pending',
         createdAt: new Date().toISOString(),
+        loginCount: 0,
+        lastLoginAt: null,
       };
       await setDoc(doc(db, 'users', userCred.user.uid), newProfile);
       setProfile(newProfile);

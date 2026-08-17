@@ -34,6 +34,13 @@ service cloud.firestore {
       allow update: if isOwner(userId)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'voicePart']);
 
+      // Login stats are recorded by the signed-in user on their own doc.
+      // loginCount may only advance by exactly 1 per write - it cannot be
+      // set to an arbitrary value.
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['loginCount', 'lastLoginAt'])
+        && request.resource.data.loginCount == resource.data.get('loginCount', 0) + 1;
+
       // Admins can review applications and manage profiles.
       allow write: if isAdmin();
     }

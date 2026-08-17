@@ -67,6 +67,7 @@ export default function MembersPage() {
       {error && <div className={s.error}>{error}</div>}
       <div className={s.tableHeader}>
         <span>Member</span>
+        <span>Logins</span>
         <span>Voice Part</span>
         <span>Rehearsal Day</span>
         <span>Status</span>
@@ -81,6 +82,10 @@ export default function MembersPage() {
                 <strong>{member.displayName || 'Unnamed member'}</strong>
                 <span>{member.email}</span>
                 <small>{member.role === 'admin' ? 'Administrator' : 'Choir member'}</small>
+              </div>
+              <div className={s.logins}>
+                <strong>{member.loginCount || 0}</strong>
+                <small>{member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleDateString() : 'Never'}</small>
               </div>
               <select
                 className={s.voiceSelect}

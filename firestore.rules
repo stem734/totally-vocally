@@ -62,6 +62,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Collection-group rule: required separately from the nested match above
+    // because Firestore only honors the {path=**} wildcard form for
+    // collectionGroup() queries (used to read attendance across all events
+    // at once for the Attendance dashboard).
+    match /{path=**}/attendance/{userId} {
+      allow read: if isApproved();
+    }
+
     // Editable member-facing portal content.
     match /content/{documentId} {
       allow read: if isApproved();

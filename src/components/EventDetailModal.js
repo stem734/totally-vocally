@@ -95,21 +95,25 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
             )}
 
             <div className={s.attSection}>
-              <p className={s.attLabel}>Are you coming?</p>
-              <div className={s.attRow}>
-                <button
-                  className={`${s.attBtn} ${myAtt === 'yes' ? s.attYes : ''}`}
-                  onClick={() => onSetAttendance(event.id, 'yes')}
-                ><CheckIcon /> Coming</button>
-                <button
-                  className={`${s.attBtn} ${myAtt === 'maybe' ? s.attMaybe : ''}`}
-                  onClick={() => onSetAttendance(event.id, 'maybe')}
-                >? Maybe</button>
-                <button
-                  className={`${s.attBtn} ${myAtt === 'no' ? s.attNo : ''}`}
-                  onClick={() => onSetAttendance(event.id, 'no')}
-                >× Can't make it</button>
-              </div>
+              {!isAdmin && (
+                <>
+                  <p className={s.attLabel}>Are you coming?</p>
+                  <div className={s.attRow}>
+                    <button
+                      className={`${s.attBtn} ${myAtt === 'yes' ? s.attYes : ''}`}
+                      onClick={() => onSetAttendance(event.id, 'yes')}
+                    ><CheckIcon /> Coming</button>
+                    <button
+                      className={`${s.attBtn} ${myAtt === 'maybe' ? s.attMaybe : ''}`}
+                      onClick={() => onSetAttendance(event.id, 'maybe')}
+                    >? Maybe</button>
+                    <button
+                      className={`${s.attBtn} ${myAtt === 'no' ? s.attNo : ''}`}
+                      onClick={() => onSetAttendance(event.id, 'no')}
+                    >× Can't make it</button>
+                  </div>
+                </>
+              )}
               <p className={s.attCount}>{attSummary(event)}</p>
             </div>
           </div>

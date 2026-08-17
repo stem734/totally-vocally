@@ -157,6 +157,7 @@ export default function App() {
           isAdmin={isAdmin}
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
+          onUpdateEvent={updateEvent}
           onSetAttendance={setAttendance}
           onAllocateSongs={allocateSongs}
           rehearsalDay={profile?.rehearsalDay}

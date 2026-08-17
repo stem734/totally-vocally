@@ -9,7 +9,10 @@ export default function Header({ activePage, onNavigate, onLogout, isAdmin }) {
     { id: 'info',     label: 'Info',     icon: InfoIcon },
     { id: 'files',    label: 'Files',    icon: FilesIcon },
   ];
-  if (isAdmin) TABS.push({ id: 'members', label: 'Members', icon: InfoIcon });
+  if (isAdmin) {
+    TABS.push({ id: 'attendance', label: 'Attendance', icon: EventIcon });
+    TABS.push({ id: 'members', label: 'Members', icon: InfoIcon });
+  }
   return (
     <header className={s.header}>
       <div className={s.brand} onClick={() => onNavigate('calendar')}>

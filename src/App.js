@@ -9,6 +9,7 @@ import LoginFirebase from './components/LoginFirebase';
 import AuthModal from './components/AuthModal';
 import PendingApproval from './components/PendingApproval';
 import MembersPage from './components/MembersPage';
+import AttendanceDashboard from './components/AttendanceDashboard';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 import { importTermDates2026 } from './termDates';
@@ -153,6 +154,7 @@ export default function App() {
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
       {page === 'files' && <FilesPage key="files" />}
+      {page === 'attendance' && isAdmin && <AttendanceDashboard key="attendance" events={events} />}
       {page === 'members' && isAdmin && <MembersPage key="members" />}
 
       <AddEventModal

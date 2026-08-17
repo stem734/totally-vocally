@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { collection, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { obfuscatedLabel, obfuscatedEmail } from '../obfuscate';
 import s from './MembersPage.module.css';
 
 const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
 const VOICE_PARTS = ['Soprano 1', 'Soprano 2', 'Alto', 'Tenor 1', 'Tenor 2', 'Bass'];
 const REHEARSAL_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 
-export default function MembersPage() {
+export default function MembersPage({ isAdmin = true, obfuscate = false }) {
   const [members, setMembers] = useState([]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
@@ -76,11 +77,14 @@ export default function MembersPage() {
       <div className={s.list}>
         {ordered.map((member) => {
           const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
+          const displayName = obfuscate ? obfuscatedLabel(member.id) : (member.displayName || 'Unnamed member');
+          const email = obfuscate ? obfuscatedEmail(member.id) : member.email;
+          const locked = !isAdmin || updating === member.id;
           return (
             <article className={s.card} key={member.id}>
               <div className={s.identity}>
-                <strong>{member.displayName || 'Unnamed member'}</strong>
-                <span>{member.email}</span>
+                <strong>{displayName}</strong>
+                <span>{email}</span>
                 <small>{member.role === 'admin' ? 'Administrator' : 'Choir member'}</small>
               </div>
               <div className={s.logins}>
@@ -90,9 +94,9 @@ export default function MembersPage() {
               <select
                 className={s.voiceSelect}
                 value={member.voicePart || ''}
-                disabled={updating === member.id}
+                disabled={locked}
                 onChange={(event) => setVoicePart(member.id, event.target.value)}
-                aria-label={`Voice part for ${member.displayName || member.email}`}
+                aria-label={`Voice part for ${displayName}`}
               >
                 <option value="">Assign voice part</option>
                 {VOICE_PARTS.map((part) => <option key={part} value={part}>{part}</option>)}
@@ -100,15 +104,15 @@ export default function MembersPage() {
               <select
                 className={s.voiceSelect}
                 value={member.rehearsalDay || ''}
-                disabled={updating === member.id}
+                disabled={locked}
                 onChange={(event) => setRehearsalDay(member.id, event.target.value)}
-                aria-label={`Rehearsal day for ${member.displayName || member.email}`}
+                aria-label={`Rehearsal day for ${displayName}`}
               >
                 <option value="">Assign rehearsal day</option>
                 {REHEARSAL_DAYS.map((day) => <option key={day} value={day}>{day}</option>)}
               </select>
               <span className={`${s.status} ${s[status]}`}>{STATUS_LABELS[status]}</span>
-              {member.role !== 'admin' && (
+              {isAdmin && member.role !== 'admin' && (
                 <div className={s.actions}>
                   {status !== 'approved' && <button className={s.approve} disabled={updating === member.id || !member.voicePart || !member.rehearsalDay} title={!member.voicePart || !member.rehearsalDay ? 'Assign a voice part and rehearsal day before approval' : ''} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
                   {status !== 'rejected' && <button className={s.reject} disabled={updating === member.id} onClick={() => setStatus(member.id, 'rejected')}>Reject</button>}

@@ -6,7 +6,7 @@ import { getDefaultFilters } from '../filterUtils';
 import { seedSongs } from '../seedSongs';
 import s from './SongsPage.module.css';
 
-export default function SongsPage() {
+export default function SongsPage({ isAdmin = true }) {
   const [filters, setFilters] = useState(getDefaultFilters());
   const { songs, loading, addSong, deleteSong, updateSong } = useSongs();
   const [seeding, setSeeding] = useState(false);
@@ -134,7 +134,7 @@ export default function SongsPage() {
             <p>Manage the song catalogue for allocating to events.</p>
           </div>
           <div className={s.headerActions}>
-            {songs.length === 0 && (
+            {isAdmin && songs.length === 0 && (
               <button
                 className={s.seedBtn}
                 onClick={handleSeedSongs}
@@ -149,6 +149,7 @@ export default function SongsPage() {
 
       {(error || seedError) && <div className={s.error}>{error || seedError}</div>}
 
+      {isAdmin && (
       <form className={s.addForm} onSubmit={handleAddSong}>
         <input
           type="text"
@@ -184,6 +185,7 @@ export default function SongsPage() {
           {updating === 'add' ? 'Adding...' : 'Add Song'}
         </button>
       </form>
+      )}
 
       <div className={s.songsList}>
         {songs.length === 0 ? (
@@ -191,7 +193,7 @@ export default function SongsPage() {
         ) : (
           songs.map((song) => (
             <article className={s.songCard} key={song.id}>
-              {editingId === song.id ? (
+              {isAdmin && editingId === song.id ? (
                 <div className={s.editForm}>
                   <input
                     type="text"
@@ -256,22 +258,24 @@ export default function SongsPage() {
                       </div>
                     )}
                   </div>
-                  <div className={s.actions}>
-                    <button
-                      className={s.editBtn}
-                      onClick={() => startEdit(song)}
-                      title="Edit song"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      className={s.deleteBtn}
-                      onClick={() => setDeletingSong(song)}
-                      title="Delete song"
-                    >
-                      ×
-                    </button>
-                  </div>
+                  {isAdmin && (
+                    <div className={s.actions}>
+                      <button
+                        className={s.editBtn}
+                        onClick={() => startEdit(song)}
+                        title="Edit song"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        className={s.deleteBtn}
+                        onClick={() => setDeletingSong(song)}
+                        title="Delete song"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </article>

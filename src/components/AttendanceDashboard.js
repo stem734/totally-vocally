@@ -5,11 +5,12 @@ import AdminSidebar from './AdminSidebar';
 import VoicePartBreakdown from './VoicePartBreakdown';
 import { getDefaultFilters, filterEvents } from '../filterUtils';
 import { eventTypeLabel } from '../eventFields';
+import { obfuscatedLabel } from '../obfuscate';
 import s from './AttendanceDashboard.module.css';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-export default function AttendanceDashboard({ events }) {
+export default function AttendanceDashboard({ events, obfuscate = false }) {
   const [members, setMembers] = useState({});
   const [error, setError] = useState('');
   const [filters, setFilters] = useState(getDefaultFilters());
@@ -39,6 +40,8 @@ export default function AttendanceDashboard({ events }) {
   const filteredEvents = filterEvents(events, filters);
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
 
+  const nameFor = (userId) => obfuscate ? obfuscatedLabel(userId) : (members[userId]?.name || userId);
+
   const getAttendanceGroups = (event) => {
     const attendance = event.attendance || {};
     const groups = {
@@ -48,14 +51,13 @@ export default function AttendanceDashboard({ events }) {
     };
 
     Object.entries(attendance).forEach(([userId, status]) => {
-      const memberName = members[userId]?.name || userId;
       if (groups[status]) {
-        groups[status].push(memberName);
+        groups[status].push({ id: userId, name: nameFor(userId) });
       }
     });
 
     Object.keys(groups).forEach((key) => {
-      groups[key].sort();
+      groups[key].sort((a, b) => a.name.localeCompare(b.name));
     });
 
     return groups;
@@ -65,12 +67,12 @@ export default function AttendanceDashboard({ events }) {
     const attendance = event.attendance || {};
     return Object.entries(members)
       .filter(([userId, member]) => member.approved && !(userId in attendance))
-      .map(([, member]) => member.name)
-      .sort();
+      .map(([userId]) => ({ id: userId, name: nameFor(userId) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   };
 
-  const copyNotResponded = (event, names) => {
-    const text = `${event.title} (${event.date}) — yet to respond:\n${names.join('\n')}`;
+  const copyNotResponded = (event, entries) => {
+    const text = `${event.title} (${event.date}) — yet to respond:\n${entries.map(e => e.name).join('\n')}`;
     navigator.clipboard.writeText(text)
       .then(() => {
         setCopiedEventId(event.id);
@@ -135,8 +137,8 @@ export default function AttendanceDashboard({ events }) {
                       </h3>
                       {groups.yes.length > 0 ? (
                         <ul className={s.memberList}>
-                          {groups.yes.map((name) => (
-                            <li key={name}>{name}</li>
+                          {groups.yes.map((m) => (
+                            <li key={m.id}>{m.name}</li>
                           ))}
                         </ul>
                       ) : (
@@ -152,8 +154,8 @@ export default function AttendanceDashboard({ events }) {
                       </h3>
                       {groups.maybe.length > 0 ? (
                         <ul className={s.memberList}>
-                          {groups.maybe.map((name) => (
-                            <li key={name}>{name}</li>
+                          {groups.maybe.map((m) => (
+                            <li key={m.id}>{m.name}</li>
                           ))}
                         </ul>
                       ) : (
@@ -169,8 +171,8 @@ export default function AttendanceDashboard({ events }) {
                       </h3>
                       {groups.no.length > 0 ? (
                         <ul className={s.memberList}>
-                          {groups.no.map((name) => (
-                            <li key={name}>{name}</li>
+                          {groups.no.map((m) => (
+                            <li key={m.id}>{m.name}</li>
                           ))}
                         </ul>
                       ) : (
@@ -191,8 +193,8 @@ export default function AttendanceDashboard({ events }) {
                       </h3>
                       {notResponded.length > 0 ? (
                         <ul className={s.memberList}>
-                          {notResponded.map((name) => (
-                            <li key={name}>{name}</li>
+                          {notResponded.map((m) => (
+                            <li key={m.id}>{m.name}</li>
                           ))}
                         </ul>
                       ) : (

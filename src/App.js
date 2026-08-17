@@ -34,7 +34,8 @@ function getAuthErrorMessage(error) {
 }
 
 export default function App() {
-  const { user, profile, isAdmin, isApproved, loading, signIn, signUp, resetPassword, logout } = useAuth();
+  const { user, profile, isAdmin, isViewer, isApproved, loading, signIn, signUp, resetPassword, logout } = useAuth();
+  const canViewAdminPages = isAdmin || isViewer;
   const { events, addEvent, deleteEvent, updateEvent, setAttendance, allocateSongs, createRehearsalBlock } = useEventsFirestore(isApproved ? user?.uid : null, profile?.voicePart);
 
   const [page, setPage] = useState('calendar');
@@ -121,7 +122,7 @@ export default function App() {
         activePage={page}
         onNavigate={navigate}
         onLogout={logout}
-        isAdmin={isAdmin}
+        showAdminNav={canViewAdminPages}
       />
 
       {page === 'calendar' && (
@@ -153,9 +154,13 @@ export default function App() {
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
       {page === 'files' && <FilesPage key="files" />}
-      {page === 'attendance' && isAdmin && <AttendanceDashboard key="attendance" events={events} />}
-      {page === 'songs' && isAdmin && <SongsPage key="songs" />}
-      {page === 'members' && isAdmin && <MembersPage key="members" />}
+      {page === 'attendance' && canViewAdminPages && (
+        <AttendanceDashboard key="attendance" events={events} obfuscate={isViewer} />
+      )}
+      {page === 'songs' && canViewAdminPages && <SongsPage key="songs" isAdmin={isAdmin} />}
+      {page === 'members' && canViewAdminPages && (
+        <MembersPage key="members" isAdmin={isAdmin} obfuscate={isViewer} />
+      )}
 
       <AddEventModal
         open={modalOpen}

@@ -2,14 +2,14 @@ import React from 'react';
 import s from './Header.module.css';
 import { CalendarIcon, EventIcon, InfoIcon, FilesIcon } from '../icons';
 
-export default function Header({ activePage, onNavigate, onLogout, isAdmin }) {
+export default function Header({ activePage, onNavigate, onLogout, showAdminNav }) {
   const TABS = [
     { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
     { id: 'events',   label: 'Events',   icon: EventIcon },
     { id: 'info',     label: 'Info',     icon: InfoIcon },
     { id: 'files',    label: 'Files',    icon: FilesIcon },
   ];
-  if (isAdmin) {
+  if (showAdminNav) {
     TABS.push({ id: 'attendance', label: 'Attendance', icon: EventIcon });
     TABS.push({ id: 'songs', label: 'Songs', icon: InfoIcon });
     TABS.push({ id: 'members', label: 'Members', icon: InfoIcon });

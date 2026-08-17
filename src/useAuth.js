@@ -16,6 +16,7 @@ export function useAuth() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isViewer, setIsViewer] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -32,9 +33,11 @@ export function useAuth() {
             const profileData = userDoc.data();
             setProfile(profileData);
             setIsAdmin(profileData.role === 'admin');
+            setIsViewer(profileData.role === 'viewer');
           } else {
             setProfile(null);
             setIsAdmin(false);
+            setIsViewer(false);
           }
           setLoading(false);
         }, (err) => {
@@ -45,6 +48,7 @@ export function useAuth() {
         setUser(null);
         setProfile(null);
         setIsAdmin(false);
+        setIsViewer(false);
         setLoading(false);
       }
     });
@@ -148,6 +152,7 @@ export function useAuth() {
       setUser(null);
       setProfile(null);
       setIsAdmin(false);
+      setIsViewer(false);
     } catch (err) {
       setError(err.message);
     }
@@ -157,6 +162,7 @@ export function useAuth() {
     user,
     profile,
     isAdmin,
+    isViewer,
     isApproved: isAdmin || profile?.status === 'approved',
     loading,
     error,

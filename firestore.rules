@@ -20,10 +20,16 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    // Read-only demo role: can view admin pages but never write anything.
+    function isViewer() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'viewer';
+    }
+
     // Users collection - profile data
     match /users/{userId} {
-      // Members can read their own application; admins can manage the directory.
-      allow read: if isOwner(userId) || isAdmin();
+      // Members can read their own application; admins and the read-only
+      // viewer role can browse the full directory.
+      allow read: if isOwner(userId) || isAdmin() || isViewer();
 
       // New accounts can only create a pending, non-admin application.
       allow create: if isOwner(userId)

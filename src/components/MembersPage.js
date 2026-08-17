@@ -65,6 +65,13 @@ export default function MembersPage() {
         <span className={s.count}>{members.length} members</span>
       </header>
       {error && <div className={s.error}>{error}</div>}
+      <div className={s.tableHeader}>
+        <span>Member</span>
+        <span>Voice Part</span>
+        <span>Rehearsal Day</span>
+        <span>Status</span>
+        <span>Actions</span>
+      </div>
       <div className={s.list}>
         {ordered.map((member) => {
           const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');

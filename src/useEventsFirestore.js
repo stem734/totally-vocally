@@ -13,9 +13,10 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 
-export function useEventsFirestore(userId) {
+export function useEventsFirestore(userId, voicePart) {
   const [events, setEvents] = useState([]);
   const [attendanceByEvent, setAttendanceByEvent] = useState({});
+  const [voicePartsByEvent, setVoicePartsByEvent] = useState({});
   const [loading, setLoading] = useState(true);
 
   // Listen to events in real-time
@@ -44,13 +45,18 @@ export function useEventsFirestore(userId) {
       collectionGroup(db, 'attendance'),
       (snapshot) => {
         const nextAttendance = {};
+        const nextVoiceParts = {};
         snapshot.forEach((attendanceDoc) => {
           const eventId = attendanceDoc.ref.parent.parent?.id;
           if (!eventId) return;
+          const data = attendanceDoc.data();
           if (!nextAttendance[eventId]) nextAttendance[eventId] = {};
-          nextAttendance[eventId][attendanceDoc.id] = attendanceDoc.data().status;
+          nextAttendance[eventId][attendanceDoc.id] = data.status;
+          if (!nextVoiceParts[eventId]) nextVoiceParts[eventId] = {};
+          nextVoiceParts[eventId][attendanceDoc.id] = data.voicePart || 'Unassigned';
         });
         setAttendanceByEvent(nextAttendance);
+        setVoicePartsByEvent(nextVoiceParts);
       },
       (err) => console.error('Failed to fetch attendance:', err)
     );
@@ -61,11 +67,22 @@ export function useEventsFirestore(userId) {
     };
   }, [userId]);
 
-  const eventsWithAttendance = useMemo(() => events.map((event) => ({
-    ...event,
-    attendance: attendanceByEvent[event.id] || {},
-    myAttendance: attendanceByEvent[event.id]?.[userId] || null,
-  })), [events, attendanceByEvent, userId]);
+  const eventsWithAttendance = useMemo(() => events.map((event) => {
+    const attendance = attendanceByEvent[event.id] || {};
+    const voiceParts = voicePartsByEvent[event.id] || {};
+    const voicePartCounts = {};
+    Object.entries(attendance).forEach(([uid, status]) => {
+      if (status !== 'yes') return;
+      const part = voiceParts[uid] || 'Unassigned';
+      voicePartCounts[part] = (voicePartCounts[part] || 0) + 1;
+    });
+    return {
+      ...event,
+      attendance,
+      myAttendance: attendance[userId] || null,
+      voicePartCounts,
+    };
+  }), [events, attendanceByEvent, voicePartsByEvent, userId]);
 
   const addEvent = useCallback(async (eventData) => {
     try {
@@ -109,6 +126,7 @@ export function useEventsFirestore(userId) {
       if (status) {
         await setDoc(attendanceRef, {
           status,
+          voicePart: voicePart || 'Unassigned',
           updatedAt: new Date().toISOString(),
         });
       } else {
@@ -119,7 +137,7 @@ export function useEventsFirestore(userId) {
       console.error('Failed to set attendance:', err);
       throw err;
     }
-  }, [userId]);
+  }, [userId, voicePart]);
 
   const allocateSongs = useCallback(async (eventId, songIds) => {
     try {

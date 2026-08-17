@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSongs } from '../useSongs';
 import EditEventModal from './EditEventModal';
 import AllocateSongsModal from './AllocateSongsModal';
+import VoicePartBreakdown from './VoicePartBreakdown';
 import s from './EventsPage.module.css';
 import { ClockIcon, CheckIcon, MusicIcon } from '../icons';
 import { eventTypeLabel, formatDuration } from '../eventFields';
@@ -116,6 +117,10 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
                         })}
                       </div>
                     </div>
+                  )}
+
+                  {ev.type !== 'rehearsal' && (
+                    <VoicePartBreakdown counts={ev.voicePartCounts || {}} checkMissing={isAdmin} />
                   )}
 
                   <div className={s.attSection}>

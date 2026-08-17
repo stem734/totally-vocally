@@ -167,6 +167,18 @@
   margin-bottom: 8px;
 }
 
+.meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.meta svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 .desc {
   font-size: 0.9rem;
   color: var(--muted-light);

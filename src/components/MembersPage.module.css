@@ -4,9 +4,11 @@
 .count { color: var(--blue-light); font-weight: 700; white-space: nowrap; }
 .error { padding: 12px; margin-bottom: 16px; border: 1px solid #e05252; border-radius: 8px; background: rgba(229,62,62,.15); color: #f49090; }
 .list { display: grid; gap: 12px; }
-.card { display: grid; grid-template-columns: 1fr minmax(140px, auto) minmax(140px, auto) auto auto; align-items: center; gap: 12px; padding: 20px; border: 1px solid rgba(255,255,255,.09); border-radius: 12px; background: var(--ink-mid); }
+.card,.tableHeader { display: grid; grid-template-columns: 1fr minmax(140px, auto) minmax(140px, auto) auto auto; align-items: center; gap: 12px; }
+.card { padding: 20px; border: 1px solid rgba(255,255,255,.09); border-radius: 12px; background: var(--ink-mid); }
+.tableHeader { padding: 0 20px; margin-bottom: 4px; color: var(--muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 .identity { display: grid; gap: 4px; }.identity span,.identity small { color: var(--muted-light); }.identity small { font-size: .78rem; }
 .status { padding: 5px 10px; border-radius: 999px; font-size: .72rem; font-weight: 800; text-transform: uppercase; }.pending { color: #f4c56a; background: rgba(244,197,106,.12); }.approved { color: #76d19a; background: rgba(118,209,154,.12); }.rejected { color: #f49090; background: rgba(244,144,144,.12); }
 .voiceSelect { width: 100%; padding: 8px 10px; color: var(--warm-white); border: 1px solid rgba(78,171,216,.32); border-radius: 7px; background: var(--ink-soft); }
 .actions { display: flex; gap: 8px; }.actions button { padding: 8px 12px; border-radius: 7px; font-weight: 700; }.approve { color: #76d19a; border: 1px solid rgba(118,209,154,.45); background: rgba(118,209,154,.08); }.reject { color: #f49090; border: 1px solid rgba(244,144,144,.45); background: rgba(244,144,144,.08); }.actions button:disabled { opacity: .5; }
-@media (max-width: 650px) { .page { padding: 28px 14px 90px; }.header { align-items: start; flex-direction: column; }.card { grid-template-columns: 1fr auto; }.voiceSelect { grid-column: 1 / -1; }.actions { grid-column: 1 / -1; }.actions button { flex: 1; } }
+@media (max-width: 650px) { .page { padding: 28px 14px 90px; }.header { align-items: start; flex-direction: column; }.tableHeader { display: none; }.card { grid-template-columns: 1fr auto; }.voiceSelect { grid-column: 1 / -1; }.actions { grid-column: 1 / -1; }.actions button { flex: 1; } }

@@ -126,7 +126,9 @@ export function useEventsFirestore(userId, voicePart) {
       if (status) {
         await setDoc(attendanceRef, {
           status,
-          voicePart: voicePart || 'Unassigned',
+          // Must exactly match the caller's users/{uid}.voicePart field -
+          // security rules verify this server-side so it can't be spoofed.
+          voicePart: voicePart ?? '',
           updatedAt: new Date().toISOString(),
         });
       } else {

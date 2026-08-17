@@ -55,8 +55,15 @@ service cloud.firestore {
       // Only approved members can see attendance.
       allow read: if isApproved();
 
-      // Approved users can write their own attendance.
-      allow write: if isApproved() && isOwner(userId);
+      // Approved users can set/update their own attendance, but the
+      // denormalized voicePart must match their real profile - it cannot
+      // be self-reported to something false.
+      allow create, update: if isApproved() && isOwner(userId)
+        && request.resource.data.voicePart ==
+           get(/databases/$(database)/documents/users/$(userId)).data.voicePart;
+
+      // Approved users can clear (delete) their own attendance.
+      allow delete: if isApproved() && isOwner(userId);
 
       // Admins can write any attendance
       allow write: if isAdmin();

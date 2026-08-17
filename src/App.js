@@ -13,7 +13,6 @@ import AttendanceDashboard from './components/AttendanceDashboard';
 import SongsPage from './components/SongsPage';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
-import { importTermDates2026 } from './termDates';
 import { seedSongs } from './seedSongs';
 
 function getAuthErrorMessage(error) {
@@ -44,7 +43,6 @@ export default function App() {
   const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'forgotPassword'
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [importingDates, setImportingDates] = useState(false);
 
   useEffect(() => {
     if (isAdmin) seedSongs().catch(err => console.error('Failed to seed songs:', err));
@@ -138,16 +136,6 @@ export default function App() {
           onAllocateSongs={allocateSongs}
           onCreateRehearsalBlock={createRehearsalBlock}
           rehearsalDay={profile?.rehearsalDay}
-          onImportTermDates={async () => {
-            setImportingDates(true);
-            try {
-              const count = await importTermDates2026(user.uid);
-              alert(`${count} term-date rehearsals imported. Existing matching dates were updated, not duplicated.`);
-            } finally {
-              setImportingDates(false);
-            }
-          }}
-          importingDates={importingDates}
         />
       )}
       {page === 'events' && (

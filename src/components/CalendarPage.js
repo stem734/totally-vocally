@@ -7,7 +7,7 @@ import { downloadICalendar } from '../calendarSubscription';
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onImportTermDates, importingDates, rehearsalDay, onCreateRehearsalBlock }) {
+export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay, onCreateRehearsalBlock }) {
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -51,7 +51,6 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
           <button className={s.exportBtn} onClick={() => downloadICalendar(events)}>Subscribe (iCal)</button>
           {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>Add Event</button>}
           {isAdmin && <button className={s.addBtn} onClick={() => setRehearsalBlockModalOpen(true)}>Create Rehearsal Block</button>}
-          {isAdmin && <button className={s.exportBtn} onClick={onImportTermDates} disabled={importingDates}>{importingDates ? 'Importing…' : 'Import 2026 Term Dates'}</button>}
         </div>
       </div>
 

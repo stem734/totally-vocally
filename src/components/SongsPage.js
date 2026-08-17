@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import AdminSidebar from './AdminSidebar';
 import { useSongs } from '../useSongs';
 import { getDefaultFilters } from '../filterUtils';
@@ -19,6 +20,8 @@ export default function SongsPage() {
   const [editChoirs, setEditChoirs] = useState([]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
+  const [deletingSong, setDeletingSong] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const CHOIR_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 
@@ -85,14 +88,18 @@ export default function SongsPage() {
     }
   };
 
-  const handleDeleteSong = async (songId) => {
-    if (!window.confirm('Remove this song?')) return;
+  const handleConfirmDelete = async () => {
+    if (!deletingSong) return;
 
+    setDeleting(true);
     setError('');
     try {
-      await deleteSong(songId);
+      await deleteSong(deletingSong.id);
+      setDeletingSong(null);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -259,7 +266,7 @@ export default function SongsPage() {
                     </button>
                     <button
                       className={s.deleteBtn}
-                      onClick={() => handleDeleteSong(song.id)}
+                      onClick={() => setDeletingSong(song)}
                       title="Delete song"
                     >
                       ×
@@ -272,6 +279,32 @@ export default function SongsPage() {
         )}
       </div>
       </main>
+
+      {deletingSong && createPortal(
+        <div className={s.confirmOverlay} onClick={() => !deleting && setDeletingSong(null)}>
+          <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <h3>Remove song?</h3>
+            <p>Are you sure you want to remove "{deletingSong.title}" from the library?</p>
+            <div className={s.confirmActions}>
+              <button
+                className={s.cancelBtn}
+                onClick={() => setDeletingSong(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className={s.confirmDeleteBtn}
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

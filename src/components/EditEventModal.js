@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import s from './EditEventModal.module.css';
 
 export default function EditEventModal({ open, event, onClose, onSave, isSaving }) {
@@ -47,7 +48,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
 
   if (!open || !event) return null;
 
-  return (
+  return createPortal(
     <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={s.modal}>
         <div className={s.modalHeader}>
@@ -156,6 +157,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

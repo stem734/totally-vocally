@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useSongs } from '../useSongs';
 import s from './AllocateSongsModal.module.css';
 
@@ -28,7 +29,7 @@ export default function AllocateSongsModal({ open, event, onClose, onSave, isSav
 
   if (!open || !event) return null;
 
-  return (
+  return createPortal(
     <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={s.modal}>
         <div className={s.modalHeader}>
@@ -91,6 +92,7 @@ export default function AllocateSongsModal({ open, event, onClose, onSave, isSav
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

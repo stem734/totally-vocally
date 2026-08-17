@@ -133,7 +133,48 @@ export function useEventsFirestore(userId) {
     }
   }, []);
 
-  return { events: eventsWithAttendance, loading, addEvent, deleteEvent, updateEvent, setAttendance, allocateSongs };
+  const createRehearsalBlock = useCallback(async (blockData) => {
+    try {
+      const startDate = new Date(blockData.startDate);
+      const endDate = new Date(blockData.endDate);
+      const excluded = new Set(blockData.excludedDates || []);
+      const daysOfWeek = blockData.daysOfWeek || [1, 3, 5];
+
+      let createdCount = 0;
+      const current = new Date(startDate);
+
+      while (current <= endDate) {
+        const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+
+        if (
+          daysOfWeek.includes(current.getDay()) &&
+          !excluded.has(dateStr)
+        ) {
+          await addDoc(collection(db, 'events'), {
+            title: `Rehearsal - ${current.toLocaleDateString('en-US', { weekday: 'long' })}`,
+            type: 'rehearsal',
+            date: dateStr,
+            time: blockData.time || '',
+            location: blockData.location || '',
+            desc: '',
+            createdBy: userId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+          createdCount++;
+        }
+
+        current.setDate(current.getDate() + 1);
+      }
+
+      return createdCount;
+    } catch (err) {
+      console.error('Failed to create rehearsal block:', err);
+      throw err;
+    }
+  }, [userId]);
+
+  return { events: eventsWithAttendance, loading, addEvent, deleteEvent, updateEvent, setAttendance, allocateSongs, createRehearsalBlock };
 }
 
 // Helper to migrate from localStorage to Firestore (one-time operation)

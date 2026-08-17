@@ -36,7 +36,7 @@ function getAuthErrorMessage(error) {
 
 export default function App() {
   const { user, profile, isAdmin, isApproved, loading, signIn, signUp, resetPassword, logout } = useAuth();
-  const { events, addEvent, deleteEvent, setAttendance, allocateSongs } = useEventsFirestore(isApproved ? user?.uid : null);
+  const { events, addEvent, deleteEvent, setAttendance, allocateSongs, createRehearsalBlock } = useEventsFirestore(isApproved ? user?.uid : null);
 
   const [page, setPage] = useState('calendar');
   const [modalOpen, setModalOpen] = useState(false);
@@ -135,6 +135,7 @@ export default function App() {
           onDeleteEvent={deleteEvent}
           onSetAttendance={setAttendance}
           onAllocateSongs={allocateSongs}
+          onCreateRehearsalBlock={createRehearsalBlock}
           rehearsalDay={profile?.rehearsalDay}
           onImportTermDates={async () => {
             setImportingDates(true);

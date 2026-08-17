@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import s from './CalendarPage.module.css';
 import EventDetailModal from './EventDetailModal';
+import RehearsalBlockModal from './RehearsalBlockModal';
 import { downloadCalendar } from '../calendarExport';
+import { downloadICalendar } from '../calendarSubscription';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance, onAllocateSongs, onImportTermDates, importingDates, rehearsalDay }) {
+export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onSetAttendance, onAllocateSongs, onImportTermDates, importingDates, rehearsalDay, onCreateRehearsalBlock }) {
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [rehearsalBlockModalOpen, setRehearsalBlockModalOpen] = useState(false);
+  const [blockCreating, setBlockCreating] = useState(false);
 
   const prev = () => { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); };
   const next = () => { if (month === 11) { setMonth(0);  setYear(y => y + 1); } else setMonth(m => m + 1); };
@@ -44,8 +48,9 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
           <h1 className={s.title}>Rehearsal <span>Calendar</span></h1>
         </div>
         <div className={s.headerBtns}>
-          <button className={s.exportBtn} onClick={() => downloadCalendar(events)}>Download Calendar (.ics)</button>
+          <button className={s.exportBtn} onClick={() => downloadICalendar(events)}>Subscribe (iCal)</button>
           {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>Add Event</button>}
+          {isAdmin && <button className={s.addBtn} onClick={() => setRehearsalBlockModalOpen(true)}>Create Rehearsal Block</button>}
           {isAdmin && <button className={s.exportBtn} onClick={onImportTermDates} disabled={importingDates}>{importingDates ? 'Importing…' : 'Import 2026 Term Dates'}</button>}
         </div>
       </div>
@@ -95,6 +100,24 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
         onSetAttendance={onSetAttendance}
         onDelete={onDeleteEvent}
         onAllocateSongs={onAllocateSongs}
+      />
+
+      <RehearsalBlockModal
+        open={rehearsalBlockModalOpen}
+        onClose={() => setRehearsalBlockModalOpen(false)}
+        onSave={async (blockData) => {
+          if (onCreateRehearsalBlock) {
+            setBlockCreating(true);
+            try {
+              const count = await onCreateRehearsalBlock(blockData);
+              alert(`Created ${count} rehearsals`);
+              setRehearsalBlockModalOpen(false);
+            } finally {
+              setBlockCreating(false);
+            }
+          }
+        }}
+        isSaving={blockCreating}
       />
     </div>
   );

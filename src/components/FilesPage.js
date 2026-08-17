@@ -25,7 +25,7 @@ export default function FilesPage() {
             <DropboxLogo />
             Open Dropbox Folder
           </a>
-          <p className={s.hint}>Contact Abi if you need access to the folder.</p>
+          <p className={s.hint}>Contact the choir director if you need access to the folder.</p>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ const REHEARSAL_PRACTICE = [
   {
     number: '02',
     title: 'Devices on silent',
-    text: 'Please do not check your phone during rehearsal. If you need to be on call for an emergency, let Abi know beforehand and keep your phone on vibrate.',
+    text: 'Please do not check your phone during rehearsal. If you need to be on call for an emergency, let the choir director know beforehand and keep your phone on vibrate.',
   },
   {
     number: '03',
@@ -32,10 +32,10 @@ const DEFAULT_INFO = {
   membershipFee: '£44 per month',
   membershipDetails: 'Membership is paid by standing order on the 5th of each month. It covers rehearsals, learning materials, arrangements, licences, planning, venue hire and the tools used to produce your resources.',
   cancellation: 'Membership is not pay-as-you-go and remains due if you miss rehearsals. If you decide to leave, please give one month’s notice.',
-  timeAway: 'If you stop membership payments, your place cannot be held. Continuing your standing order keeps your place and learning-resource access as a virtual member. Speak to Abi before making changes.',
+  timeAway: 'If you stop membership payments, your place cannot be held. Continuing your standing order keeps your place and learning-resource access as a virtual member. Speak to the choir director before making changes.',
   communication: 'Look out for the weekly member email or WhatsApp message with singing information, exercises and term plans.',
-  email: 'abi@totallyvocally.com',
-  phone: '07786 548337',
+  email: 'info@totallyvocally.com',
+  phone: '07000 000000',
 };
 
 const INCLUDED = [
@@ -135,7 +135,7 @@ export default function InfoPage({ isAdmin }) {
       </section>
 
       <footer className={s.footer}>
-        <div><strong>Questions about choir or membership?</strong><span>Abi is the best person to help.</span></div>
+        <div><strong>Questions about choir or membership?</strong><span>The choir director is the best person to help.</span></div>
         <div className={s.footerLinks}><a href={`mailto:${info.email}`}>{info.email}</a><a href={`tel:${info.phone.replace(/\s/g, '')}`}><PhoneIcon /> {info.phone}</a></div>
       </footer>
     </main>

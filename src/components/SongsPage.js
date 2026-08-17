@@ -12,11 +12,31 @@ export default function SongsPage() {
   const [seedError, setSeedError] = useState('');
   const [newSongTitle, setNewSongTitle] = useState('');
   const [newSongUrl, setNewSongUrl] = useState('');
+  const [newSongChoirs, setNewSongChoirs] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editUrl, setEditUrl] = useState('');
+  const [editChoirs, setEditChoirs] = useState([]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
+
+  const CHOIR_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
+
+  const toggleChoir = (choir, isNew = true) => {
+    if (isNew) {
+      setNewSongChoirs(
+        newSongChoirs.includes(choir)
+          ? newSongChoirs.filter(c => c !== choir)
+          : [...newSongChoirs, choir]
+      );
+    } else {
+      setEditChoirs(
+        editChoirs.includes(choir)
+          ? editChoirs.filter(c => c !== choir)
+          : [...editChoirs, choir]
+      );
+    }
+  };
 
   const handleAddSong = async (e) => {
     e.preventDefault();
@@ -25,9 +45,10 @@ export default function SongsPage() {
     setUpdating('add');
     setError('');
     try {
-      await addSong(newSongTitle.trim(), newSongUrl.trim());
+      await addSong(newSongTitle.trim(), newSongUrl.trim(), newSongChoirs);
       setNewSongTitle('');
       setNewSongUrl('');
+      setNewSongChoirs([]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -39,6 +60,7 @@ export default function SongsPage() {
     setEditingId(song.id);
     setEditTitle(song.title);
     setEditUrl(song.url || '');
+    setEditChoirs(song.choirs || []);
   };
 
   const handleSaveEdit = async () => {
@@ -50,10 +72,12 @@ export default function SongsPage() {
       await updateSong(editingId, {
         title: editTitle.trim(),
         url: editUrl.trim(),
+        choirs: editChoirs,
       });
       setEditingId(null);
       setEditTitle('');
       setEditUrl('');
+      setEditChoirs([]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -135,6 +159,20 @@ export default function SongsPage() {
           disabled={updating === 'add'}
           className={s.input}
         />
+        <div className={s.choirSelector}>
+          <label className={s.choirLabel}>Choirs:</label>
+          {CHOIR_DAYS.map((choir) => (
+            <label key={choir} className={s.choirCheckbox}>
+              <input
+                type="checkbox"
+                checked={newSongChoirs.includes(choir)}
+                onChange={() => toggleChoir(choir, true)}
+                disabled={updating === 'add'}
+              />
+              <span>{choir}</span>
+            </label>
+          ))}
+        </div>
         <button type="submit" disabled={updating === 'add' || !newSongTitle.trim()} className={s.submitBtn}>
           {updating === 'add' ? 'Adding...' : 'Add Song'}
         </button>
@@ -164,6 +202,19 @@ export default function SongsPage() {
                     className={s.editInput}
                     placeholder="Link URL (optional)"
                   />
+                  <div className={s.choirSelector}>
+                    {CHOIR_DAYS.map((choir) => (
+                      <label key={choir} className={s.choirCheckbox}>
+                        <input
+                          type="checkbox"
+                          checked={editChoirs.includes(choir)}
+                          onChange={() => toggleChoir(choir, false)}
+                          disabled={updating === song.id}
+                        />
+                        <span>{choir}</span>
+                      </label>
+                    ))}
+                  </div>
                   <div className={s.editActions}>
                     <button
                       className={s.saveBtn}
@@ -189,6 +240,13 @@ export default function SongsPage() {
                       <a href={song.url} target="_blank" rel="noopener noreferrer" className={s.songLink}>
                         Link →
                       </a>
+                    )}
+                    {song.choirs && song.choirs.length > 0 && (
+                      <div className={s.choirTags}>
+                        {song.choirs.map((choir) => (
+                          <span key={choir} className={s.choirTag}>{choir}</span>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <div className={s.actions}>

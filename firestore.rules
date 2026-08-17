@@ -68,5 +68,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Songs collection - admin managed
+    match /songs/{songId} {
+      allow read: if isApproved();
+      allow write: if isAdmin();
+    }
+
   }
 }

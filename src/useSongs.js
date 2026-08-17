@@ -30,11 +30,12 @@ export function useSongs() {
     return () => unsubscribe();
   }, []);
 
-  const addSong = useCallback(async (title, url = '') => {
+  const addSong = useCallback(async (title, url = '', choirs = []) => {
     try {
       await addDoc(collection(db, 'songs'), {
         title,
         url: url || '',
+        choirs: choirs || [],
         createdAt: new Date().toISOString(),
       });
     } catch (err) {

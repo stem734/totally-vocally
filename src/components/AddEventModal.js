@@ -32,7 +32,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
   };
 
   return (
-    <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={s.overlay}>
       <div className={s.modal}>
         <div className={s.modalHeader}>
           <h2 className={s.modalTitle}>Add New Event</h2>

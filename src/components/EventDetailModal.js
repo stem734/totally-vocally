@@ -32,7 +32,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
   const isReh = event.type === 'rehearsal';
 
   return (
-    <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={s.overlay}>
       <div className={s.modal}>
         <div className={s.modalHeader}>
           <h2 className={s.modalTitle}>{event.title}</h2>

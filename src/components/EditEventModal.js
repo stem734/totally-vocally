@@ -49,7 +49,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
   if (!open || !event) return null;
 
   return createPortal(
-    <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={s.overlay}>
       <div className={s.modal}>
         <div className={s.modalHeader}>
           <h2 className={s.modalTitle}>Edit Event</h2>

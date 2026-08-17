@@ -79,7 +79,7 @@ export default function RehearsalBlockModal({ open, onClose, onSave, isSaving })
   if (!open) return null;
 
   return (
-    <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && resetForm()}>
+    <div className={s.overlay}>
       <div className={s.modal}>
         <div className={s.modalHeader}>
           <h2 className={s.modalTitle}>Create Rehearsal Block</h2>

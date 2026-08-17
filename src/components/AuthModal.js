@@ -20,7 +20,7 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
   const isSignUp = mode === 'signup';
 
   return (
-    <div className={s.overlay} onClick={(e) => e.target === e.currentTarget && !loading && onClose()}>
+    <div className={s.overlay}>
       <div className={`${s.modal} authModal`}>
         <div className={s.modalHeader}>
           <h2 className={s.modalTitle}>

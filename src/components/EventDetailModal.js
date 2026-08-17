@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSongs } from '../useSongs';
 import AllocateSongsModal from './AllocateSongsModal';
+import EditEventModal from './EditEventModal';
 import s from './EventDetailModal.module.css';
 import { ClockIcon, CheckIcon } from '../icons';
 
@@ -18,9 +19,11 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete, onAllocateSongs }) {
+export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete, onUpdate, onAllocateSongs }) {
   const { songs } = useSongs();
   const [allocateModalOpen, setAllocateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   if (!open || !event) return null;
 
@@ -115,6 +118,10 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
         {isAdmin && (
           <div className={s.footer}>
             <button
+              className={s.editBtn}
+              onClick={() => setEditModalOpen(true)}
+            >Edit Event</button>
+            <button
               className={s.allocateBtn}
               onClick={() => setAllocateModalOpen(true)}
             >Allocate Songs</button>
@@ -128,6 +135,24 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
               }}
             >Delete Event</button>
           </div>
+        )}
+
+        {editModalOpen && isAdmin && onUpdate && (
+          <EditEventModal
+            open={editModalOpen}
+            event={event}
+            onClose={() => setEditModalOpen(false)}
+            onSave={async (updates) => {
+              setIsUpdating(true);
+              try {
+                await onUpdate(event.id, updates);
+                setEditModalOpen(false);
+              } finally {
+                setIsUpdating(false);
+              }
+            }}
+            isSaving={isUpdating}
+          />
         )}
 
         {allocateModalOpen && isAdmin && onAllocateSongs && (

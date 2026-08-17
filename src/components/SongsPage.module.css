@@ -15,6 +15,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 2rem;
+  gap: 1rem;
 }
 
 .header div {
@@ -35,6 +36,35 @@
   margin: 0;
   color: #a8a0a8;
   font-size: 0.95rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.seedBtn {
+  padding: 0.6rem 1.2rem;
+  background: #4a7c59;
+  color: #d4f5de;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.seedBtn:hover:not(:disabled) {
+  background: #5a9c69;
+}
+
+.seedBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .count {

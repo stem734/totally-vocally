@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import AdminSidebar from './AdminSidebar';
 import { useSongs } from '../useSongs';
 import { getDefaultFilters } from '../filterUtils';
+import { seedSongs } from '../seedSongs';
 import s from './SongsPage.module.css';
 
 export default function SongsPage() {
   const [filters, setFilters] = useState(getDefaultFilters());
   const { songs, loading, addSong, deleteSong, updateSong } = useSongs();
+  const [seeding, setSeeding] = useState(false);
+  const [seedError, setSeedError] = useState('');
   const [newSongTitle, setNewSongTitle] = useState('');
   const [newSongUrl, setNewSongUrl] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -69,6 +72,19 @@ export default function SongsPage() {
     }
   };
 
+  const handleSeedSongs = async () => {
+    setSeedError('');
+    setSeeding(true);
+    try {
+      const count = await seedSongs();
+      alert(`✓ Successfully imported ${count} songs!`);
+    } catch (err) {
+      setSeedError(err.message);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className={s.page}>
@@ -86,10 +102,21 @@ export default function SongsPage() {
             <h1>Song <span>Library</span></h1>
             <p>Manage the song catalogue for allocating to events.</p>
           </div>
-          <span className={s.count}>{songs.length} songs</span>
+          <div className={s.headerActions}>
+            {songs.length === 0 && (
+              <button
+                className={s.seedBtn}
+                onClick={handleSeedSongs}
+                disabled={seeding}
+              >
+                {seeding ? 'Importing...' : 'Import Song List'}
+              </button>
+            )}
+            <span className={s.count}>{songs.length} songs</span>
+          </div>
         </header>
 
-      {error && <div className={s.error}>{error}</div>}
+      {(error || seedError) && <div className={s.error}>{error || seedError}</div>}
 
       <form className={s.addForm} onSubmit={handleAddSong}>
         <input

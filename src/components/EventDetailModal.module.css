@@ -226,6 +226,19 @@
   border-top: 1px solid var(--blue-dark);
 }
 
+.editBtn {
+  flex: 1;
+  background: rgba(156,156,160,0.1);
+  border: 1.5px solid rgba(156,156,160,0.3);
+  color: #a8a0a8;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 10px;
+  transition: all 0.18s;
+}
+.editBtn:hover { background: rgba(156,156,160,0.2); border-color: #d4a5a5; color: #d4a5a5; }
+
 .allocateBtn {
   flex: 1;
   background: rgba(78,171,216,0.1);

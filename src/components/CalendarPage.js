@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import s from './CalendarPage.module.css';
 import EventDetailModal from './EventDetailModal';
 import RehearsalBlockModal from './RehearsalBlockModal';
-import { downloadCalendar } from '../calendarExport';
 import { downloadICalendar } from '../calendarSubscription';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];

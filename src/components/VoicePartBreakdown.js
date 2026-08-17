@@ -23,8 +23,13 @@ const VOICE_PART_ABBR = {
   'Unassigned': '?',
 };
 
-export default function VoicePartBreakdown({ counts }) {
+const SUNG_VOICE_PARTS = VOICE_PART_ORDER.filter((part) => part !== 'Unassigned');
+
+export default function VoicePartBreakdown({ counts, checkMissing = false }) {
   const total = VOICE_PART_ORDER.reduce((sum, part) => sum + (counts[part] || 0), 0);
+  const missingParts = checkMissing
+    ? SUNG_VOICE_PARTS.filter((part) => (counts[part] || 0) === 0)
+    : [];
 
   return (
     <div className={s.wrap}>
@@ -51,6 +56,11 @@ export default function VoicePartBreakdown({ counts }) {
             );
           })}
         </div>
+      )}
+      {missingParts.length > 0 && (
+        <p className={s.missingAlert}>
+          ⚠ No one coming from: {missingParts.join(', ')}
+        </p>
       )}
     </div>
   );

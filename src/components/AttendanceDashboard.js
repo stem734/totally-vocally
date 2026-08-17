@@ -167,7 +167,9 @@ export default function AttendanceDashboard({ events }) {
                     </div>
                   </div>
 
-                  <VoicePartBreakdown counts={voicePartCounts} />
+                  {event.type === 'performance' && (
+                    <VoicePartBreakdown counts={voicePartCounts} checkMissing />
+                  )}
 
                   <div className={s.summary}>
                     Total responses: {totalResponses}

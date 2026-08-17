@@ -52,3 +52,14 @@
   font-style: italic;
   margin: 0;
 }
+
+.missingAlert {
+  margin: 0.75rem 0 0 0;
+  padding: 0.6rem 0.85rem;
+  background: rgba(229, 62, 62, 0.12);
+  border: 1px solid rgba(229, 62, 62, 0.35);
+  border-radius: 0.5rem;
+  color: #f49090;
+  font-size: 0.82rem;
+  font-weight: 600;
+}

@@ -100,7 +100,20 @@
   }
 
   .brand {
-    display: none;
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 52px;
+    padding: 0 14px;
+    align-items: center;
+    background: var(--ink-mid);
+    border-bottom: 2px solid rgba(193,60,133,0.3);
+    z-index: 100;
+  }
+
+  .brandLogo {
+    height: 28px;
   }
 
   .nav {
@@ -131,6 +144,20 @@
   }
 
   .logoutBtn {
-    display: none;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 52px;
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 0.65rem;
+    background: var(--ink-mid);
+    border-radius: 0;
+    border: none;
+    border-bottom: 2px solid rgba(193,60,133,0.3);
+    border-left: 1.5px solid rgba(78,171,216,0.3);
+    z-index: 100;
   }
 }

@@ -70,6 +70,7 @@ a { color: inherit; }
 
 @media (max-width: 640px) {
   body {
+    padding-top: 52px;
     padding-bottom: 70px;
   }
 }

@@ -114,6 +114,10 @@ export default function AttendanceDashboard({ events }) {
                     </span>
                   </div>
 
+                  {event.type === 'performance' && (
+                    <VoicePartBreakdown counts={voicePartCounts} checkMissing />
+                  )}
+
                   <div className={s.attendanceGroups}>
                     <div className={s.group}>
                       <h3 className={s.groupTitle}>
@@ -166,10 +170,6 @@ export default function AttendanceDashboard({ events }) {
                       )}
                     </div>
                   </div>
-
-                  {event.type === 'performance' && (
-                    <VoicePartBreakdown counts={voicePartCounts} checkMissing />
-                  )}
 
                   <div className={s.summary}>
                     Total responses: {totalResponses}

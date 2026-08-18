@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import AdminSidebar from './AdminSidebar';
 import { useSongs } from '../useSongs';
-import { getDefaultFilters } from '../filterUtils';
 import { seedSongs } from '../seedSongs';
+import { ExternalLinkIcon } from '../icons';
 import s from './SongsPage.module.css';
 
+const CHOIR_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
+
 export default function SongsPage({ isAdmin = true }) {
-  const [filters, setFilters] = useState(getDefaultFilters());
   const { songs, loading, addSong, deleteSong, updateSong } = useSongs();
   const [seeding, setSeeding] = useState(false);
   const [seedError, setSeedError] = useState('');
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const [newSongTitle, setNewSongTitle] = useState('');
   const [newSongUrl, setNewSongUrl] = useState('');
   const [newSongChoirs, setNewSongChoirs] = useState([]);
@@ -22,8 +23,6 @@ export default function SongsPage({ isAdmin = true }) {
   const [updating, setUpdating] = useState('');
   const [deletingSong, setDeletingSong] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
-  const CHOIR_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 
   const toggleChoir = (choir, isNew = true) => {
     if (isNew) {
@@ -52,6 +51,7 @@ export default function SongsPage({ isAdmin = true }) {
       setNewSongTitle('');
       setNewSongUrl('');
       setNewSongChoirs([]);
+      setAddModalOpen(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -125,93 +125,56 @@ export default function SongsPage({ isAdmin = true }) {
   }
 
   return (
-    <div className={s.container}>
-      <AdminSidebar filters={filters} onFiltersChange={setFilters} showMonthFilter={false} />
-      <main className={s.page}>
-        <header className={s.header}>
-          <div>
-            <h1>Song <span>Library</span></h1>
-            <p>Manage the song catalogue for allocating to events.</p>
-          </div>
-          <div className={s.headerActions}>
-            {isAdmin && songs.length === 0 && (
-              <button
-                className={s.seedBtn}
-                onClick={handleSeedSongs}
-                disabled={seeding}
-              >
-                {seeding ? 'Importing...' : 'Import Song List'}
-              </button>
-            )}
-            <span className={s.count}>{songs.length} songs</span>
-          </div>
-        </header>
+    <main className={s.page}>
+      <header className={s.header}>
+        <div>
+          <h1>Song <span>Library</span></h1>
+          <p>Manage the song catalogue for allocating to events.</p>
+        </div>
+        <div className={s.headerActions}>
+          {isAdmin && songs.length === 0 && (
+            <button
+              className={s.seedBtn}
+              onClick={handleSeedSongs}
+              disabled={seeding}
+            >
+              {seeding ? 'Importing...' : 'Import Song List'}
+            </button>
+          )}
+          {isAdmin && (
+            <button className={s.submitBtn} onClick={() => setAddModalOpen(true)}>
+              + Add Song
+            </button>
+          )}
+          <span className={s.count}>{songs.length} songs</span>
+        </div>
+      </header>
 
       {(error || seedError) && <div className={s.error}>{error || seedError}</div>}
 
-      {isAdmin && (
-      <form className={s.addForm} onSubmit={handleAddSong}>
-        <input
-          type="text"
-          placeholder="Song title..."
-          value={newSongTitle}
-          onChange={(e) => setNewSongTitle(e.target.value)}
-          disabled={updating === 'add'}
-          className={s.input}
-        />
-        <input
-          type="url"
-          placeholder="Link URL (optional)"
-          value={newSongUrl}
-          onChange={(e) => setNewSongUrl(e.target.value)}
-          disabled={updating === 'add'}
-          className={s.input}
-        />
-        <div className={s.choirSelector}>
-          <label className={s.choirLabel}>Choirs:</label>
-          {CHOIR_DAYS.map((choir) => (
-            <label key={choir} className={s.choirCheckbox}>
-              <input
-                type="checkbox"
-                checked={newSongChoirs.includes(choir)}
-                onChange={() => toggleChoir(choir, true)}
-                disabled={updating === 'add'}
-              />
-              <span>{choir}</span>
-            </label>
-          ))}
-        </div>
-        <button type="submit" disabled={updating === 'add' || !newSongTitle.trim()} className={s.submitBtn}>
-          {updating === 'add' ? 'Adding...' : 'Add Song'}
-        </button>
-      </form>
-      )}
-
-      <div className={s.songsList}>
-        {songs.length === 0 ? (
-          <p className={s.empty}>No songs yet. Add one to get started.</p>
-        ) : (
-          songs.map((song) => (
-            <article className={s.songCard} key={song.id}>
-              {isAdmin && editingId === song.id ? (
-                <div className={s.editForm}>
+      {songs.length === 0 ? (
+        <p className={s.empty}>No songs yet. Add one to get started.</p>
+      ) : (
+        <>
+          <div className={s.tableHeader}>
+            <span>Title</span>
+            <span>Choirs</span>
+            <span>Link</span>
+            {isAdmin && <span>Actions</span>}
+          </div>
+          <div className={s.list}>
+            {songs.map((song) => (
+              isAdmin && editingId === song.id ? (
+                <article className={`${s.card} ${s.editCard}`} key={song.id}>
                   <input
                     type="text"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
                     disabled={updating === song.id}
-                    className={s.editInput}
+                    className={`${s.editInput} ${s.titleCell}`}
                     placeholder="Song title"
                   />
-                  <input
-                    type="url"
-                    value={editUrl}
-                    onChange={(e) => setEditUrl(e.target.value)}
-                    disabled={updating === song.id}
-                    className={s.editInput}
-                    placeholder="Link URL (optional)"
-                  />
-                  <div className={s.choirSelector}>
+                  <div className={`${s.choirSelector} ${s.choirsCell}`}>
                     {CHOIR_DAYS.map((choir) => (
                       <label key={choir} className={s.choirCheckbox}>
                         <input
@@ -224,7 +187,15 @@ export default function SongsPage({ isAdmin = true }) {
                       </label>
                     ))}
                   </div>
-                  <div className={s.editActions}>
+                  <input
+                    type="url"
+                    value={editUrl}
+                    onChange={(e) => setEditUrl(e.target.value)}
+                    disabled={updating === song.id}
+                    className={`${s.editInput} ${s.linkCell}`}
+                    placeholder="Link URL (optional)"
+                  />
+                  <div className={`${s.actionsCell} ${s.editActions}`}>
                     <button
                       className={s.saveBtn}
                       onClick={handleSaveEdit}
@@ -240,16 +211,11 @@ export default function SongsPage({ isAdmin = true }) {
                       Cancel
                     </button>
                   </div>
-                </div>
+                </article>
               ) : (
-                <>
-                  <div className={s.songInfo}>
-                    <h3>{song.title}</h3>
-                    {song.url && (
-                      <a href={song.url} target="_blank" rel="noopener noreferrer" className={s.songLink}>
-                        Link →
-                      </a>
-                    )}
+                <article className={s.card} key={song.id}>
+                  <span className={s.titleCell}>{song.title}</span>
+                  <div className={s.choirsCell}>
                     {song.choirs && song.choirs.length > 0 && (
                       <div className={s.choirTags}>
                         {song.choirs.map((choir) => (
@@ -258,8 +224,17 @@ export default function SongsPage({ isAdmin = true }) {
                       </div>
                     )}
                   </div>
+                  <div className={s.linkCell}>
+                    {song.url ? (
+                      <a href={song.url} target="_blank" rel="noopener noreferrer" className={s.songLink} title="Open link" aria-label="Open link">
+                        <ExternalLinkIcon />
+                      </a>
+                    ) : (
+                      <span className={s.noLink}>—</span>
+                    )}
+                  </div>
                   {isAdmin && (
-                    <div className={s.actions}>
+                    <div className={s.actionsCell}>
                       <button
                         className={s.editBtn}
                         onClick={() => startEdit(song)}
@@ -276,13 +251,65 @@ export default function SongsPage({ isAdmin = true }) {
                       </button>
                     </div>
                   )}
-                </>
-              )}
-            </article>
-          ))
-        )}
-      </div>
-      </main>
+                </article>
+              )
+            ))}
+          </div>
+        </>
+      )}
+
+      {addModalOpen && createPortal(
+        <div className={s.confirmOverlay} onClick={() => updating !== 'add' && setAddModalOpen(false)}>
+          <form className={s.addModal} onClick={(e) => e.stopPropagation()} onSubmit={handleAddSong}>
+            <h3>Add a song</h3>
+            <input
+              type="text"
+              placeholder="Song title..."
+              value={newSongTitle}
+              onChange={(e) => setNewSongTitle(e.target.value)}
+              disabled={updating === 'add'}
+              className={s.input}
+              autoFocus
+            />
+            <input
+              type="url"
+              placeholder="Link URL (optional)"
+              value={newSongUrl}
+              onChange={(e) => setNewSongUrl(e.target.value)}
+              disabled={updating === 'add'}
+              className={s.input}
+            />
+            <div className={s.choirSelector}>
+              <label className={s.choirLabel}>Choirs:</label>
+              {CHOIR_DAYS.map((choir) => (
+                <label key={choir} className={s.choirCheckbox}>
+                  <input
+                    type="checkbox"
+                    checked={newSongChoirs.includes(choir)}
+                    onChange={() => toggleChoir(choir, true)}
+                    disabled={updating === 'add'}
+                  />
+                  <span>{choir}</span>
+                </label>
+              ))}
+            </div>
+            <div className={s.confirmActions}>
+              <button
+                type="button"
+                className={s.cancelBtn}
+                onClick={() => setAddModalOpen(false)}
+                disabled={updating === 'add'}
+              >
+                Cancel
+              </button>
+              <button type="submit" disabled={updating === 'add' || !newSongTitle.trim()} className={s.submitBtn}>
+                {updating === 'add' ? 'Adding...' : 'Add Song'}
+              </button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
 
       {deletingSong && createPortal(
         <div className={s.confirmOverlay} onClick={() => !deleting && setDeletingSong(null)}>
@@ -309,6 +336,6 @@ export default function SongsPage({ isAdmin = true }) {
         </div>,
         document.body
       )}
-    </div>
+    </main>
   );
 }

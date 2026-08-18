@@ -70,6 +70,14 @@ export const MessageSquareIcon = () => (
   </svg>
 );
 
+export const ExternalLinkIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+    <polyline points="15 3 21 3 21 9"/>
+    <line x1="10" y1="14" x2="21" y2="3"/>
+  </svg>
+);
+
 export const DropboxLogo = () => (
   <svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor">
     <path d="M64 32L0 80l64 48 64-48L64 32zm128 0l-64 48 64 48 64-48-64-48zM0 176l64 48 64-48-64-48L0 176zm192-48l-64 48 64 48 64-48-64-48zm-64 54l-64 48 64 32 64-32-64-48z"/>

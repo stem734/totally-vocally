@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import s from './EventDetailModal.module.css';
+import { useModalA11y } from '../useModalA11y';
 import './AuthModal.css';
 
 const TERMS_URL = 'https://mailchi.mp/535857a27c03/terms-and-conditions';
@@ -9,6 +10,7 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [agreed, setAgreed] = useState(false);
+  const modalRef = useModalA11y(open, onClose);
 
   const handleSubmit = () => {
     if (!email) return;
@@ -24,9 +26,16 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
 
   return (
     <div className={s.overlay}>
-      <div className={`${s.modal} authModal`}>
+      <div
+        className={`${s.modal} authModal`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="authModalTitle"
+        ref={modalRef}
+        tabIndex={-1}
+      >
         <div className={s.modalHeader}>
-          <h2 className={s.modalTitle}>
+          <h2 className={s.modalTitle} id="authModalTitle">
             {isForgotPassword ? 'Reset Password' : (isSignUp ? 'Request Access' : 'Sign In')}
           </h2>
           <button className={s.closeBtn} onClick={onClose} aria-label="Close" disabled={loading}>×</button>
@@ -35,12 +44,14 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
         <div className={s.body}>
           <div className="authContent">
             <div className="authField">
-              <label>Email Address</label>
+              <label htmlFor="authEmail">Email Address</label>
               <input
+                id="authEmail"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
+                autoComplete="email"
                 disabled={loading}
               />
             </div>
@@ -49,23 +60,27 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
               <>
               {isSignUp && (
                 <div className="authField">
-                  <label>Full Name</label>
+                  <label htmlFor="authDisplayName">Full Name</label>
                   <input
+                    id="authDisplayName"
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Your name"
+                    autoComplete="name"
                     disabled={loading}
                   />
                 </div>
               )}
               <div className="authField">
-                <label>Password</label>
+                <label htmlFor="authPassword">Password</label>
                 <input
+                  id="authPassword"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
                   disabled={loading}
                 />
               </div>
@@ -96,7 +111,7 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
             )}
 
             {error && (
-              <div className="authError">{error}</div>
+              <div className="authError" role="alert">{error}</div>
             )}
 
             <button

@@ -3,6 +3,7 @@
   max-width: 900px;
   margin: 0 auto;
   animation: fadeUp 0.3s ease both;
+  outline: none;
 }
 
 .pageHeader {

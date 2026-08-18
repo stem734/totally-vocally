@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import s from './InfoPage.module.css';
@@ -54,6 +54,9 @@ export default function InfoPage({ isAdmin }) {
   const [draft, setDraft] = useState(DEFAULT_INFO);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const mainRef = useRef(null);
+
+  useEffect(() => { mainRef.current?.focus(); }, []);
 
   useEffect(() => onSnapshot(doc(db, 'content', 'memberInfo'), (snapshot) => {
     const next = { ...DEFAULT_INFO, ...(snapshot.exists() ? snapshot.data() : {}) };
@@ -72,7 +75,8 @@ export default function InfoPage({ isAdmin }) {
   };
 
   return (
-    <main className={s.page}>
+    <main className={s.page} id="main-content" ref={mainRef} tabIndex={-1}>
+      <h1 className={s.pageTitle}>Choir <span>Info</span></h1>
       {isAdmin && <div className={s.adminBar}><span>Member information</span><button onClick={() => { setDraft(info); setEditing(!editing); }}>{editing ? 'Cancel' : 'Edit page'}</button></div>}
       {editing && (
         <section className={s.editor}>

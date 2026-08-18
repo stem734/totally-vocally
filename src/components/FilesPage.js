@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import s from './FilesPage.module.css';
 import { DropboxLogo } from '../icons';
 
@@ -6,8 +6,12 @@ import { DropboxLogo } from '../icons';
 const DROPBOX_URL = 'https://www.dropbox.com/your-folder-link-here';
 
 export default function FilesPage() {
+  const mainRef = useRef(null);
+
+  useEffect(() => { mainRef.current?.focus(); }, []);
+
   return (
-    <div className={s.page}>
+    <main className={s.page} id="main-content" ref={mainRef} tabIndex={-1}>
       <div className={s.pageHeader}>
         <h1 className={s.title}>Shared <span>Files</span></h1>
       </div>
@@ -15,7 +19,7 @@ export default function FilesPage() {
       <div className={s.hero}>
         <div className={s.bigNote} aria-hidden="true"></div>
         <div className={s.content}>
-          <div className={s.icon}>📂</div>
+          <div className={s.icon} aria-hidden="true">📂</div>
           <h2 className={s.heroTitle}>Sheet Music &amp; Resources</h2>
           <p className={s.heroDesc}>
             All choir files — sheet music, recordings, newsletters, and documents — live in our
@@ -28,6 +32,6 @@ export default function FilesPage() {
           <p className={s.hint}>Contact the choir director if you need access to the folder.</p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

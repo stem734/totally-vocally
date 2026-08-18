@@ -6,6 +6,7 @@ import VoicePartBreakdown from './VoicePartBreakdown';
 import s from './EventDetailModal.module.css';
 import { ClockIcon, CheckIcon } from '../icons';
 import { eventTypeLabel, formatDuration } from '../eventFields';
+import { useModalA11y } from '../useModalA11y';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -27,6 +28,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const modalRef = useModalA11y(open && !!event, onClose);
 
   if (!open || !event) return null;
 
@@ -36,9 +38,16 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
 
   return (
     <div className={s.overlay}>
-      <div className={s.modal}>
+      <div
+        className={s.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="eventDetailModalTitle"
+        ref={modalRef}
+        tabIndex={-1}
+      >
         <div className={s.modalHeader}>
-          <h2 className={s.modalTitle}>{event.title}</h2>
+          <h2 className={s.modalTitle} id="eventDetailModalTitle">{event.title}</h2>
           <button className={s.closeBtn} onClick={onClose} aria-label="Close">×</button>
         </div>
 

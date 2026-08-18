@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSongs } from '../useSongs';
 import EditEventModal from './EditEventModal';
 import AllocateSongsModal from './AllocateSongsModal';
@@ -27,6 +27,9 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
   const [allocatingEventId, setAllocatingEventId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingEvent, setDeletingEvent] = useState(null);
+  const mainRef = useRef(null);
+
+  useEffect(() => { mainRef.current?.focus(); }, []);
 
   const today = new Date().toISOString().split('T')[0];
   const upcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
@@ -37,7 +40,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
   const allocatingEvent = events.find(e => e.id === allocatingEventId) || null;
 
   return (
-    <div className={s.page}>
+    <main className={s.page} id="main-content" ref={mainRef} tabIndex={-1}>
       <div className={s.pageHeader}>
         <div>
           <h1 className={s.title}>Upcoming <span>Events</span></h1>
@@ -208,6 +211,6 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }

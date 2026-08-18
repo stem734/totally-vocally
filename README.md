@@ -1,16 +1,22 @@
 # 🎵 Totally Vocally — Members Portal
 
-A React web app for Totally Vocally choir members. Password-protected portal with a rehearsal calendar, event attendance, choir information, and a Dropbox files link.
+A React web app for Totally Vocally choir members. Members sign in with their own
+email and password; an administrator approves each account before it can see the
+portal. Includes a rehearsal calendar, event attendance, song lists, a member
+directory, and choir information.
 
 ---
 
 ## Features
 
-- 🔐 **Password login** — members enter the shared password to access the portal
-- 📅 **Calendar** — monthly view showing rehearsals and performances
-- 🎤 **Events** — list view with attendance RSVP (Coming / Maybe / Can't make it)
-- ℹ️ **Info page** — choir details, director contact, venue, guidelines
-- 📁 **Files** — direct link to your shared Dropbox folder
+- 🔐 **Per-member accounts** — email/password sign-in via Firebase Auth, with
+  admin approval required before access. Sessions auto-expire after inactivity.
+- 📅 **Calendar** — monthly view of rehearsals and performances
+- 🎤 **Events** — attendance RSVP (Coming / Maybe / Can't make it)
+- 🎶 **Songs** — repertoire per choir night, with allocation to events
+- 👥 **Members & attendance** — admin directory and attendance dashboard
+- ℹ️ **Info page** — choir details, venue, guidelines
+- 📁 **Files** — link to the shared Dropbox folder
 
 ---
 
@@ -18,7 +24,7 @@ A React web app for Totally Vocally choir members. Password-protected portal wit
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) v16 or higher
-- npm (comes with Node.js)
+- A Firebase project (see [FIREBASE_SETUP.md](FIREBASE_SETUP.md))
 
 ### Steps
 
@@ -26,110 +32,57 @@ A React web app for Totally Vocally choir members. Password-protected portal wit
 # 1. Install dependencies
 npm install
 
-# 2. Start the development server
+# 2. Add your Firebase credentials
+#    Create .env.local (see FIREBASE_SETUP.md for the required keys)
+
+# 3. Start the development server
 npm start
 ```
 
-The app will open at **http://localhost:3000**
+The app opens at **http://localhost:3000**. Sign in with a member account you
+have created in Firebase Auth, or request access from the login screen and
+approve the account as an admin.
 
-**Password:** `5inging`
+> Configuration lives in `.env.local`, which is git-ignored. Never commit it.
+> The Firebase **web** API key is safe to expose in the client bundle; access is
+> controlled by Firebase Auth and the Firestore security rules in
+> [firestore.rules](firestore.rules), not by hiding the key.
 
 ---
 
-## Deploying to GitHub Pages
+## Deployment
 
-### First-time setup
+The app is deployed on **Vercel**. Set the same `REACT_APP_FIREBASE_*`
+environment variables in the Vercel project settings, then push to the
+production branch (or run a Vercel deploy) to publish.
 
-**1. Create a GitHub repository**
-- Go to [github.com/new](https://github.com/new)
-- Name it `totally-vocally` (or anything you like)
-- Set it to **Public** (required for free GitHub Pages)
-- Click **Create repository**
-
-**2. Push your code to GitHub**
-
-```bash
-# Inside the totally-vocally folder:
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/totally-vocally.git
-git push -u origin main
-```
-
-> Replace `YOUR-USERNAME` with your actual GitHub username.
-
-**3. Update `package.json` with your GitHub Pages URL**
-
-Open `package.json` and change the `homepage` line:
-
-```json
-"homepage": "https://YOUR-USERNAME.github.io/totally-vocally",
-```
-
-**4. Deploy**
-
-```bash
-npm run deploy
-```
-
-This builds the app and pushes it to a `gh-pages` branch automatically.
-
-**5. Enable GitHub Pages**
-- Go to your repo on GitHub → **Settings** → **Pages**
-- Under "Source", select **Deploy from a branch**
-- Choose branch: `gh-pages`, folder: `/ (root)`
-- Click **Save**
-
-Your app will be live at:
-**`https://YOUR-USERNAME.github.io/totally-vocally`**
-
-> It may take 1–2 minutes for GitHub Pages to go live the first time.
-
-### Subsequent deployments
-
-Whenever you make changes:
-
-```bash
-git add .
-git commit -m "Your change description"
-git push
-npm run deploy
-```
+Firestore security rules are defined in [firestore.rules](firestore.rules) and
+must be deployed to Firebase separately (Firebase console or `firebase deploy
+--only firestore:rules`).
 
 ---
 
 ## Customisation
 
-### Change the password
-Open `src/components/Login.js` and change:
-```js
-const PASSWORD = '5inging';
-```
-
 ### Add your Dropbox link
-Open `src/components/FilesPage.js` and replace:
-```js
-const DROPBOX_URL = 'https://www.dropbox.com/your-folder-link-here';
-```
-with your actual Dropbox shared folder URL.
+Open `src/components/FilesPage.js` and set the Dropbox shared folder URL.
 
 ### Update choir information
-Open `src/components/InfoPage.js` — the `CARDS` array contains all the info card content. Edit the text fields directly.
+Open `src/components/InfoPage.js` — the `CARDS` array holds all info-card
+content, including the rehearsal location and director contact.
 
-### Change rehearsal times / venue on the Info page
-The `CARDS` array in `InfoPage.js` has a card with title `'Rehearsal Location'` — update the `text` field there.
+### Inactivity timeout
+The auto-logout window is `INACTIVITY_TIMEOUT_MS` in `src/useAuth.js`
+(default 30 minutes).
 
 ---
 
-## Notes on Data Storage
+## Data Storage
 
-Events and attendance are saved in the browser's **localStorage**. This means:
-- Data persists between sessions on the **same device/browser**
-- Data is **not shared** between different members' devices
-
-If you want events and attendance to sync across all members in real time, this would require adding a backend database (e.g. Firebase or Supabase). Ask your developer or raise it as a future enhancement.
+Events, attendance, songs, member profiles, and portal content are stored in
+**Cloud Firestore** and sync across all members in real time. Access is enforced
+server-side by the rules in [firestore.rules](firestore.rules): only approved
+members can read choir data, and only admins can modify it.
 
 ---
 
@@ -137,8 +90,8 @@ If you want events and attendance to sync across all members in real time, this 
 
 - [React 18](https://react.dev/)
 - [Create React App](https://create-react-app.dev/)
+- [Firebase](https://firebase.google.com/) — Authentication + Cloud Firestore
 - [CSS Modules](https://create-react-app.dev/docs/adding-a-css-modules-stylesheet/)
-- [gh-pages](https://www.npmjs.com/package/gh-pages) for deployment
 
 ---
 

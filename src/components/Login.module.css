@@ -78,6 +78,17 @@
   font-weight: 600;
 }
 
+.notice {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #f5f0f5;
+  background: rgba(255, 196, 0, 0.12);
+  border: 1px solid rgba(255, 196, 0, 0.35);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: -18px 0 26px;
+}
+
 .inputWrap { margin-bottom: 18px; }
 
 .input {

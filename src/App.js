@@ -34,7 +34,7 @@ function getAuthErrorMessage(error) {
 }
 
 export default function App() {
-  const { user, profile, isAdmin, isViewer, isApproved, loading, signIn, signUp, resetPassword, logout } = useAuth();
+  const { user, profile, isAdmin, isViewer, isApproved, loading, sessionExpired, signIn, signUp, resetPassword, logout } = useAuth();
   const canViewAdminPages = isAdmin || isViewer;
   const { events, addEvent, deleteEvent, updateEvent, setAttendance, allocateSongs, createRehearsalBlock } = useEventsFirestore(isApproved ? user?.uid : null, profile?.voicePart);
 
@@ -91,6 +91,7 @@ export default function App() {
     return (
       <>
         <LoginFirebase
+          sessionExpired={sessionExpired}
           onLoginClick={() => { setAuthMode('signin'); setAuthModalOpen(true); }}
           onSignUpClick={() => { setAuthMode('signup'); setAuthModalOpen(true); }}
         />

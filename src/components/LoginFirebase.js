@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './Login.module.css';
 
-export default function LoginFirebase({ onLoginClick, onSignUpClick }) {
+export default function LoginFirebase({ onLoginClick, onSignUpClick, sessionExpired }) {
   return (
     <div className={s.screen}>
       <div className={s.bg} />
@@ -13,6 +13,12 @@ export default function LoginFirebase({ onLoginClick, onSignUpClick }) {
           <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Totally Vocally" className={s.logoImg} />
         </div>
         <p className={s.tagline}>Members Portal</p>
+
+        {sessionExpired && (
+          <p className={s.notice} role="status">
+            You were signed out after a period of inactivity. Please sign in again.
+          </p>
+        )}
 
         <div className={s.buttonGroup}>
           <button className={s.btnPrimary} onClick={onLoginClick}>

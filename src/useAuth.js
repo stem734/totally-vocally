@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   isSignInWithEmailLink,
   signInWithEmailLink,
@@ -12,6 +12,10 @@ import {
 import { doc, increment, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
+// Automatically sign a user out after this much inactivity, so an
+// unattended session can't be left open indefinitely.
+const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+
 export function useAuth() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -19,6 +23,9 @@ export function useAuth() {
   const [isViewer, setIsViewer] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // True after an automatic sign-out, so the login screen can explain why.
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const lastActivityRef = useRef(Date.now());
 
   // Check if user is already logged in
   useEffect(() => {
@@ -78,8 +85,33 @@ export function useAuth() {
     };
   }, []);
 
+  // Sign the user out after a period of inactivity so they're prompted to
+  // log back in. Only runs while someone is actually logged in.
+  useEffect(() => {
+    if (!user) return undefined;
+
+    lastActivityRef.current = Date.now();
+    const markActivity = () => { lastActivityRef.current = Date.now(); };
+
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click', 'visibilitychange'];
+    activityEvents.forEach((evt) => window.addEventListener(evt, markActivity, { passive: true }));
+
+    const interval = setInterval(() => {
+      if (Date.now() - lastActivityRef.current >= INACTIVITY_TIMEOUT_MS) {
+        setSessionExpired(true);
+        signOut(auth).catch((err) => console.error('Failed to sign out on inactivity:', err));
+      }
+    }, 30 * 1000); // check every 30s
+
+    return () => {
+      clearInterval(interval);
+      activityEvents.forEach((evt) => window.removeEventListener(evt, markActivity));
+    };
+  }, [user]);
+
   const signIn = useCallback(async (email, password) => {
     setError('');
+    setSessionExpired(false);
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       try {
@@ -166,6 +198,7 @@ export function useAuth() {
     isApproved: isAdmin || profile?.status === 'approved',
     loading,
     error,
+    sessionExpired,
     signIn,
     signUp,
     resetPassword,

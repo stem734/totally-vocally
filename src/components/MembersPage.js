@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { collection, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { createPortal } from 'react-dom';
+import { collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { obfuscatedLabel, obfuscatedEmail } from '../obfuscate';
 import s from './MembersPage.module.css';
@@ -12,6 +13,8 @@ export default function MembersPage({ isAdmin = true, obfuscate = false }) {
   const [members, setMembers] = useState([]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
+  const [deletingMember, setDeletingMember] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => onSnapshot(collection(db, 'users'), (snapshot) => {
     setMembers(snapshot.docs.map((member) => ({ id: member.id, ...member.data() })));
@@ -50,6 +53,20 @@ export default function MembersPage({ isAdmin = true, obfuscate = false }) {
       setError(err.message);
     } finally {
       setUpdating('');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingMember) return;
+    setDeleting(true);
+    setError('');
+    try {
+      await deleteDoc(doc(db, 'users', deletingMember.id));
+      setDeletingMember(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -116,12 +133,34 @@ export default function MembersPage({ isAdmin = true, obfuscate = false }) {
                 <div className={s.actions}>
                   {status !== 'approved' && <button className={s.approve} disabled={updating === member.id || !member.voicePart || !member.rehearsalDay} title={!member.voicePart || !member.rehearsalDay ? 'Assign a voice part and rehearsal day before approval' : ''} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
                   {status !== 'rejected' && <button className={s.reject} disabled={updating === member.id} onClick={() => setStatus(member.id, 'rejected')}>Reject</button>}
+                  <button className={s.delete} disabled={updating === member.id} onClick={() => setDeletingMember({ id: member.id, displayName })}>Delete</button>
                 </div>
               )}
             </article>
           );
         })}
       </div>
+
+      {deletingMember && createPortal(
+        <div className={s.confirmOverlay} onClick={() => !deleting && setDeletingMember(null)}>
+          <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <h3>Remove member?</h3>
+            <p>
+              This removes "{deletingMember.displayName}" from the members list and revokes their
+              access to the app immediately. Their sign-in still technically works, but they'll be
+              stuck on the "Awaiting approval" screen with no way back in from here. To fully block
+              them from signing in, delete their account in the Firebase console too.
+            </p>
+            <div className={s.confirmActions}>
+              <button className={s.cancelBtn} onClick={() => setDeletingMember(null)} disabled={deleting}>Cancel</button>
+              <button className={s.confirmDeleteBtn} onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </main>
   );
 }

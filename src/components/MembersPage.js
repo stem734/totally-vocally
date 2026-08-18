@@ -100,8 +100,8 @@ export default function MembersPage({ isAdmin = true, obfuscate = false }) {
           return (
             <article className={s.card} key={member.id}>
               <div className={s.identity}>
-                <strong>{displayName}</strong>
-                <span>{email}</span>
+                <strong title={displayName}>{displayName}</strong>
+                <span title={email}>{email}</span>
                 <small>{member.role === 'admin' ? 'Administrator' : 'Choir member'}</small>
               </div>
               <div className={s.logins}>

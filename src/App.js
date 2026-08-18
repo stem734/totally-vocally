@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import CalendarPage from './components/CalendarPage';
 import EventsPage from './components/EventsPage';
@@ -49,6 +49,12 @@ export default function App() {
     if (isAdmin) seedSongs().catch(err => console.error('Failed to seed songs:', err));
   }, [isAdmin]);
 
+  const closeAuthModal = useCallback(() => {
+    setAuthModalOpen(false);
+    setAuthError('');
+    setAuthMode('signin');
+  }, []);
+
   const handleAuth = async (email, password, displayName) => {
     setAuthLoading(true);
     setAuthError('');
@@ -98,7 +104,7 @@ export default function App() {
         <AuthModal
           open={authModalOpen}
           mode={authMode}
-          onClose={() => { setAuthModalOpen(false); setAuthError(''); setAuthMode('signin'); }}
+          onClose={closeAuthModal}
           onSubmit={handleAuth}
           loading={authLoading}
           error={authError}

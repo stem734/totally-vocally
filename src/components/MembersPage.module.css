@@ -4,10 +4,10 @@
 .count { color: var(--blue-light); font-weight: 700; white-space: nowrap; }
 .error { padding: 12px; margin-bottom: 16px; border: 1px solid #e05252; border-radius: 8px; background: rgba(229,62,62,.15); color: #f49090; }
 .list { display: grid; gap: 12px; }
-.card,.tableHeader { display: grid; grid-template-columns: 1fr 90px 160px 160px 110px 250px; align-items: center; gap: 12px; }
+.card,.tableHeader { display: grid; grid-template-columns: minmax(140px,1fr) 90px 150px 150px 100px 190px; align-items: center; gap: 12px; }
 .card { padding: 20px; border: 1px solid rgba(255,255,255,.09); border-radius: 12px; background: var(--ink-mid); }
 .tableHeader { padding: 0 20px; margin-bottom: 4px; color: var(--muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
-.identity { display: grid; gap: 4px; }.identity span,.identity small { color: var(--muted-light); }.identity small { font-size: .78rem; }
+.identity { display: grid; gap: 4px; min-width: 0; }.identity strong,.identity span,.identity small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.identity span,.identity small { color: var(--muted-light); }.identity small { font-size: .78rem; }
 .logins { display: grid; gap: 2px; }.logins strong { font-size: 1rem; color: var(--warm-white); }.logins small { font-size: .74rem; color: var(--muted); white-space: nowrap; }
 .status { padding: 5px 10px; border-radius: 999px; font-size: .72rem; font-weight: 800; text-transform: uppercase; }.pending { color: #f4c56a; background: rgba(244,197,106,.12); }.approved { color: #76d19a; background: rgba(118,209,154,.12); }.rejected { color: #f49090; background: rgba(244,144,144,.12); }
 .voiceSelect { width: 100%; padding: 8px 10px; color: var(--warm-white); border: 1px solid rgba(78,171,216,.32); border-radius: 7px; background: var(--ink-soft); }

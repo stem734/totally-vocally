@@ -1,7 +1,7 @@
 .wrap {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #2a2a2f;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
 }
 
 .label {
@@ -9,7 +9,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #a8a0a8;
+  color: var(--muted-light);
   margin: 0 0 0.6rem 0;
 }
 
@@ -18,8 +18,8 @@
   height: 44px;
   border-radius: 8px;
   overflow: hidden;
-  background: #0a0a0f;
-  border: 1px solid #2a2a2f;
+  background: var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.09);
 }
 
 .segment {
@@ -48,7 +48,7 @@
 
 .empty {
   font-size: 0.78rem;
-  color: #707080;
+  color: var(--muted);
   font-style: italic;
   margin: 0;
 }

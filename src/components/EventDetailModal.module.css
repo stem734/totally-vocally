@@ -242,14 +242,14 @@
   flex: 1;
   background: rgba(156,156,160,0.1);
   border: 1.5px solid rgba(156,156,160,0.3);
-  color: #a8a0a8;
+  color: var(--muted-light);
   font-size: 0.9rem;
   font-weight: 700;
   padding: 12px;
   border-radius: 10px;
   transition: all 0.18s;
 }
-.editBtn:hover { background: rgba(156,156,160,0.2); border-color: #d4a5a5; color: #d4a5a5; }
+.editBtn:hover { background: rgba(193,60,133,0.15); border-color: var(--pink); color: var(--pink-light); }
 
 .allocateBtn {
   flex: 1;
@@ -305,7 +305,7 @@
 
 .confirmModal p {
   margin: 0 0 20px;
-  color: #a8a0a8;
+  color: var(--muted-light);
   font-size: 0.9rem;
 }
 

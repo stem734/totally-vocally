@@ -4,12 +4,12 @@ import s from './VoicePartBreakdown.module.css';
 const VOICE_PART_ORDER = ['Soprano 1', 'Soprano 2', 'Alto', 'Tenor 1', 'Tenor 2', 'Bass', 'Unassigned'];
 
 const VOICE_PART_COLORS = {
-  'Soprano 1': { bg: '#e8657a', text: '#1a0a0d' },
-  'Soprano 2': { bg: '#d4a5a5', text: '#1a0a0d' },
-  'Alto': { bg: '#d6a32e', text: '#1a1405' },
-  'Tenor 1': { bg: '#4eabd8', text: '#f5f0f5' },
-  'Tenor 2': { bg: '#6b7a8f', text: '#f5f0f5' },
-  'Bass': { bg: '#4a7c59', text: '#f5f0f5' },
+  'Soprano 1': { bg: '#c13c85', text: '#ffffff' },
+  'Soprano 2': { bg: '#e87ab8', text: '#1a0a12' },
+  'Alto': { bg: '#f4c56a', text: '#1a1405' },
+  'Tenor 1': { bg: '#4eabd8', text: '#0a1620' },
+  'Tenor 2': { bg: '#2e7fa8', text: '#f5f0f5' },
+  'Bass': { bg: '#76d19a', text: '#0a1a0f' },
   'Unassigned': { bg: '#54545f', text: '#f5f0f5' },
 };
 

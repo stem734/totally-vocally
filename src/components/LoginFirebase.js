@@ -29,7 +29,7 @@ export default function LoginFirebase({ onLoginClick, onSignUpClick, sessionExpi
           </button>
         </div>
 
-        <p className={s.hint}>New members can request access. An administrator must approve every account.</p>
+        <p className={s.hint}>Only members of Totally Vocally Choir can use this application</p>
       </div>
     </div>
   );

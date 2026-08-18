@@ -38,6 +38,8 @@ const DEFAULT_INFO = {
   phone: '07000 000000',
 };
 
+const TERMS_URL = 'https://mailchi.mp/535857a27c03/terms-and-conditions';
+
 const INCLUDED = [
   'Two-hour rehearsals across 38 weeks of the year',
   'Professional learning tracks, lyrics and videos',
@@ -132,6 +134,27 @@ export default function InfoPage({ isAdmin }) {
         <article><p className={s.sectionLabel}>Performances</p><h3>Are concerts compulsory?</h3><p>No. Performances and solos are always optional. You are warmly encouraged to join in, but never pressured.</p></article>
         <article><p className={s.sectionLabel}>Extra costs</p><h3>Will opportunities cost extra?</h3><p>If an outside opportunity involves a cost to singers, it will be explained in advance and participation will remain optional.</p></article>
         <article><p className={s.sectionLabel}>Communication</p><h3>Where are updates shared?</h3><p>{info.communication}</p></article>
+      </section>
+
+      <section className={s.story}>
+        <p className={s.sectionLabel}>Privacy</p>
+        <h2>Privacy &amp; your data</h2>
+        <p>
+          This members' app stores your name, email address, voice part, sign-in activity
+          and the event attendance you record, so the choir can plan rehearsals, events and
+          member communications.
+        </p>
+        <p>
+          Your account details are visible only to you and the choir admin team. Attendance
+          you record for an event may be seen by other approved members as well as admins,
+          since it's used for rehearsal and performance planning.
+        </p>
+        <p>
+          This app is part of your wider Totally Vocally membership. For full details on how
+          your data is collected and used, and your rights over it, see the choir's{' '}
+          <a href={TERMS_URL} target="_blank" rel="noopener noreferrer">Terms &amp; Privacy Policy</a>,
+          or contact <a href={`mailto:${info.email}`}>{info.email}</a>.
+        </p>
       </section>
 
       <footer className={s.footer}>

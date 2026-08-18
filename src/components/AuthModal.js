@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import s from './EventDetailModal.module.css';
 import './AuthModal.css';
 
+const TERMS_URL = 'https://mailchi.mp/535857a27c03/terms-and-conditions';
+
 export default function AuthModal({ open, mode, onClose, onSubmit, loading, error, onForgotPassword }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [agreed, setAgreed] = useState(false);
 
   const handleSubmit = () => {
     if (!email) return;
     if (mode !== 'forgotPassword' && !password) return;
-    if (mode === 'signup' && !displayName) return;
+    if (mode === 'signup' && (!displayName || !agreed)) return;
     onSubmit(email, password, displayName);
   };
 
@@ -69,13 +72,36 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
               </>
             )}
 
+            {isSignUp && (
+              <>
+                <p className="authNotice">
+                  Joining the app means sharing your name, email, voice part and rehearsal
+                  attendance with the choir admin team so they can run rehearsals, events and
+                  communications. This is covered by the choir's{' '}
+                  <a href={TERMS_URL} target="_blank" rel="noopener noreferrer">Terms &amp; Privacy Policy</a>.
+                </p>
+                <label className="authCheckboxField">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    disabled={loading}
+                  />
+                  <span>
+                    I have read and agree to the{' '}
+                    <a href={TERMS_URL} target="_blank" rel="noopener noreferrer">Terms &amp; Conditions and Privacy Policy</a>
+                  </span>
+                </label>
+              </>
+            )}
+
             {error && (
               <div className="authError">{error}</div>
             )}
 
             <button
               onClick={handleSubmit}
-              disabled={(!email || ((!isForgotPassword) && !password) || (isSignUp && !displayName)) || loading}
+              disabled={(!email || ((!isForgotPassword) && !password) || (isSignUp && (!displayName || !agreed))) || loading}
               className="authSubmitBtn"
             >
               {loading ? 'Please wait...' : (isForgotPassword ? 'Send Reset Link' : (isSignUp ? 'Submit Request' : 'Sign In'))}

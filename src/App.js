@@ -15,6 +15,8 @@ import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 import { seedSongs } from './seedSongs';
 
+const LAST_SEEN_EVENTS_KEY_PREFIX = 'tv_last_seen_events_';
+
 function getAuthErrorMessage(error) {
   switch (error?.code) {
     case 'auth/invalid-credential':
@@ -44,10 +46,25 @@ export default function App() {
   const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'forgotPassword'
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [lastSeenEventsAt, setLastSeenEventsAt] = useState('');
 
   useEffect(() => {
     if (isAdmin) seedSongs().catch(err => console.error('Failed to seed songs:', err));
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (!user) { setLastSeenEventsAt(''); return; }
+    setLastSeenEventsAt(localStorage.getItem(LAST_SEEN_EVENTS_KEY_PREFIX + user.uid) || '');
+  }, [user]);
+
+  const markEventsSeen = useCallback(() => {
+    if (!user) return;
+    const now = new Date().toISOString();
+    localStorage.setItem(LAST_SEEN_EVENTS_KEY_PREFIX + user.uid, now);
+    setLastSeenEventsAt(now);
+  }, [user]);
+
+  const hasNewEvents = events.some((ev) => ev.createdAt && ev.createdAt > lastSeenEventsAt);
 
   const closeAuthModal = useCallback(() => {
     setAuthModalOpen(false);
@@ -130,6 +147,7 @@ export default function App() {
         onNavigate={navigate}
         onLogout={logout}
         showAdminNav={canViewAdminPages}
+        hasNewEvents={hasNewEvents}
       />
 
       {page === 'calendar' && (
@@ -144,6 +162,7 @@ export default function App() {
           onAllocateSongs={allocateSongs}
           onCreateRehearsalBlock={createRehearsalBlock}
           rehearsalDay={profile?.rehearsalDay}
+          onMarkEventsSeen={markEventsSeen}
         />
       )}
       {page === 'events' && (
@@ -157,6 +176,7 @@ export default function App() {
           onSetAttendance={setAttendance}
           onAllocateSongs={allocateSongs}
           rehearsalDay={profile?.rehearsalDay}
+          onMarkEventsSeen={markEventsSeen}
         />
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}

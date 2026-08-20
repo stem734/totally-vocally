@@ -7,7 +7,7 @@ import { downloadICalendar } from '../calendarSubscription';
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay, onCreateRehearsalBlock }) {
+export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay, onCreateRehearsalBlock, onMarkEventsSeen }) {
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -17,7 +17,11 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
   const [blockCreating, setBlockCreating] = useState(false);
   const mainRef = useRef(null);
 
-  useEffect(() => { mainRef.current?.focus(); }, []);
+  useEffect(() => {
+    mainRef.current?.focus();
+    onMarkEventsSeen?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const closeEventDetail = useCallback(() => setSelectedEventId(null), []);
 

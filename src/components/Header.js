@@ -2,7 +2,7 @@ import React from 'react';
 import s from './Header.module.css';
 import { CalendarIcon, EventIcon, InfoIcon, FilesIcon } from '../icons';
 
-export default function Header({ activePage, onNavigate, onLogout, showAdminNav }) {
+export default function Header({ activePage, onNavigate, onLogout, showAdminNav, hasNewEvents }) {
   const TABS = [
     { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
     { id: 'events',   label: 'Events',   icon: EventIcon },
@@ -25,6 +25,7 @@ export default function Header({ activePage, onNavigate, onLogout, showAdminNav 
         <nav className={s.nav} aria-label="Main navigation">
           {TABS.map((tab) => {
             const Icon = tab.icon;
+            const showBadge = hasNewEvents && (tab.id === 'calendar' || tab.id === 'events');
             return (
               <button
                 key={tab.id}
@@ -32,8 +33,14 @@ export default function Header({ activePage, onNavigate, onLogout, showAdminNav 
                 onClick={() => onNavigate(tab.id)}
                 aria-current={activePage === tab.id ? 'page' : undefined}
               >
-                <span className={s.navIcon}><Icon /></span>
-                <span className={s.navLabel}>{tab.label}</span>
+                <span className={s.navIcon}>
+                  <Icon />
+                  {showBadge && <span className={s.navBadge} aria-hidden="true" />}
+                </span>
+                <span className={s.navLabel}>
+                  {tab.label}
+                  {showBadge && <span className={s.srOnly}> (new)</span>}
+                </span>
               </button>
             );
           })}

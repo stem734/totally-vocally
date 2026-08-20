@@ -97,7 +97,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
               <p className={s.desc}>{event.desc}</p>
             )}
 
-            {isAdmin && event.songIds && event.songIds.length > 0 && (
+            {event.songIds && event.songIds.length > 0 && (
               <div className={s.songsSection}>
                 <p className={s.songsLabel}>Songs Allocated</p>
                 <div className={s.songsList}>

@@ -105,7 +105,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
 
                   {ev.desc && <p className={s.desc}>{ev.desc}</p>}
 
-                  {isAdmin && ev.songIds && ev.songIds.length > 0 && (
+                  {ev.songIds && ev.songIds.length > 0 && (
                     <div className={s.songsSection}>
                       <p className={s.attLabel}>Songs Allocated</p>
                       <div className={s.songsList}>

@@ -21,7 +21,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay, onMarkEventsSeen }) {
+export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay }) {
   const { songs } = useSongs();
   const [editingEventId, setEditingEventId] = useState(null);
   const [allocatingEventId, setAllocatingEventId] = useState(null);
@@ -29,11 +29,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
   const [deletingEvent, setDeletingEvent] = useState(null);
   const mainRef = useRef(null);
 
-  useEffect(() => {
-    mainRef.current?.focus();
-    onMarkEventsSeen?.();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { mainRef.current?.focus(); }, []);
 
   const today = new Date().toISOString().split('T')[0];
   const upcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));

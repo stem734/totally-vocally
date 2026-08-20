@@ -136,7 +136,10 @@ export default function App() {
   }
 
   // Logged in
-  const navigate = (p) => setPage(p);
+  const navigate = (p) => {
+    setPage(p);
+    if (p === 'calendar' || p === 'events') markEventsSeen();
+  };
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
@@ -162,7 +165,6 @@ export default function App() {
           onAllocateSongs={allocateSongs}
           onCreateRehearsalBlock={createRehearsalBlock}
           rehearsalDay={profile?.rehearsalDay}
-          onMarkEventsSeen={markEventsSeen}
         />
       )}
       {page === 'events' && (
@@ -176,7 +178,6 @@ export default function App() {
           onSetAttendance={setAttendance}
           onAllocateSongs={allocateSongs}
           rehearsalDay={profile?.rehearsalDay}
-          onMarkEventsSeen={markEventsSeen}
         />
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
@@ -194,7 +195,7 @@ export default function App() {
         onClose={closeModal}
         onSave={(ev) => {
           addEvent(ev);
-          setPage('events');
+          navigate('events');
         }}
       />
     </>

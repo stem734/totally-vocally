@@ -49,18 +49,41 @@ VITE_FIREBASE_STORAGE_BUCKET=totally-vocally.firebasestorage.app
 The first Storage rules deployment that reads Firestore may ask to enable the
 cross-service rules permission. Accept it only for this Firebase project.
 
+## Browser download CORS
+
+Firebase's authenticated `getBlob()` browser downloads require CORS on the
+underlying Cloud Storage bucket. In Google Cloud Console open:
+
+**Cloud Storage → Buckets → totally-vocally.firebasestorage.app → Configuration
+→ Cross-origin resource sharing → Edit**
+
+Enable CORS and add one configuration:
+
+- Origins: `https://totally-vocally.vercel.app`, `http://localhost:5173`,
+  `http://127.0.0.1:5173`
+- Methods: `GET`, `HEAD`
+- Response headers: `Content-Type`, `Content-Length`, `Content-Range`,
+  `Accept-Ranges`
+- Cache expiry: `3600` seconds
+
+Without this configuration, file listing and metadata can still work while
+audio playback and downloads remain stuck before eventually reporting
+`storage/retry-limit-exceeded`.
+
 ## Smoke test
 
 1. Sign in as an admin and open Files.
 2. Upload a small PDF. Confirm it appears with the original name and size.
 3. Download it and compare the downloaded file.
-4. Sign in as an approved non-admin. Confirm download works and upload/delete
+4. Upload an audio file, press Play, and confirm the controls appear and audio
+   starts without remaining on Loading.
+5. Sign in as an approved non-admin. Confirm download works and upload/delete
    controls are absent.
-5. Using browser developer tools or the Rules Playground, confirm the member
+6. Using browser developer tools or the Rules Playground, confirm the member
    cannot create or delete an object directly.
-6. Confirm a pending user cannot list or download anything.
-7. As admin, try an executable or file over 100 MB and confirm it is rejected.
-8. Delete the test PDF and confirm it disappears for all members.
+7. Confirm a pending user cannot list or download anything.
+8. As admin, try an executable or file over 100 MB and confirm it is rejected.
+9. Delete the test PDF and confirm it disappears for all members.
 
 ## Migrating from Dropbox
 

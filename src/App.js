@@ -180,7 +180,7 @@ export default function App() {
         />
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
-      {page === 'files' && <FilesPage key="files" isAdmin={isAdmin} />}
+      {page === 'files' && <FilesPage key="files" isAdmin={isAdmin} songs={songLibrary.songs} />}
       {page === 'attendance' && canViewAdminPages && (
         <AttendanceDashboard key="attendance" events={events} />
       )}

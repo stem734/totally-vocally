@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   deleteObject,
@@ -9,6 +9,7 @@ import {
   uploadBytesResumable,
 } from 'firebase/storage';
 import { storage } from '../firebase';
+import { safeExternalUrl } from '../safeUrl';
 import s from './FilesPage.module.css';
 
 const FILES_PATH = 'shared';
@@ -49,7 +50,14 @@ function formatBytes(bytes) {
   return `${(bytes / (1024 ** index)).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
-export default function FilesPage({ isAdmin = false }) {
+function linkedPathsForSong(song) {
+  if (Array.isArray(song.linkedFiles)) {
+    return song.linkedFiles.map((file) => file.fullPath).filter(Boolean);
+  }
+  return song.linkedFilePath ? [song.linkedFilePath] : [];
+}
+
+export default function FilesPage({ isAdmin = false, songs = [] }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,6 +77,35 @@ export default function FilesPage({ isAdmin = false }) {
   const audioUrlRef = useRef('');
   const previewUrlRef = useRef('');
   const previewRequestRef = useRef(0);
+
+  const fileGroups = useMemo(() => {
+    const filesByPath = new Map(files.map((file) => [file.fullPath, file]));
+    const assignedPaths = new Set();
+    const songGroups = songs.map((song) => {
+      const groupedFiles = linkedPathsForSong(song).map((path) => {
+        const file = filesByPath.get(path);
+        if (file) assignedPaths.add(path);
+        return file;
+      }).filter(Boolean);
+      return {
+        id: `song-${song.id}`,
+        name: song.title,
+        files: groupedFiles,
+        externalUrl: safeExternalUrl(song.url),
+      };
+    }).filter((group) => group.files.length > 0 || group.externalUrl);
+
+    const generalFiles = files.filter((file) => !assignedPaths.has(file.fullPath));
+    if (generalFiles.length > 0) {
+      songGroups.push({
+        id: 'general-resources',
+        name: 'General Resources',
+        files: generalFiles,
+        externalUrl: '',
+      });
+    }
+    return songGroups;
+  }, [files, songs]);
 
   const loadFiles = useCallback(async () => {
     setError('');
@@ -226,15 +263,15 @@ export default function FilesPage({ isAdmin = false }) {
     setAudioLoading(false);
   };
 
-  const handlePlay = async (file) => {
-    if (playingFile === file.fullPath) {
+  const handlePlay = async (file, locationKey = file.fullPath) => {
+    if (playingFile === locationKey) {
       closePlayer();
       return;
     }
 
     setError('');
     setAudioLoading(true);
-    setPlayingFile(file.fullPath);
+    setPlayingFile(locationKey);
     replaceAudioUrl();
     const requestId = audioRequestRef.current + 1;
     audioRequestRef.current = requestId;
@@ -314,55 +351,71 @@ export default function FilesPage({ isAdmin = false }) {
 
       {loading ? (
         <p className={s.state}>Loading files…</p>
-      ) : files.length === 0 ? (
+      ) : fileGroups.length === 0 ? (
         <section className={s.empty}>
           <span aria-hidden="true">📂</span>
           <h2>No shared files yet</h2>
           <p>{isAdmin ? 'Upload the first choir resource to get started.' : 'Files uploaded by the choir team will appear here.'}</p>
         </section>
       ) : (
-        <section className={s.fileList} aria-label="Shared choir files">
-          {files.map((file) => {
-            const busy = activeFile === file.fullPath;
-            const isAudio = file.contentType.startsWith('audio/');
-            const isPlaying = playingFile === file.fullPath;
-            const isPreviewable = isPreviewableType(file.contentType);
+        <section className={s.folderTree} aria-label="Choir resource folders">
+          {fileGroups.map((group) => {
+            const itemCount = group.files.length + (group.externalUrl ? 1 : 0);
             return (
-              <article className={s.fileCard} key={file.fullPath}>
-                <div className={s.fileIcon} aria-hidden="true">{isAudio ? '🎧' : file.contentType === 'application/pdf' ? '📄' : '📁'}</div>
-                <div className={s.fileDetails}>
-                  <h2>{file.name}</h2>
-                  <p>{formatBytes(file.size)}{file.updated ? ` · Updated ${new Date(file.updated).toLocaleDateString()}` : ''}</p>
-                </div>
-                <div className={s.actions}>
-                  {isPreviewable && (
-                    <button onClick={() => handlePreview(file)} disabled={previewLoading}>
-                      {previewLoading && previewFile?.fullPath === file.fullPath ? 'Opening…' : 'View'}
-                    </button>
+              <details className={s.folder} key={group.id}>
+                <summary>
+                  <span className={s.folderIcon} aria-hidden="true">📁</span>
+                  <strong>{group.name}</strong>
+                  <small>{itemCount} resource{itemCount === 1 ? '' : 's'}</small>
+                </summary>
+                <div className={s.folderContents}>
+                  {group.files.map((file) => {
+                    const busy = activeFile === file.fullPath;
+                    const isAudio = file.contentType.startsWith('audio/');
+                    const locationKey = `${group.id}:${file.fullPath}`;
+                    const isPlaying = playingFile === locationKey;
+                    const isPreviewable = isPreviewableType(file.contentType);
+                    return (
+                      <article className={s.fileCard} key={`${group.id}-${file.fullPath}`}>
+                        <div className={s.fileIcon} aria-hidden="true">{isAudio ? '🎧' : file.contentType === 'application/pdf' ? '📄' : '📁'}</div>
+                        <div className={s.fileDetails}>
+                          <h2>{file.name}</h2>
+                          <p>{formatBytes(file.size)}{file.updated ? ` · Updated ${new Date(file.updated).toLocaleDateString()}` : ''}</p>
+                        </div>
+                        <div className={s.actions}>
+                          {isPreviewable && (
+                            <button onClick={() => handlePreview(file)} disabled={previewLoading}>
+                              {previewLoading && previewFile?.fullPath === file.fullPath ? 'Opening…' : 'View'}
+                            </button>
+                          )}
+                          {isAudio && (
+                            <button onClick={() => handlePlay(file, locationKey)} disabled={audioLoading && isPlaying}>
+                              {audioLoading && isPlaying ? 'Loading…' : isPlaying ? 'Close player' : 'Play'}
+                            </button>
+                          )}
+                          <button onClick={() => handleDownload(file)} disabled={busy}>{busy ? 'Working…' : 'Download'}</button>
+                          {isAdmin && <button className={s.deleteButton} onClick={() => handleDelete(file)} disabled={busy}>Delete</button>}
+                        </div>
+                        {isAudio && isPlaying && audioUrl && (
+                          <div className={s.audioPlayer}>
+                            <audio controls autoPlay preload="metadata" aria-label={`Playing ${file.name}`} onError={() => setError('This recording could not be played by your browser. Check that it is a valid audio file.')}>
+                              <source src={audioUrl} type={file.contentType} />
+                              Your browser does not support audio playback.
+                            </audio>
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                  {group.externalUrl && (
+                    <a className={s.externalResource} href={group.externalUrl} target="_blank" rel="noopener noreferrer">
+                      <span aria-hidden="true">🔗</span>
+                      <div><strong>External practice resource</strong><small>{group.externalUrl}</small></div>
+                      <span>Open ↗</span>
+                    </a>
                   )}
-                  {isAudio && (
-                    <button onClick={() => handlePlay(file)} disabled={audioLoading && isPlaying}>
-                      {audioLoading && isPlaying ? 'Loading…' : isPlaying ? 'Close player' : 'Play'}
-                    </button>
-                  )}
-                  <button onClick={() => handleDownload(file)} disabled={busy}>{busy ? 'Working…' : 'Download'}</button>
-                  {isAdmin && <button className={s.deleteButton} onClick={() => handleDelete(file)} disabled={busy}>Delete</button>}
                 </div>
-                {isAudio && isPlaying && audioUrl && (
-                  <div className={s.audioPlayer}>
-                    <audio
-                      controls
-                      autoPlay
-                      preload="metadata"
-                      aria-label={`Playing ${file.name}`}
-                      onError={() => setError('This recording could not be played by your browser. Check that it is a valid audio file.')}
-                    >
-                      <source src={audioUrl} type={file.contentType} />
-                      Your browser does not support audio playback.
-                    </audio>
-                  </div>
-                )}
-              </article>
+              </details>
             );
           })}
         </section>

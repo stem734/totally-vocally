@@ -11,5 +11,10 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(fetch(event.request));
+  // Cross-origin requests (notably authenticated Firebase Storage media)
+  // must bypass the service worker. Proxying them here can leave streamed
+  // responses pending indefinitely in Chromium.
+  if (new URL(event.request.url).origin === self.location.origin) {
+    event.respondWith(fetch(event.request));
+  }
 });

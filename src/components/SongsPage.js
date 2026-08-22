@@ -247,74 +247,6 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
           </div>
           <div className={s.list}>
             {songs.map((song) => (
-              isAdmin && editingId === song.id ? (
-                <article className={`${s.card} ${s.editCard}`} key={song.id}>
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    disabled={updating === song.id}
-                    className={`${s.editInput} ${s.titleCell}`}
-                    placeholder="Song title"
-                  />
-                  <div className={`${s.choirSelector} ${s.choirsCell}`}>
-                    {CHOIR_DAYS.map((choir) => (
-                      <label key={choir} className={s.choirCheckbox}>
-                        <input
-                          type="checkbox"
-                          checked={editChoirs.includes(choir)}
-                          onChange={() => toggleChoir(choir, false)}
-                          disabled={updating === song.id}
-                        />
-                        <span>{choir}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <input
-                    type="url"
-                    value={editUrl}
-                    onChange={(e) => {
-                      setEditUrl(e.target.value);
-                      if (e.target.value) setEditLinkedFilePath('');
-                    }}
-                    disabled={updating === song.id}
-                    className={`${s.editInput} ${s.linkCell}`}
-                    placeholder="Link URL (optional)"
-                  />
-                  <select
-                    value={editLinkedFilePath}
-                    onChange={(e) => {
-                      setEditLinkedFilePath(e.target.value);
-                      if (e.target.value) setEditUrl('');
-                    }}
-                    disabled={updating === song.id || filesLoading}
-                    className={`${s.editInput} ${s.fileSelect}`}
-                    aria-label="Linked uploaded file"
-                  >
-                    <option value="">No uploaded file</option>
-                    {editLinkedFilePath && !selectedFile(editLinkedFilePath) && (
-                      <option value={editLinkedFilePath}>{song.linkedFileName || 'Previously linked file'}</option>
-                    )}
-                    {availableFiles.map((file) => <option key={file.fullPath} value={file.fullPath}>{file.name}</option>)}
-                  </select>
-                  <div className={`${s.actionsCell} ${s.editActions}`}>
-                    <button
-                      className={s.saveBtn}
-                      onClick={handleSaveEdit}
-                      disabled={updating === song.id || !editTitle.trim()}
-                    >
-                      {updating === song.id ? '...' : 'Save'}
-                    </button>
-                    <button
-                      className={s.cancelBtn}
-                      onClick={() => setEditingId(null)}
-                      disabled={updating === song.id}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </article>
-              ) : (
                 <article className={s.card} key={song.id}>
                   <span className={s.titleCell}>{song.title}</span>
                   <div className={s.choirsCell}>
@@ -365,10 +297,64 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
                     </div>
                   )}
                 </article>
-              )
             ))}
           </div>
         </>
+      )}
+
+      {editingId && createPortal(
+        <div className={s.confirmOverlay} onClick={() => updating !== editingId && setEditingId(null)}>
+          <form className={s.songModal} onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); handleSaveEdit(); }}>
+            <div className={s.modalHeader}>
+              <div>
+                <span className={s.eyebrow}>Song Library</span>
+                <h3>Edit song</h3>
+              </div>
+              <button type="button" className={s.closeBtn} onClick={() => setEditingId(null)} aria-label="Close editor" disabled={updating === editingId}>×</button>
+            </div>
+
+            <label className={s.field}>
+              <span>Song title</span>
+              <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} disabled={updating === editingId} className={s.input} autoFocus />
+            </label>
+
+            <fieldset className={s.fieldset}>
+              <legend>Choirs</legend>
+              <div className={s.choirSelector}>
+                {CHOIR_DAYS.map((choir) => (
+                  <label key={choir} className={s.choirCheckbox}>
+                    <input type="checkbox" checked={editChoirs.includes(choir)} onChange={() => toggleChoir(choir, false)} disabled={updating === editingId} />
+                    <span>{choir}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className={s.resourceBox}>
+              <legend>Practice resource</legend>
+              <p>Choose a file from the Files section, or provide an external web link.</p>
+              <label className={s.field}>
+                <span>Uploaded file</span>
+                <select value={editLinkedFilePath} onChange={(e) => { setEditLinkedFilePath(e.target.value); if (e.target.value) setEditUrl(''); }} disabled={updating === editingId || filesLoading} className={s.input}>
+                  <option value="">No uploaded file</option>
+                  {editLinkedFilePath && !selectedFile(editLinkedFilePath) && <option value={editLinkedFilePath}>Previously linked file</option>}
+                  {availableFiles.map((file) => <option key={file.fullPath} value={file.fullPath}>{file.name}</option>)}
+                </select>
+              </label>
+              <div className={s.orDivider}><span>or</span></div>
+              <label className={s.field}>
+                <span>External HTTPS link</span>
+                <input type="url" value={editUrl} onChange={(e) => { setEditUrl(e.target.value); if (e.target.value) setEditLinkedFilePath(''); }} disabled={updating === editingId} className={s.input} placeholder="https://…" />
+              </label>
+            </fieldset>
+
+            <div className={s.modalActions}>
+              <button type="button" className={s.cancelBtn} onClick={() => setEditingId(null)} disabled={updating === editingId}>Cancel</button>
+              <button type="submit" className={s.submitBtn} disabled={updating === editingId || !editTitle.trim()}>{updating === editingId ? 'Saving…' : 'Save changes'}</button>
+            </div>
+          </form>
+        </div>,
+        document.body
       )}
 
       {addModalOpen && createPortal(

@@ -184,7 +184,11 @@ export default function FilesPage({ isAdmin = false }) {
       // Fetch through the authenticated SDK so playback remains protected by
       // Storage Rules instead of exposing a shareable download-token URL.
       const blob = await getBlob(ref(storage, file.fullPath));
-      const nextUrl = URL.createObjectURL(blob);
+      // Firebase responses may arrive as application/octet-stream. Chromium
+      // refuses an untyped blob under nosniff/CSP, even when the bytes are a
+      // valid MP3, so preserve the trusted MIME type stored in metadata.
+      const playableBlob = blob.slice(0, blob.size, file.contentType);
+      const nextUrl = URL.createObjectURL(playableBlob);
       if (audioRequestRef.current !== requestId) {
         URL.revokeObjectURL(nextUrl);
         return;
@@ -282,7 +286,14 @@ export default function FilesPage({ isAdmin = false }) {
                 </div>
                 {isAudio && isPlaying && audioUrl && (
                   <div className={s.audioPlayer}>
-                    <audio controls autoPlay src={audioUrl} aria-label={`Playing ${file.name}`}>
+                    <audio
+                      controls
+                      autoPlay
+                      preload="metadata"
+                      aria-label={`Playing ${file.name}`}
+                      onError={() => setError('This recording could not be played by your browser. Check that it is a valid audio file.')}
+                    >
+                      <source src={audioUrl} type={file.contentType} />
                       Your browser does not support audio playback.
                     </audio>
                   </div>

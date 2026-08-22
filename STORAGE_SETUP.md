@@ -16,6 +16,13 @@ member resources under `shared/`.
 - Files are downloaded through the authenticated Firebase SDK. The app does not
   generate persistent download-token links that could be shared outside the
   membership.
+- PDF, plain-text, image, audio, and video files can be viewed or played in the
+  browser after an authenticated download. Preview blob URLs exist only in the
+  current browser session and are revoked when the viewer closes.
+- Microsoft Office formats (`.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`)
+  remain download-only. Native browsers cannot reliably render them, and using
+  a hosted Office/Google viewer would require giving that third party a public
+  file URL, bypassing the approved-member access model.
 
 ## Files involved
 
@@ -77,13 +84,15 @@ audio playback and downloads remain stuck before eventually reporting
 3. Download it and compare the downloaded file.
 4. Upload an audio file, press Play, and confirm the controls appear and audio
    starts without remaining on Loading.
-5. Sign in as an approved non-admin. Confirm download works and upload/delete
+5. Upload a PDF and a text file, press View, and confirm each opens inside the
+   authenticated preview modal without navigating away from the app.
+6. Sign in as an approved non-admin. Confirm download works and upload/delete
    controls are absent.
-6. Using browser developer tools or the Rules Playground, confirm the member
+7. Using browser developer tools or the Rules Playground, confirm the member
    cannot create or delete an object directly.
-7. Confirm a pending user cannot list or download anything.
-8. As admin, try an executable or file over 100 MB and confirm it is rejected.
-9. Delete the test PDF and confirm it disappears for all members.
+8. Confirm a pending user cannot list or download anything.
+9. As admin, try an executable or file over 100 MB and confirm it is rejected.
+10. Delete the test PDF and confirm it disappears for all members.
 
 ## Migrating from Dropbox
 

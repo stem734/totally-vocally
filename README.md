@@ -5,6 +5,9 @@ email and password; an administrator approves each account before it can see the
 portal. Includes a rehearsal calendar, event attendance, song lists, a member
 directory, and choir information.
 
+For the consolidated implementation and operational handover from 22 August
+2026, see [FVSPA_HANDOVER_2026-08-22.md](FVSPA_HANDOVER_2026-08-22.md).
+
 ---
 
 ## Features
@@ -39,7 +42,7 @@ cp .env.example .env.local
 npm start
 ```
 
-The app opens at **http://localhost:3000**. Sign in with a member account you
+The app opens at **http://localhost:5173**. Sign in with a member account you
 have created in Firebase Auth, or request access from the login screen and
 approve the account as an admin.
 

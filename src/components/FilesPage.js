@@ -54,6 +54,7 @@ export default function FilesPage({ isAdmin = false }) {
   const mainRef = useRef(null);
   const inputRef = useRef(null);
   const audioRequestRef = useRef(0);
+  const audioUrlRef = useRef('');
 
   const loadFiles = useCallback(async () => {
     setError('');
@@ -83,8 +84,14 @@ export default function FilesPage({ isAdmin = false }) {
   useEffect(() => { mainRef.current?.focus(); }, []);
   useEffect(() => { loadFiles(); }, [loadFiles]);
   useEffect(() => () => {
-    if (audioUrl) URL.revokeObjectURL(audioUrl);
-  }, [audioUrl]);
+    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+  }, []);
+
+  const replaceAudioUrl = (nextUrl = '') => {
+    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    audioUrlRef.current = nextUrl;
+    setAudioUrl(nextUrl);
+  };
 
   const uploadOne = (file) => new Promise((resolve, reject) => {
     const uniqueName = `${Date.now()}-${crypto.randomUUID()}-${safeStorageName(file.name)}`;
@@ -157,7 +164,7 @@ export default function FilesPage({ isAdmin = false }) {
   const closePlayer = () => {
     audioRequestRef.current += 1;
     setPlayingFile('');
-    setAudioUrl('');
+    replaceAudioUrl();
     setAudioLoading(false);
   };
 
@@ -170,7 +177,7 @@ export default function FilesPage({ isAdmin = false }) {
     setError('');
     setAudioLoading(true);
     setPlayingFile(file.fullPath);
-    setAudioUrl('');
+    replaceAudioUrl();
     const requestId = audioRequestRef.current + 1;
     audioRequestRef.current = requestId;
     try {
@@ -182,7 +189,7 @@ export default function FilesPage({ isAdmin = false }) {
         URL.revokeObjectURL(nextUrl);
         return;
       }
-      setAudioUrl(nextUrl);
+      replaceAudioUrl(nextUrl);
     } catch (err) {
       if (audioRequestRef.current !== requestId) return;
       console.error('Failed to load audio file:', err);

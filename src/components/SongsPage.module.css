@@ -200,7 +200,16 @@
   color: var(--blue-light);
   border-radius: 7px;
   transition: background 0.2s, color 0.2s;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
+
+.songLink:disabled { opacity: 0.55; cursor: wait; }
+.fileSelect { grid-column: 3; }
+
+.editCard { grid-template-rows: auto auto; }
+.editCard .actionsCell { grid-column: 4; grid-row: 1 / span 2; }
 
 .songLink svg {
   width: 16px;

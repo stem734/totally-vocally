@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { getBlob, getMetadata, listAll, ref } from 'firebase/storage';
 import { seedSongs } from '../seedSongs';
+import { storage } from '../firebase';
 import { ExternalLinkIcon } from '../icons';
 import { requireSafeExternalUrl, safeExternalUrl } from '../safeUrl';
 import s from './SongsPage.module.css';
 
 const CHOIR_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
+const FILES_PATH = 'shared';
 
 export default function SongsPage({ isAdmin = true, songLibrary }) {
   const { songs, loading, addSong, deleteSong, updateSong } = songLibrary;
@@ -14,15 +17,61 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newSongTitle, setNewSongTitle] = useState('');
   const [newSongUrl, setNewSongUrl] = useState('');
+  const [newLinkedFilePath, setNewLinkedFilePath] = useState('');
   const [newSongChoirs, setNewSongChoirs] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editUrl, setEditUrl] = useState('');
+  const [editLinkedFilePath, setEditLinkedFilePath] = useState('');
   const [editChoirs, setEditChoirs] = useState([]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
   const [deletingSong, setDeletingSong] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [availableFiles, setAvailableFiles] = useState([]);
+  const [filesLoading, setFilesLoading] = useState(false);
+  const [openingFile, setOpeningFile] = useState('');
+
+  const loadAvailableFiles = useCallback(async () => {
+    if (!isAdmin) return;
+    setFilesLoading(true);
+    try {
+      const result = await listAll(ref(storage, FILES_PATH));
+      const files = await Promise.all(result.items.map(async (fileRef) => {
+        const metadata = await getMetadata(fileRef);
+        return {
+          fullPath: fileRef.fullPath,
+          name: metadata.customMetadata?.originalName || fileRef.name,
+          contentType: metadata.contentType || 'application/octet-stream',
+        };
+      }));
+      files.sort((a, b) => a.name.localeCompare(b.name));
+      setAvailableFiles(files);
+    } catch (err) {
+      console.error('Failed to load files for songs:', err);
+      setError('Uploaded files could not be loaded. You can still use an external link.');
+    } finally {
+      setFilesLoading(false);
+    }
+  }, [isAdmin]);
+
+  useEffect(() => { loadAvailableFiles(); }, [loadAvailableFiles]);
+
+  const selectedFile = (fullPath) => availableFiles.find((file) => file.fullPath === fullPath) || null;
+
+  const linkedFileForEdit = () => {
+    const selected = selectedFile(editLinkedFilePath);
+    if (selected) return selected;
+    const currentSong = songs.find((song) => song.id === editingId);
+    if (currentSong?.linkedFilePath === editLinkedFilePath) {
+      return {
+        fullPath: currentSong.linkedFilePath,
+        name: currentSong.linkedFileName || 'Linked file',
+        contentType: currentSong.linkedFileContentType || 'application/octet-stream',
+      };
+    }
+    return null;
+  };
 
   const toggleChoir = (choir, isNew = true) => {
     if (isNew) {
@@ -47,9 +96,15 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
     setUpdating('add');
     setError('');
     try {
-      await addSong(newSongTitle.trim(), requireSafeExternalUrl(newSongUrl), newSongChoirs);
+      await addSong(
+        newSongTitle.trim(),
+        requireSafeExternalUrl(newSongUrl),
+        newSongChoirs,
+        selectedFile(newLinkedFilePath)
+      );
       setNewSongTitle('');
       setNewSongUrl('');
+      setNewLinkedFilePath('');
       setNewSongChoirs([]);
       setAddModalOpen(false);
     } catch (err) {
@@ -63,6 +118,7 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
     setEditingId(song.id);
     setEditTitle(song.title);
     setEditUrl(song.url || '');
+    setEditLinkedFilePath(song.linkedFilePath || '');
     setEditChoirs(song.choirs || []);
   };
 
@@ -72,19 +128,46 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
     setUpdating(editingId);
     setError('');
     try {
+      const linkedFile = linkedFileForEdit();
       await updateSong(editingId, {
         title: editTitle.trim(),
         url: requireSafeExternalUrl(editUrl),
         choirs: editChoirs,
+        linkedFilePath: linkedFile?.fullPath || '',
+        linkedFileName: linkedFile?.name || '',
+        linkedFileContentType: linkedFile?.contentType || '',
       });
       setEditingId(null);
       setEditTitle('');
       setEditUrl('');
+      setEditLinkedFilePath('');
       setEditChoirs([]);
     } catch (err) {
       setError(err.message);
     } finally {
       setUpdating('');
+    }
+  };
+
+  const handleLinkedFile = async (song) => {
+    if (!song.linkedFilePath) return;
+    setError('');
+    setOpeningFile(song.id);
+    try {
+      const blob = await getBlob(ref(storage, song.linkedFilePath));
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = song.linkedFileName || song.title;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+    } catch (err) {
+      console.error('Failed to open linked file:', err);
+      setError('The linked file could not be downloaded. It may have been removed.');
+    } finally {
+      setOpeningFile('');
     }
   };
 
@@ -190,11 +273,30 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
                   <input
                     type="url"
                     value={editUrl}
-                    onChange={(e) => setEditUrl(e.target.value)}
+                    onChange={(e) => {
+                      setEditUrl(e.target.value);
+                      if (e.target.value) setEditLinkedFilePath('');
+                    }}
                     disabled={updating === song.id}
                     className={`${s.editInput} ${s.linkCell}`}
                     placeholder="Link URL (optional)"
                   />
+                  <select
+                    value={editLinkedFilePath}
+                    onChange={(e) => {
+                      setEditLinkedFilePath(e.target.value);
+                      if (e.target.value) setEditUrl('');
+                    }}
+                    disabled={updating === song.id || filesLoading}
+                    className={`${s.editInput} ${s.fileSelect}`}
+                    aria-label="Linked uploaded file"
+                  >
+                    <option value="">No uploaded file</option>
+                    {editLinkedFilePath && !selectedFile(editLinkedFilePath) && (
+                      <option value={editLinkedFilePath}>{song.linkedFileName || 'Previously linked file'}</option>
+                    )}
+                    {availableFiles.map((file) => <option key={file.fullPath} value={file.fullPath}>{file.name}</option>)}
+                  </select>
                   <div className={`${s.actionsCell} ${s.editActions}`}>
                     <button
                       className={s.saveBtn}
@@ -225,7 +327,18 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
                     )}
                   </div>
                   <div className={s.linkCell}>
-                    {safeExternalUrl(song.url) ? (
+                    {song.linkedFilePath ? (
+                      <button
+                        type="button"
+                        onClick={() => handleLinkedFile(song)}
+                        disabled={openingFile === song.id}
+                        className={s.songLink}
+                        title={`Download ${song.linkedFileName || 'linked file'}`}
+                        aria-label={`Download ${song.linkedFileName || 'linked file'}`}
+                      >
+                        {openingFile === song.id ? '…' : '📎'}
+                      </button>
+                    ) : safeExternalUrl(song.url) ? (
                       <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink} title="Open link" aria-label="Open link">
                         <ExternalLinkIcon />
                       </a>
@@ -275,10 +388,26 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
               type="url"
               placeholder="Link URL (optional)"
               value={newSongUrl}
-              onChange={(e) => setNewSongUrl(e.target.value)}
+              onChange={(e) => {
+                setNewSongUrl(e.target.value);
+                if (e.target.value) setNewLinkedFilePath('');
+              }}
               disabled={updating === 'add'}
               className={s.input}
             />
+            <select
+              value={newLinkedFilePath}
+              onChange={(e) => {
+                setNewLinkedFilePath(e.target.value);
+                if (e.target.value) setNewSongUrl('');
+              }}
+              disabled={updating === 'add' || filesLoading}
+              className={s.input}
+              aria-label="Linked uploaded file"
+            >
+              <option value="">{filesLoading ? 'Loading uploaded files…' : 'Choose an uploaded file (optional)'}</option>
+              {availableFiles.map((file) => <option key={file.fullPath} value={file.fullPath}>{file.name}</option>)}
+            </select>
             <div className={s.choirSelector}>
               <label className={s.choirLabel}>Choirs:</label>
               {CHOIR_DAYS.map((choir) => (

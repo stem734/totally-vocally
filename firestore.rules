@@ -100,14 +100,24 @@ service cloud.firestore {
     match /songs/{songId} {
       allow read: if isApproved();
       allow create, update: if isAdmin()
-        && request.resource.data.keys().hasOnly(['title', 'url', 'choirs', 'createdAt', 'updatedAt'])
+        && request.resource.data.keys().hasOnly([
+          'title', 'url', 'choirs', 'linkedFilePath', 'linkedFileName',
+          'linkedFileContentType', 'createdAt', 'updatedAt'
+        ])
         && request.resource.data.keys().hasAll(['title', 'url', 'choirs'])
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
         && request.resource.data.title.size() <= 200
         && request.resource.data.url is string
         && (request.resource.data.url == '' || request.resource.data.url.matches('^https://[^\\s]+$'))
-        && request.resource.data.choirs is list;
+        && request.resource.data.choirs is list
+        && request.resource.data.get('linkedFilePath', '') is string
+        && (request.resource.data.get('linkedFilePath', '') == ''
+          || request.resource.data.get('linkedFilePath', '').matches('^shared/[^/]+$'))
+        && request.resource.data.get('linkedFileName', '') is string
+        && request.resource.data.get('linkedFileName', '').size() <= 255
+        && request.resource.data.get('linkedFileContentType', '') is string
+        && request.resource.data.get('linkedFileContentType', '').size() <= 150;
       allow delete: if isAdmin();
     }
 

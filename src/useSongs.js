@@ -37,12 +37,15 @@ export function useSongs(enabled = true) {
     return () => unsubscribe();
   }, [enabled]);
 
-  const addSong = useCallback(async (title, url = '', choirs = []) => {
+  const addSong = useCallback(async (title, url = '', choirs = [], linkedFile = null) => {
     try {
       await addDoc(collection(db, 'songs'), {
         title,
         url: url || '',
         choirs: choirs || [],
+        linkedFilePath: linkedFile?.fullPath || '',
+        linkedFileName: linkedFile?.name || '',
+        linkedFileContentType: linkedFile?.contentType || '',
         createdAt: new Date().toISOString(),
       });
     } catch (err) {

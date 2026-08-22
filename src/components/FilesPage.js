@@ -48,8 +48,12 @@ export default function FilesPage({ isAdmin = false }) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activeFile, setActiveFile] = useState('');
+  const [playingFile, setPlayingFile] = useState('');
+  const [audioUrl, setAudioUrl] = useState('');
+  const [audioLoading, setAudioLoading] = useState(false);
   const mainRef = useRef(null);
   const inputRef = useRef(null);
+  const audioRequestRef = useRef(0);
 
   const loadFiles = useCallback(async () => {
     setError('');
@@ -78,6 +82,9 @@ export default function FilesPage({ isAdmin = false }) {
 
   useEffect(() => { mainRef.current?.focus(); }, []);
   useEffect(() => { loadFiles(); }, [loadFiles]);
+  useEffect(() => () => {
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+  }, [audioUrl]);
 
   const uploadOne = (file) => new Promise((resolve, reject) => {
     const uniqueName = `${Date.now()}-${crypto.randomUUID()}-${safeStorageName(file.name)}`;
@@ -147,6 +154,45 @@ export default function FilesPage({ isAdmin = false }) {
     }
   };
 
+  const closePlayer = () => {
+    audioRequestRef.current += 1;
+    setPlayingFile('');
+    setAudioUrl('');
+    setAudioLoading(false);
+  };
+
+  const handlePlay = async (file) => {
+    if (playingFile === file.fullPath) {
+      closePlayer();
+      return;
+    }
+
+    setError('');
+    setAudioLoading(true);
+    setPlayingFile(file.fullPath);
+    setAudioUrl('');
+    const requestId = audioRequestRef.current + 1;
+    audioRequestRef.current = requestId;
+    try {
+      // Fetch through the authenticated SDK so playback remains protected by
+      // Storage Rules instead of exposing a shareable download-token URL.
+      const blob = await getBlob(ref(storage, file.fullPath));
+      const nextUrl = URL.createObjectURL(blob);
+      if (audioRequestRef.current !== requestId) {
+        URL.revokeObjectURL(nextUrl);
+        return;
+      }
+      setAudioUrl(nextUrl);
+    } catch (err) {
+      if (audioRequestRef.current !== requestId) return;
+      console.error('Failed to load audio file:', err);
+      setPlayingFile('');
+      setError('The recording could not be played. Please try again.');
+    } finally {
+      if (audioRequestRef.current === requestId) setAudioLoading(false);
+    }
+  };
+
   const handleDelete = async (file) => {
     if (!window.confirm(`Delete “${file.name}” for every member? This cannot be undone.`)) return;
 
@@ -209,17 +255,31 @@ export default function FilesPage({ isAdmin = false }) {
         <section className={s.fileList} aria-label="Shared choir files">
           {files.map((file) => {
             const busy = activeFile === file.fullPath;
+            const isAudio = file.contentType.startsWith('audio/');
+            const isPlaying = playingFile === file.fullPath;
             return (
               <article className={s.fileCard} key={file.fullPath}>
-                <div className={s.fileIcon} aria-hidden="true">{file.contentType.startsWith('audio/') ? '🎧' : file.contentType === 'application/pdf' ? '📄' : '📁'}</div>
+                <div className={s.fileIcon} aria-hidden="true">{isAudio ? '🎧' : file.contentType === 'application/pdf' ? '📄' : '📁'}</div>
                 <div className={s.fileDetails}>
                   <h2>{file.name}</h2>
                   <p>{formatBytes(file.size)}{file.updated ? ` · Updated ${new Date(file.updated).toLocaleDateString()}` : ''}</p>
                 </div>
                 <div className={s.actions}>
+                  {isAudio && (
+                    <button onClick={() => handlePlay(file)} disabled={audioLoading && isPlaying}>
+                      {audioLoading && isPlaying ? 'Loading…' : isPlaying ? 'Close player' : 'Play'}
+                    </button>
+                  )}
                   <button onClick={() => handleDownload(file)} disabled={busy}>{busy ? 'Working…' : 'Download'}</button>
                   {isAdmin && <button className={s.deleteButton} onClick={() => handleDelete(file)} disabled={busy}>Delete</button>}
                 </div>
+                {isAudio && isPlaying && audioUrl && (
+                  <div className={s.audioPlayer}>
+                    <audio controls autoPlay src={audioUrl} aria-label={`Playing ${file.name}`}>
+                      Your browser does not support audio playback.
+                    </audio>
+                  </div>
+                )}
               </article>
             );
           })}

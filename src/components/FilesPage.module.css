@@ -49,6 +49,8 @@
 .actions { display: flex; gap: 8px; }
 .actions button { background: var(--teal); color: var(--warm-white); padding: 9px 13px; }
 .actions .deleteButton { background: transparent; color: #ff9999; border: 1px solid rgba(255, 153, 153, 0.45); }
+.audioPlayer { grid-column: 2 / -1; min-width: 0; }
+.audioPlayer audio { display: block; width: 100%; height: 42px; }
 .hint { margin-top: 20px; text-align: center; font-size: 0.82rem; color: var(--muted); }
 
 @media (max-width: 640px) {
@@ -58,4 +60,5 @@
   .fileCard { grid-template-columns: auto minmax(0, 1fr); }
   .actions { grid-column: 1 / -1; }
   .actions button { flex: 1; }
+  .audioPlayer { grid-column: 1 / -1; }
 }

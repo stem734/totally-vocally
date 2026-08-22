@@ -23,7 +23,13 @@ function songLinkedFiles(song) {
   return [];
 }
 
-export default function SongsPage({ isAdmin = true, songLibrary }) {
+export default function SongsPage({
+  isAdmin = true,
+  songLibrary,
+  embedded = false,
+  uploadedFiles = null,
+  uploadedFilesLoading = false,
+}) {
   const { songs, loading, addSong, deleteSong, updateSong } = songLibrary;
   const [seeding, setSeeding] = useState(false);
   const [seedError, setSeedError] = useState('');
@@ -47,7 +53,7 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
   const [resourceSong, setResourceSong] = useState(null);
 
   const loadAvailableFiles = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!isAdmin || Array.isArray(uploadedFiles)) return;
     setFilesLoading(true);
     try {
       const result = await listAll(ref(storage, FILES_PATH));
@@ -67,9 +73,16 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
     } finally {
       setFilesLoading(false);
     }
-  }, [isAdmin]);
+  }, [isAdmin, uploadedFiles]);
 
-  useEffect(() => { loadAvailableFiles(); }, [loadAvailableFiles]);
+  useEffect(() => {
+    if (Array.isArray(uploadedFiles)) {
+      setAvailableFiles(uploadedFiles);
+      setFilesLoading(uploadedFilesLoading);
+      return;
+    }
+    loadAvailableFiles();
+  }, [loadAvailableFiles, uploadedFiles, uploadedFilesLoading]);
 
   const filesForPaths = (paths, currentSong = null) => paths.map((fullPath) => (
     availableFiles.find((file) => file.fullPath === fullPath)
@@ -220,19 +233,25 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
   };
 
   if (loading) {
+    const LoadingRoot = embedded ? 'section' : 'main';
     return (
-      <main className={s.page}>
+      <LoadingRoot className={`${s.page} ${embedded ? s.embedded : ''}`}>
         <p>Loading songs...</p>
-      </main>
+      </LoadingRoot>
     );
   }
 
+  const Root = embedded ? 'section' : 'main';
+  const Heading = embedded ? 'h2' : 'h1';
+
   return (
-    <main className={s.page}>
+    <Root className={`${s.page} ${embedded ? s.embedded : ''}`} aria-labelledby={embedded ? 'song-folder-management-title' : undefined}>
       <header className={s.header}>
         <div>
-          <h1>Song <span>Library</span></h1>
-          <p>Manage the song catalogue for allocating to events.</p>
+          <Heading id={embedded ? 'song-folder-management-title' : undefined}>
+            {embedded ? <>Manage <span>song folders</span></> : <>Song <span>Library</span></>}
+          </Heading>
+          <p>{embedded ? 'Create song folders and choose which uploaded resources members see inside them.' : 'Manage the song catalogue for allocating to events.'}</p>
         </div>
         <div className={s.headerActions}>
           {isAdmin && songs.length === 0 && (
@@ -505,6 +524,6 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
         </div>,
         document.body
       )}
-    </main>
+    </Root>
   );
 }

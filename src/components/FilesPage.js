@@ -10,6 +10,7 @@ import {
 } from 'firebase/storage';
 import { storage } from '../firebase';
 import { safeExternalUrl } from '../safeUrl';
+import SongsPage from './SongsPage';
 import s from './FilesPage.module.css';
 
 const FILES_PATH = 'shared';
@@ -57,7 +58,8 @@ function linkedPathsForSong(song) {
   return song.linkedFilePath ? [song.linkedFilePath] : [];
 }
 
-export default function FilesPage({ isAdmin = false, songs = [] }) {
+export default function FilesPage({ isAdmin = false, songLibrary }) {
+  const songs = songLibrary?.songs || [];
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -418,6 +420,18 @@ export default function FilesPage({ isAdmin = false, songs = [] }) {
               </details>
             );
           })}
+        </section>
+      )}
+
+      {isAdmin && songLibrary && (
+        <section className={s.songManagement} aria-label="Song folder management">
+          <SongsPage
+            isAdmin
+            embedded
+            songLibrary={songLibrary}
+            uploadedFiles={files}
+            uploadedFilesLoading={loading}
+          />
         </section>
       )}
 

@@ -83,6 +83,7 @@
 .previewFooter button { padding: 9px 16px; border: 0; border-radius: 9px; background: var(--teal); color: var(--warm-white); font: inherit; font-weight: 800; cursor: pointer; }
 .previewFooter .previewCloseButton { background: transparent; border: 1px solid var(--teal); }
 .hint { margin-top: 20px; text-align: center; font-size: 0.82rem; color: var(--muted); }
+.songManagement { margin-top: 42px; padding-top: 32px; border-top: 2px solid var(--teal-dark); }
 
 @media (max-width: 640px) {
   .page { padding: 24px 14px; }

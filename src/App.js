@@ -10,7 +10,6 @@ import AuthModal from './components/AuthModal';
 import PendingApproval from './components/PendingApproval';
 import MembersPage from './components/MembersPage';
 import AttendanceDashboard from './components/AttendanceDashboard';
-import SongsPage from './components/SongsPage';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 import { useSongs } from './useSongs';
@@ -180,11 +179,10 @@ export default function App() {
         />
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
-      {page === 'files' && <FilesPage key="files" isAdmin={isAdmin} songs={songLibrary.songs} />}
+      {page === 'files' && <FilesPage key="files" isAdmin={isAdmin} songLibrary={songLibrary} />}
       {page === 'attendance' && canViewAdminPages && (
         <AttendanceDashboard key="attendance" events={events} />
       )}
-      {page === 'songs' && canViewAdminPages && <SongsPage key="songs" isAdmin={isAdmin} songLibrary={songLibrary} />}
       {page === 'members' && canViewAdminPages && (
         <MembersPage key="members" isAdmin={isAdmin} />
       )}

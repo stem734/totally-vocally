@@ -13,10 +13,9 @@ directory, and choir information.
   admin approval required before access. Sessions auto-expire after inactivity.
 - 📅 **Calendar** — monthly view of rehearsals and performances
 - 🎤 **Events** — attendance RSVP (Coming / Maybe / Can't make it)
-- 🎶 **Songs** — repertoire per choir night, with allocation to events
+- 📁 **Files** — authenticated song folders for lyrics, voice parts, recordings and documents; admins upload resources and manage the catalogue in the same section
 - 👥 **Members & attendance** — admin directory and attendance dashboard
 - ℹ️ **Info page** — choir details, venue, guidelines
-- 📁 **Files** — authenticated Firebase file library with admin uploads
 
 ---
 

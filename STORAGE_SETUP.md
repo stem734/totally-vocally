@@ -3,6 +3,20 @@
 The app uses the default bucket `totally-vocally.firebasestorage.app` and stores
 member resources under `shared/`.
 
+## Admin workflow
+
+The Files section is the single resource-management area. Members see a folder
+for each song and a General Resources folder for uploads not linked to a song.
+Admins use the same page to:
+
+1. Upload files.
+2. Add or edit a song folder under **Manage song folders**.
+3. Select every uploaded file that belongs in that folder and optionally add an
+   external HTTPS practice link.
+
+A file can be linked to more than one song without uploading another copy. The
+separate Songs navigation item is intentionally not shown.
+
 ## Access model
 
 - Approved members and admins can list and download files.

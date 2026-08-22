@@ -1,97 +1,61 @@
 .page {
   padding: 44px 36px;
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
   animation: fadeUp 0.3s ease both;
   outline: none;
 }
 
 .pageHeader {
-  margin-bottom: 36px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
   padding-bottom: 20px;
   border-bottom: 2px solid var(--teal-dark);
 }
-
-.title {
-  font-family: 'Righteous', sans-serif;
-  font-size: 2.8rem;
-  color: var(--warm-white);
-  line-height: 1.1;
-}
+.pageHeader p { margin: 8px 0 0; color: var(--muted-light); }
+.title { margin: 0; font-family: 'Righteous', sans-serif; font-size: 2.8rem; color: var(--warm-white); line-height: 1.1; }
 .title span { color: var(--coral); }
+.hiddenInput { display: none; }
 
-.hero {
-  background: linear-gradient(135deg, var(--teal-dark), var(--ink-soft) 80%);
-  border: 1.5px solid var(--teal);
-  border-radius: 20px;
-  padding: 60px 40px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+.uploadButton, .actions button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 18px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
 }
+.uploadButton { background: var(--coral); color: var(--ink); white-space: nowrap; }
+.uploadButton:disabled, .actions button:disabled { opacity: 0.55; cursor: wait; }
+.uploadStatus, .error { margin-bottom: 20px; border-radius: 12px; padding: 14px 16px; }
+.uploadStatus { background: var(--teal-dark); border: 1px solid var(--teal); }
+.uploadStatus div { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+.uploadStatus progress { width: 100%; accent-color: var(--coral); }
+.error { background: rgba(218, 86, 86, 0.14); border: 1px solid #da5656; color: #ffd4d4; }
+.state { color: var(--muted-light); text-align: center; padding: 50px 0; }
+.empty { padding: 54px 24px; border: 1px dashed var(--teal); border-radius: 18px; text-align: center; color: var(--muted-light); }
+.empty span { display: block; font-size: 3.5rem; margin-bottom: 12px; }
+.empty h2 { margin: 0 0 8px; color: var(--warm-white); }
+.empty p { margin: 0; }
+.fileList { display: grid; gap: 12px; }
+.fileCard { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 16px; background: var(--ink-soft); border: 1px solid var(--teal-dark); border-radius: 14px; }
+.fileIcon { font-size: 1.8rem; }
+.fileDetails { min-width: 0; }
+.fileDetails h2 { margin: 0; color: var(--warm-white); font-size: 1rem; overflow-wrap: anywhere; }
+.fileDetails p { margin: 5px 0 0; color: var(--muted); font-size: 0.82rem; }
+.actions { display: flex; gap: 8px; }
+.actions button { background: var(--teal); color: var(--warm-white); padding: 9px 13px; }
+.actions .deleteButton { background: transparent; color: #ff9999; border: 1px solid rgba(255, 153, 153, 0.45); }
+.hint { margin-top: 20px; text-align: center; font-size: 0.82rem; color: var(--muted); }
 
-.bigNote {
-  position: absolute;
-  font-size: 240px;
-  color: rgba(78,171,216,0.05);
-  bottom: -60px;
-  right: -20px;
-  line-height: 1;
-  user-select: none;
-  pointer-events: none;
-}
-
-.content { position: relative; z-index: 1; }
-
-.icon { font-size: 4rem; margin-bottom: 16px; }
-
-.heroTitle {
-  font-family: 'Righteous', sans-serif;
-  font-size: 1.9rem;
-  color: var(--warm-white);
-  margin-bottom: 14px;
-}
-
-.heroDesc {
-  font-size: 1rem;
-  color: var(--muted-light);
-  line-height: 1.75;
-  max-width: 400px;
-  margin: 0 auto 30px;
-}
-
-.dropboxBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: #0061ff;
-  color: white;
-  text-decoration: none;
-  font-family: 'Righteous', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.05em;
-  padding: 14px 36px;
-  border-radius: 12px;
-  transition: background 0.2s, transform 0.18s, box-shadow 0.2s;
-  box-shadow: 0 6px 22px rgba(0,97,255,0.35);
-}
-
-.dropboxBtn:hover {
-  background: #0050d8;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0,97,255,0.4);
-}
-
-.hint {
-  margin-top: 18px;
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-style: italic;
-}
-
-@media (max-width: 580px) {
+@media (max-width: 640px) {
   .page { padding: 24px 14px; }
+  .pageHeader { align-items: flex-start; flex-direction: column; }
   .title { font-size: 1.9rem; }
-  .hero { padding: 40px 20px; }
-  .heroTitle { font-size: 1.4rem; }
+  .fileCard { grid-template-columns: auto minmax(0, 1fr); }
+  .actions { grid-column: 1 / -1; }
+  .actions button { flex: 1; }
 }

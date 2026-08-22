@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   collection,
   collectionGroup,
+  getDocs,
   query,
   orderBy,
   onSnapshot,
@@ -10,6 +11,7 @@ import {
   doc,
   updateDoc,
   setDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -100,7 +102,19 @@ export function useEventsFirestore(userId, voicePart) {
 
   const deleteEvent = useCallback(async (eventId) => {
     try {
-      await deleteDoc(doc(db, 'events', eventId));
+      const eventRef = doc(db, 'events', eventId);
+      const attendance = await getDocs(collection(eventRef, 'attendance'));
+
+      // Firestore does not cascade parent deletes. Remove attendance first so
+      // deleted events cannot leave personal response data behind.
+      const refs = attendance.docs.map((attendanceDoc) => attendanceDoc.ref);
+      for (let offset = 0; offset < refs.length; offset += 400) {
+        const batch = writeBatch(db);
+        refs.slice(offset, offset + 400).forEach((ref) => batch.delete(ref));
+        await batch.commit();
+      }
+
+      await deleteDoc(eventRef);
     } catch (err) {
       console.error('Failed to delete event:', err);
       throw err;

@@ -1,10 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useSongs } from '../useSongs';
 import s from './AllocateSongsModal.module.css';
 
-export default function AllocateSongsModal({ open, event, onClose, onSave, isSaving }) {
-  const { songs } = useSongs();
+export default function AllocateSongsModal({ open, event, onClose, onSave, isSaving, songs = [] }) {
   const [selectedSongIds, setSelectedSongIds] = useState(event?.songIds || []);
 
   const allocatedSongs = useMemo(() => {

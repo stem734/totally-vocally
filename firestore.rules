@@ -20,16 +20,10 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
-    // Read-only demo role: can view admin pages but never write anything.
-    function isViewer() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'viewer';
-    }
-
     // Users collection - profile data
     match /users/{userId} {
-      // Members can read their own application; admins and the read-only
-      // viewer role can browse the full directory.
-      allow read: if isOwner(userId) || isAdmin() || isViewer();
+      // Personal profiles are never exposed as a collection to non-admins.
+      allow read: if isOwner(userId) || isAdmin();
 
       // New accounts can only create a pending, non-admin application.
       allow create: if isOwner(userId)
@@ -72,6 +66,12 @@ service cloud.firestore {
       // denormalized voicePart must match their real profile - it cannot
       // be self-reported to something false.
       allow create, update: if isApproved() && isOwner(userId)
+        && request.resource.data.keys().hasOnly(['status', 'voicePart', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['status', 'voicePart', 'updatedAt'])
+        && request.resource.data.status in ['yes', 'maybe', 'no']
+        && request.resource.data.voicePart is string
+        && request.resource.data.updatedAt is string
+        && request.resource.data.updatedAt.size() <= 40
         && request.resource.data.voicePart ==
            get(/databases/$(database)/documents/users/$(userId)).data.voicePart;
 
@@ -99,7 +99,16 @@ service cloud.firestore {
     // Songs collection - admin managed
     match /songs/{songId} {
       allow read: if isApproved();
-      allow write: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['title', 'url', 'choirs', 'createdAt', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['title', 'url', 'choirs'])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.url is string
+        && (request.resource.data.url == '' || request.resource.data.url.matches('^https://[^\\s]+$'))
+        && request.resource.data.choirs is list;
+      allow delete: if isAdmin();
     }
 
   }

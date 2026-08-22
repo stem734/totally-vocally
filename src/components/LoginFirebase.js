@@ -10,7 +10,7 @@ export default function LoginFirebase({ onLoginClick, onSignUpClick, sessionExpi
       </div>
       <div className={s.card}>
         <div className={s.logoWrap}>
-          <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Totally Vocally" className={s.logoImg} />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Totally Vocally" className={s.logoImg} />
         </div>
         <p className={s.tagline}>Members Portal</p>
 

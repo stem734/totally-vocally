@@ -5,12 +5,11 @@ import AdminSidebar from './AdminSidebar';
 import VoicePartBreakdown from './VoicePartBreakdown';
 import { getDefaultFilters, filterEvents } from '../filterUtils';
 import { eventTypeLabel } from '../eventFields';
-import { obfuscatedLabel } from '../obfuscate';
 import s from './AttendanceDashboard.module.css';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-export default function AttendanceDashboard({ events, obfuscate = false }) {
+export default function AttendanceDashboard({ events }) {
   const [members, setMembers] = useState({});
   const [error, setError] = useState('');
   const [filters, setFilters] = useState(getDefaultFilters());
@@ -40,7 +39,7 @@ export default function AttendanceDashboard({ events, obfuscate = false }) {
   const filteredEvents = filterEvents(events, filters);
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  const nameFor = (userId) => obfuscate ? obfuscatedLabel(userId) : (members[userId]?.name || userId);
+  const nameFor = (userId) => members[userId]?.name || userId;
 
   const getAttendanceGroups = (event) => {
     const attendance = event.attendance || {};

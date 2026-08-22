@@ -5,7 +5,7 @@ export default function PendingApproval({ profile, onLogout }) {
   return (
     <main className={s.screen}>
       <section className={s.card}>
-        <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Totally Vocally" className={s.logo} />
+        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Totally Vocally" className={s.logo} />
         <span className={s.badge}>Request received</span>
         <h1>Awaiting approval</h1>
         <p>

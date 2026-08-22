@@ -1,4 +1,4 @@
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, writeBatch } from 'firebase/firestore';
 import { db } from './firebase';
 
 const SONGS = [
@@ -39,18 +39,19 @@ export async function seedSongs() {
       return existing.size;
     }
 
-    let count = 0;
-    for (const song of SONGS) {
-      await addDoc(songsRef, {
+    const batch = writeBatch(db);
+    SONGS.forEach((song, index) => {
+      // Deterministic IDs make concurrent imports idempotent.
+      batch.set(doc(songsRef, `starter-${String(index + 1).padStart(2, '0')}`), {
         ...song,
         url: '',
         createdAt: new Date().toISOString(),
       });
-      count++;
-    }
+    });
+    await batch.commit();
 
-    console.log(`Seeded ${count} songs to Firestore`);
-    return count;
+    console.log(`Seeded ${SONGS.length} songs to Firestore`);
+    return SONGS.length;
   } catch (err) {
     console.error('Failed to seed songs:', err);
     throw err;

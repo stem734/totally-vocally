@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useSongs } from '../useSongs';
 import { seedSongs } from '../seedSongs';
 import { ExternalLinkIcon } from '../icons';
+import { requireSafeExternalUrl, safeExternalUrl } from '../safeUrl';
 import s from './SongsPage.module.css';
 
 const CHOIR_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 
-export default function SongsPage({ isAdmin = true }) {
-  const { songs, loading, addSong, deleteSong, updateSong } = useSongs();
+export default function SongsPage({ isAdmin = true, songLibrary }) {
+  const { songs, loading, addSong, deleteSong, updateSong } = songLibrary;
   const [seeding, setSeeding] = useState(false);
   const [seedError, setSeedError] = useState('');
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -47,7 +47,7 @@ export default function SongsPage({ isAdmin = true }) {
     setUpdating('add');
     setError('');
     try {
-      await addSong(newSongTitle.trim(), newSongUrl.trim(), newSongChoirs);
+      await addSong(newSongTitle.trim(), requireSafeExternalUrl(newSongUrl), newSongChoirs);
       setNewSongTitle('');
       setNewSongUrl('');
       setNewSongChoirs([]);
@@ -74,7 +74,7 @@ export default function SongsPage({ isAdmin = true }) {
     try {
       await updateSong(editingId, {
         title: editTitle.trim(),
-        url: editUrl.trim(),
+        url: requireSafeExternalUrl(editUrl),
         choirs: editChoirs,
       });
       setEditingId(null);
@@ -225,8 +225,8 @@ export default function SongsPage({ isAdmin = true }) {
                     )}
                   </div>
                   <div className={s.linkCell}>
-                    {song.url ? (
-                      <a href={song.url} target="_blank" rel="noopener noreferrer" className={s.songLink} title="Open link" aria-label="Open link">
+                    {safeExternalUrl(song.url) ? (
+                      <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink} title="Open link" aria-label="Open link">
                         <ExternalLinkIcon />
                       </a>
                     ) : (

@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { obfuscatedLabel, obfuscatedEmail } from '../obfuscate';
 import s from './MembersPage.module.css';
 
 const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
 const VOICE_PARTS = ['Soprano 1', 'Soprano 2', 'Alto', 'Tenor 1', 'Tenor 2', 'Bass'];
 const REHEARSAL_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 
-export default function MembersPage({ isAdmin = true, obfuscate = false }) {
+export default function MembersPage({ isAdmin = true }) {
   const [members, setMembers] = useState([]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
@@ -94,8 +93,8 @@ export default function MembersPage({ isAdmin = true, obfuscate = false }) {
       <div className={s.list}>
         {ordered.map((member) => {
           const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
-          const displayName = obfuscate ? obfuscatedLabel(member.id) : (member.displayName || 'Unnamed member');
-          const email = obfuscate ? obfuscatedEmail(member.id) : member.email;
+          const displayName = member.displayName || 'Unnamed member';
+          const email = member.email;
           const locked = !isAdmin || updating === member.id;
           return (
             <article className={s.card} key={member.id}>

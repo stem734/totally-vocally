@@ -26,26 +26,25 @@ This guide walks through setting up Firebase for the Totally Vocally choir porta
 
 ### 3. Set Environment Variables
 
-Create `.env.local` in the project root (copy from `.env.local.example`):
+Create `.env.local` in the project root (copy from `.env.example`):
 
 ```bash
-REACT_APP_FIREBASE_API_KEY=your-api-key
-REACT_APP_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-REACT_APP_FIREBASE_PROJECT_ID=your-project-id
-REACT_APP_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-REACT_APP_FIREBASE_APP_ID=your-app-id
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
 ```
 
 Replace with values from Step 2.
 
-### 4. Enable Email Link Authentication
+### 4. Enable Email/Password Authentication
 
 1. Go to **Authentication** > **Sign-in method** tab
 2. Click "Email/Password"
-3. Enable "Email link (passwordless sign-in)"
-4. Set "Link expires after": 24 hours (default is fine)
-5. Save
+3. Enable "Email/Password"
+4. Save
 
 ### 5. Create Firestore Database
 
@@ -96,7 +95,7 @@ Then manually create an admin entry in Firestore:
    - `role`: (string) "admin"
 6. Save
 
-Later, Abi will sign in with the magic link flow and promote other admins as needed.
+Later, Abi can sign in with the email/password flow and promote other admins as needed.
 
 ### 9. Install Dependencies
 

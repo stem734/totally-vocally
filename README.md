@@ -16,14 +16,14 @@ directory, and choir information.
 - 🎶 **Songs** — repertoire per choir night, with allocation to events
 - 👥 **Members & attendance** — admin directory and attendance dashboard
 - ℹ️ **Info page** — choir details, venue, guidelines
-- 📁 **Files** — link to the shared Dropbox folder
+- 📁 **Files** — authenticated Firebase file library with admin uploads
 
 ---
 
 ## Quick Start (Local Development)
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) v16 or higher
+- [Node.js](https://nodejs.org/) v20.19 or higher (or v22.12+)
 - A Firebase project (see [FIREBASE_SETUP.md](FIREBASE_SETUP.md))
 
 ### Steps
@@ -32,8 +32,9 @@ directory, and choir information.
 # 1. Install dependencies
 npm install
 
-# 2. Add your Firebase credentials
-#    Create .env.local (see FIREBASE_SETUP.md for the required keys)
+# 2. Add your Firebase web configuration
+cp .env.example .env.local
+#    Fill in the VITE_FIREBASE_* values (see FIREBASE_SETUP.md)
 
 # 3. Start the development server
 npm start
@@ -52,7 +53,7 @@ approve the account as an admin.
 
 ## Deployment
 
-The app is deployed on **Vercel**. Set the same `REACT_APP_FIREBASE_*`
+The app is deployed on **Vercel**. Set the same `VITE_FIREBASE_*`
 environment variables in the Vercel project settings, then push to the
 production branch (or run a Vercel deploy) to publish.
 
@@ -64,8 +65,10 @@ must be deployed to Firebase separately (Firebase console or `firebase deploy
 
 ## Customisation
 
-### Add your Dropbox link
-Open `src/components/FilesPage.js` and set the Dropbox shared folder URL.
+### Shared files
+Approved members can download files from Firebase Storage. Administrators can
+upload and delete files from the Files page. Storage access is enforced by
+`storage.rules`; see `STORAGE_SETUP.md` before deploying.
 
 ### Update choir information
 Open `src/components/InfoPage.js` — the `CARDS` array holds all info-card
@@ -89,7 +92,7 @@ members can read choir data, and only admins can modify it.
 ## Tech Stack
 
 - [React 18](https://react.dev/)
-- [Create React App](https://create-react-app.dev/)
+- [Vite](https://vite.dev/)
 - [Firebase](https://firebase.google.com/) — Authentication + Cloud Firestore
 - [CSS Modules](https://create-react-app.dev/docs/adding-a-css-modules-stylesheet/)
 

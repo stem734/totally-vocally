@@ -13,7 +13,7 @@ import AttendanceDashboard from './components/AttendanceDashboard';
 import SongsPage from './components/SongsPage';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
-import { seedSongs } from './seedSongs';
+import { useSongs } from './useSongs';
 
 const LAST_SEEN_EVENTS_KEY_PREFIX = 'tv_last_seen_events_';
 
@@ -36,9 +36,10 @@ function getAuthErrorMessage(error) {
 }
 
 export default function App() {
-  const { user, profile, isAdmin, isViewer, isApproved, loading, sessionExpired, signIn, signUp, resetPassword, logout } = useAuth();
-  const canViewAdminPages = isAdmin || isViewer;
+  const { user, profile, isAdmin, isApproved, loading, sessionExpired, signIn, signUp, resetPassword, logout } = useAuth();
+  const canViewAdminPages = isAdmin;
   const { events, addEvent, deleteEvent, updateEvent, setAttendance, allocateSongs, createRehearsalBlock } = useEventsFirestore(isApproved ? user?.uid : null, profile?.voicePart);
+  const songLibrary = useSongs(isApproved);
 
   const [page, setPage] = useState('calendar');
   const [modalOpen, setModalOpen] = useState(false);
@@ -47,10 +48,6 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
   const [lastSeenEventsAt, setLastSeenEventsAt] = useState('');
-
-  useEffect(() => {
-    if (isAdmin) seedSongs().catch(err => console.error('Failed to seed songs:', err));
-  }, [isAdmin]);
 
   useEffect(() => {
     if (!user) { setLastSeenEventsAt(''); return; }
@@ -165,6 +162,7 @@ export default function App() {
           onAllocateSongs={allocateSongs}
           onCreateRehearsalBlock={createRehearsalBlock}
           rehearsalDay={profile?.rehearsalDay}
+          songs={songLibrary.songs}
         />
       )}
       {page === 'events' && (
@@ -178,16 +176,17 @@ export default function App() {
           onSetAttendance={setAttendance}
           onAllocateSongs={allocateSongs}
           rehearsalDay={profile?.rehearsalDay}
+          songs={songLibrary.songs}
         />
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
-      {page === 'files' && <FilesPage key="files" />}
+      {page === 'files' && <FilesPage key="files" isAdmin={isAdmin} />}
       {page === 'attendance' && canViewAdminPages && (
-        <AttendanceDashboard key="attendance" events={events} obfuscate={isViewer} />
+        <AttendanceDashboard key="attendance" events={events} />
       )}
-      {page === 'songs' && canViewAdminPages && <SongsPage key="songs" isAdmin={isAdmin} />}
+      {page === 'songs' && canViewAdminPages && <SongsPage key="songs" isAdmin={isAdmin} songLibrary={songLibrary} />}
       {page === 'members' && canViewAdminPages && (
-        <MembersPage key="members" isAdmin={isAdmin} obfuscate={isViewer} />
+        <MembersPage key="members" isAdmin={isAdmin} />
       )}
 
       <AddEventModal

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useSongs } from '../useSongs';
 import EditEventModal from './EditEventModal';
 import AllocateSongsModal from './AllocateSongsModal';
 import VoicePartBreakdown from './VoicePartBreakdown';
@@ -7,6 +6,7 @@ import LinkedText from './LinkedText';
 import s from './EventsPage.module.css';
 import { ClockIcon, CheckIcon, MusicIcon } from '../icons';
 import { eventTypeLabel, formatDuration } from '../eventFields';
+import { safeExternalUrl } from '../safeUrl';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -22,8 +22,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay }) {
-  const { songs } = useSongs();
+export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay, songs = [] }) {
   const [editingEventId, setEditingEventId] = useState(null);
   const [allocatingEventId, setAllocatingEventId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -111,8 +110,8 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
                           return (
                             <span key={songId} className={s.songTag}>
                               {song?.title || 'Unknown Song'}
-                              {song?.url && (
-                                <a href={song.url} target="_blank" rel="noopener noreferrer" className={s.songLink}>
+                              {safeExternalUrl(song?.url) && (
+                                <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink}>
                                   🔗
                                 </a>
                               )}
@@ -191,6 +190,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
             setAllocatingEventId(null);
           }}
           isSaving={false}
+          songs={songs}
         />
       )}
 

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useSongs } from '../useSongs';
 import AllocateSongsModal from './AllocateSongsModal';
 import EditEventModal from './EditEventModal';
 import VoicePartBreakdown from './VoicePartBreakdown';
@@ -8,6 +7,7 @@ import s from './EventDetailModal.module.css';
 import { ClockIcon, CheckIcon } from '../icons';
 import { eventTypeLabel, formatDuration } from '../eventFields';
 import { useModalA11y } from '../useModalA11y';
+import { safeExternalUrl } from '../safeUrl';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -23,8 +23,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete, onUpdate, onAllocateSongs }) {
-  const { songs } = useSongs();
+export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete, onUpdate, onAllocateSongs, songs = [] }) {
   const [allocateModalOpen, setAllocateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -105,8 +104,8 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
                     return (
                       <div key={songId} className={s.songTag}>
                         {song?.title || 'Unknown Song'}
-                        {song?.url && (
-                          <a href={song.url} target="_blank" rel="noopener noreferrer" className={s.songLink}>
+                        {safeExternalUrl(song?.url) && (
+                          <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink}>
                             🔗
                           </a>
                         )}
@@ -191,6 +190,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
               setAllocateModalOpen(false);
             }}
             isSaving={false}
+            songs={songs}
           />
         )}
 

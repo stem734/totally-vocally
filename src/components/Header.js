@@ -19,7 +19,7 @@ export default function Header({ activePage, onNavigate, onLogout, showAdminNav,
       <a href="#main-content" className={s.skipLink}>Skip to content</a>
       <header className={s.header}>
         <button type="button" className={s.brand} onClick={() => onNavigate('calendar')}>
-          <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Totally Vocally" className={s.brandLogo} />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Totally Vocally" className={s.brandLogo} />
         </button>
 
         <nav className={s.nav} aria-label="Main navigation">

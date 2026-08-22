@@ -2,25 +2,16 @@
   "name": "totally-vocally",
   "version": "1.0.0",
   "private": true,
-  "homepage": ".",
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.3",
     "firebase": "^12.17.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
+    "react-dom": "^18.2.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ]
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "browserslist": {
     "production": [
@@ -35,6 +26,8 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^6.0.0"
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.0.0"
   }
 }

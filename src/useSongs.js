@@ -2,11 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
-export function useSongs() {
+export function useSongs(enabled = true) {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!enabled) {
+      setSongs([]);
+      setLoading(false);
+      return undefined;
+    }
+
+    setLoading(true);
     const unsubscribe = onSnapshot(
       collection(db, 'songs'),
       (snapshot) => {
@@ -28,7 +35,7 @@ export function useSongs() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [enabled]);
 
   const addSong = useCallback(async (title, url = '', choirs = []) => {
     try {

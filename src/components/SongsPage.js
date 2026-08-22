@@ -9,6 +9,19 @@ import s from './SongsPage.module.css';
 
 const CHOIR_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 const FILES_PATH = 'shared';
+const MAX_LINKED_FILES = 20;
+
+function songLinkedFiles(song) {
+  if (Array.isArray(song.linkedFiles)) return song.linkedFiles;
+  if (song.linkedFilePath) {
+    return [{
+      fullPath: song.linkedFilePath,
+      name: song.linkedFileName || 'Linked file',
+      contentType: song.linkedFileContentType || 'application/octet-stream',
+    }];
+  }
+  return [];
+}
 
 export default function SongsPage({ isAdmin = true, songLibrary }) {
   const { songs, loading, addSong, deleteSong, updateSong } = songLibrary;
@@ -17,12 +30,12 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newSongTitle, setNewSongTitle] = useState('');
   const [newSongUrl, setNewSongUrl] = useState('');
-  const [newLinkedFilePath, setNewLinkedFilePath] = useState('');
+  const [newLinkedFilePaths, setNewLinkedFilePaths] = useState([]);
   const [newSongChoirs, setNewSongChoirs] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editUrl, setEditUrl] = useState('');
-  const [editLinkedFilePath, setEditLinkedFilePath] = useState('');
+  const [editLinkedFilePaths, setEditLinkedFilePaths] = useState([]);
   const [editChoirs, setEditChoirs] = useState([]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
@@ -31,6 +44,7 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
   const [availableFiles, setAvailableFiles] = useState([]);
   const [filesLoading, setFilesLoading] = useState(false);
   const [openingFile, setOpeningFile] = useState('');
+  const [resourceSong, setResourceSong] = useState(null);
 
   const loadAvailableFiles = useCallback(async () => {
     if (!isAdmin) return;
@@ -57,20 +71,21 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
 
   useEffect(() => { loadAvailableFiles(); }, [loadAvailableFiles]);
 
-  const selectedFile = (fullPath) => availableFiles.find((file) => file.fullPath === fullPath) || null;
+  const filesForPaths = (paths, currentSong = null) => paths.map((fullPath) => (
+    availableFiles.find((file) => file.fullPath === fullPath)
+      || songLinkedFiles(currentSong || {}).find((file) => file.fullPath === fullPath)
+  )).filter(Boolean);
 
-  const linkedFileForEdit = () => {
-    const selected = selectedFile(editLinkedFilePath);
-    if (selected) return selected;
-    const currentSong = songs.find((song) => song.id === editingId);
-    if (currentSong?.linkedFilePath === editLinkedFilePath) {
-      return {
-        fullPath: currentSong.linkedFilePath,
-        name: currentSong.linkedFileName || 'Linked file',
-        contentType: currentSong.linkedFileContentType || 'application/octet-stream',
-      };
+  const toggleLinkedFile = (fullPath, isNew) => {
+    const paths = isNew ? newLinkedFilePaths : editLinkedFilePaths;
+    const setPaths = isNew ? setNewLinkedFilePaths : setEditLinkedFilePaths;
+    if (paths.includes(fullPath)) {
+      setPaths(paths.filter((path) => path !== fullPath));
+    } else if (paths.length < MAX_LINKED_FILES) {
+      setPaths([...paths, fullPath]);
+    } else {
+      setError(`A song can have up to ${MAX_LINKED_FILES} linked files.`);
     }
-    return null;
   };
 
   const toggleChoir = (choir, isNew = true) => {
@@ -100,11 +115,11 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
         newSongTitle.trim(),
         requireSafeExternalUrl(newSongUrl),
         newSongChoirs,
-        selectedFile(newLinkedFilePath)
+        filesForPaths(newLinkedFilePaths)
       );
       setNewSongTitle('');
       setNewSongUrl('');
-      setNewLinkedFilePath('');
+      setNewLinkedFilePaths([]);
       setNewSongChoirs([]);
       setAddModalOpen(false);
     } catch (err) {
@@ -118,7 +133,7 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
     setEditingId(song.id);
     setEditTitle(song.title);
     setEditUrl(song.url || '');
-    setEditLinkedFilePath(song.linkedFilePath || '');
+    setEditLinkedFilePaths(songLinkedFiles(song).map((file) => file.fullPath));
     setEditChoirs(song.choirs || []);
   };
 
@@ -128,19 +143,24 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
     setUpdating(editingId);
     setError('');
     try {
-      const linkedFile = linkedFileForEdit();
+      const currentSong = songs.find((song) => song.id === editingId);
       await updateSong(editingId, {
         title: editTitle.trim(),
         url: requireSafeExternalUrl(editUrl),
         choirs: editChoirs,
-        linkedFilePath: linkedFile?.fullPath || '',
-        linkedFileName: linkedFile?.name || '',
-        linkedFileContentType: linkedFile?.contentType || '',
+        linkedFiles: filesForPaths(editLinkedFilePaths, currentSong).map((file) => ({
+          fullPath: file.fullPath,
+          name: file.name,
+          contentType: file.contentType,
+        })),
+        linkedFilePath: '',
+        linkedFileName: '',
+        linkedFileContentType: '',
       });
       setEditingId(null);
       setEditTitle('');
       setEditUrl('');
-      setEditLinkedFilePath('');
+      setEditLinkedFilePaths([]);
       setEditChoirs([]);
     } catch (err) {
       setError(err.message);
@@ -149,16 +169,16 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
     }
   };
 
-  const handleLinkedFile = async (song) => {
-    if (!song.linkedFilePath) return;
+  const handleLinkedFile = async (songId, file) => {
+    if (!file?.fullPath) return;
     setError('');
-    setOpeningFile(song.id);
+    setOpeningFile(`${songId}:${file.fullPath}`);
     try {
-      const blob = await getBlob(ref(storage, song.linkedFilePath));
+      const blob = await getBlob(ref(storage, file.fullPath));
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = objectUrl;
-      link.download = song.linkedFileName || song.title;
+      link.download = file.name || 'choir-resource';
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -246,7 +266,10 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
             {isAdmin && <span>Actions</span>}
           </div>
           <div className={s.list}>
-            {songs.map((song) => (
+            {songs.map((song) => {
+              const linkedFiles = songLinkedFiles(song);
+              const resourceCount = linkedFiles.length + (safeExternalUrl(song.url) ? 1 : 0);
+              return (
                 <article className={s.card} key={song.id}>
                   <span className={s.titleCell}>{song.title}</span>
                   <div className={s.choirsCell}>
@@ -259,21 +282,15 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
                     )}
                   </div>
                   <div className={s.linkCell}>
-                    {song.linkedFilePath ? (
+                    {resourceCount > 0 ? (
                       <button
                         type="button"
-                        onClick={() => handleLinkedFile(song)}
-                        disabled={openingFile === song.id}
-                        className={s.songLink}
-                        title={`Download ${song.linkedFileName || 'linked file'}`}
-                        aria-label={`Download ${song.linkedFileName || 'linked file'}`}
+                        onClick={() => setResourceSong(song)}
+                        className={s.resourcesButton}
+                        title="Open song resources"
                       >
-                        {openingFile === song.id ? '…' : '📎'}
+                        {linkedFiles.length > 0 ? `${linkedFiles.length} file${linkedFiles.length === 1 ? '' : 's'}` : 'Web link'}
                       </button>
-                    ) : safeExternalUrl(song.url) ? (
-                      <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink} title="Open link" aria-label="Open link">
-                        <ExternalLinkIcon />
-                      </a>
                     ) : (
                       <span className={s.noLink}>—</span>
                     )}
@@ -297,7 +314,8 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
                     </div>
                   )}
                 </article>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
@@ -331,20 +349,25 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
             </fieldset>
 
             <fieldset className={s.resourceBox}>
-              <legend>Practice resource</legend>
-              <p>Choose a file from the Files section, or provide an external web link.</p>
+              <legend>Practice resources</legend>
+              <p>Select all files that belong to this song, such as lyrics, voice parts and learning tracks.</p>
+              <div className={s.fileChecklist} aria-label="Uploaded files">
+                {filesLoading ? <span className={s.checklistState}>Loading uploaded files…</span> : availableFiles.length === 0 ? <span className={s.checklistState}>No files have been uploaded yet.</span> : availableFiles.map((file) => (
+                  <label key={file.fullPath} className={s.fileChoice}>
+                    <input type="checkbox" checked={editLinkedFilePaths.includes(file.fullPath)} onChange={() => toggleLinkedFile(file.fullPath, false)} disabled={updating === editingId} />
+                    <span>{file.name}</span>
+                  </label>
+                ))}
+                {songLinkedFiles(songs.find((song) => song.id === editingId) || {}).filter((file) => !availableFiles.some((available) => available.fullPath === file.fullPath)).map((file) => (
+                  <label key={file.fullPath} className={s.fileChoice}>
+                    <input type="checkbox" checked={editLinkedFilePaths.includes(file.fullPath)} onChange={() => toggleLinkedFile(file.fullPath, false)} disabled={updating === editingId} />
+                    <span>{file.name} (currently unavailable)</span>
+                  </label>
+                ))}
+              </div>
               <label className={s.field}>
-                <span>Uploaded file</span>
-                <select value={editLinkedFilePath} onChange={(e) => { setEditLinkedFilePath(e.target.value); if (e.target.value) setEditUrl(''); }} disabled={updating === editingId || filesLoading} className={s.input}>
-                  <option value="">No uploaded file</option>
-                  {editLinkedFilePath && !selectedFile(editLinkedFilePath) && <option value={editLinkedFilePath}>Previously linked file</option>}
-                  {availableFiles.map((file) => <option key={file.fullPath} value={file.fullPath}>{file.name}</option>)}
-                </select>
-              </label>
-              <div className={s.orDivider}><span>or</span></div>
-              <label className={s.field}>
-                <span>External HTTPS link</span>
-                <input type="url" value={editUrl} onChange={(e) => { setEditUrl(e.target.value); if (e.target.value) setEditLinkedFilePath(''); }} disabled={updating === editingId} className={s.input} placeholder="https://…" />
+                <span>External HTTPS link (optional)</span>
+                <input type="url" value={editUrl} onChange={(e) => setEditUrl(e.target.value)} disabled={updating === editingId} className={s.input} placeholder="https://…" />
               </label>
             </fieldset>
 
@@ -374,26 +397,18 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
               type="url"
               placeholder="Link URL (optional)"
               value={newSongUrl}
-              onChange={(e) => {
-                setNewSongUrl(e.target.value);
-                if (e.target.value) setNewLinkedFilePath('');
-              }}
+              onChange={(e) => setNewSongUrl(e.target.value)}
               disabled={updating === 'add'}
               className={s.input}
             />
-            <select
-              value={newLinkedFilePath}
-              onChange={(e) => {
-                setNewLinkedFilePath(e.target.value);
-                if (e.target.value) setNewSongUrl('');
-              }}
-              disabled={updating === 'add' || filesLoading}
-              className={s.input}
-              aria-label="Linked uploaded file"
-            >
-              <option value="">{filesLoading ? 'Loading uploaded files…' : 'Choose an uploaded file (optional)'}</option>
-              {availableFiles.map((file) => <option key={file.fullPath} value={file.fullPath}>{file.name}</option>)}
-            </select>
+            <div className={s.fileChecklist} aria-label="Uploaded files">
+              {filesLoading ? <span className={s.checklistState}>Loading uploaded files…</span> : availableFiles.length === 0 ? <span className={s.checklistState}>No files have been uploaded yet.</span> : availableFiles.map((file) => (
+                <label key={file.fullPath} className={s.fileChoice}>
+                  <input type="checkbox" checked={newLinkedFilePaths.includes(file.fullPath)} onChange={() => toggleLinkedFile(file.fullPath, true)} disabled={updating === 'add'} />
+                  <span>{file.name}</span>
+                </label>
+              ))}
+            </div>
             <div className={s.choirSelector}>
               <label className={s.choirLabel}>Choirs:</label>
               {CHOIR_DAYS.map((choir) => (
@@ -422,6 +437,45 @@ export default function SongsPage({ isAdmin = true, songLibrary }) {
               </button>
             </div>
           </form>
+        </div>,
+        document.body
+      )}
+
+      {resourceSong && createPortal(
+        <div className={s.confirmOverlay} onClick={() => setResourceSong(null)}>
+          <section className={s.resourcesModal} role="dialog" aria-modal="true" aria-labelledby="song-resources-title" onClick={(e) => e.stopPropagation()}>
+            <div className={s.modalHeader}>
+              <div>
+                <span className={s.eyebrow}>Practice resources</span>
+                <h3 id="song-resources-title">{resourceSong.title}</h3>
+              </div>
+              <button type="button" className={s.closeBtn} onClick={() => setResourceSong(null)} aria-label="Close resources">×</button>
+            </div>
+            <div className={s.resourceList}>
+              {songLinkedFiles(resourceSong).map((file) => {
+                const fileKey = `${resourceSong.id}:${file.fullPath}`;
+                return (
+                  <div className={s.resourceItem} key={file.fullPath}>
+                    <span aria-hidden="true">{file.contentType?.startsWith('audio/') ? '🎧' : file.contentType === 'application/pdf' ? '📄' : '📎'}</span>
+                    <div><strong>{file.name}</strong><small>Uploaded file</small></div>
+                    <button onClick={() => handleLinkedFile(resourceSong.id, file)} disabled={openingFile === fileKey}>
+                      {openingFile === fileKey ? 'Opening…' : 'Download'}
+                    </button>
+                  </div>
+                );
+              })}
+              {safeExternalUrl(resourceSong.url) && (
+                <div className={s.resourceItem}>
+                  <ExternalLinkIcon />
+                  <div><strong>External resource</strong><small>{safeExternalUrl(resourceSong.url)}</small></div>
+                  <a href={safeExternalUrl(resourceSong.url)} target="_blank" rel="noopener noreferrer">Open</a>
+                </div>
+              )}
+            </div>
+            <div className={s.modalActions}>
+              <button type="button" className={s.cancelBtn} onClick={() => setResourceSong(null)}>Close</button>
+            </div>
+          </section>
         </div>,
         document.body
       )}

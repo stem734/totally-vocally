@@ -102,7 +102,7 @@ service cloud.firestore {
       allow create, update: if isAdmin()
         && request.resource.data.keys().hasOnly([
           'title', 'url', 'choirs', 'linkedFilePath', 'linkedFileName',
-          'linkedFileContentType', 'createdAt', 'updatedAt'
+          'linkedFileContentType', 'linkedFiles', 'createdAt', 'updatedAt'
         ])
         && request.resource.data.keys().hasAll(['title', 'url', 'choirs'])
         && request.resource.data.title is string
@@ -111,6 +111,8 @@ service cloud.firestore {
         && request.resource.data.url is string
         && (request.resource.data.url == '' || request.resource.data.url.matches('^https://[^\\s]+$'))
         && request.resource.data.choirs is list
+        && request.resource.data.get('linkedFiles', []) is list
+        && request.resource.data.get('linkedFiles', []).size() <= 20
         && request.resource.data.get('linkedFilePath', '') is string
         && (request.resource.data.get('linkedFilePath', '') == ''
           || request.resource.data.get('linkedFilePath', '').matches('^shared/[^/]+$'))

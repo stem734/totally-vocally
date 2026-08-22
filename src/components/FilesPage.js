@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   deleteObject,
   getBlob,
@@ -30,6 +31,13 @@ function isAllowedType(type) {
     || type.startsWith('video/');
 }
 
+function isPreviewableType(type) {
+  return type === 'application/pdf'
+    || type.startsWith('text/')
+    || type.startsWith('image/')
+    || type.startsWith('video/');
+}
+
 function safeStorageName(name) {
   return name.normalize('NFKC').replace(/[^a-zA-Z0-9._-]+/g, '-').slice(-160) || 'file';
 }
@@ -51,10 +59,16 @@ export default function FilesPage({ isAdmin = false }) {
   const [playingFile, setPlayingFile] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
   const [audioLoading, setAudioLoading] = useState(false);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewText, setPreviewText] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
   const mainRef = useRef(null);
   const inputRef = useRef(null);
   const audioRequestRef = useRef(0);
   const audioUrlRef = useRef('');
+  const previewUrlRef = useRef('');
+  const previewRequestRef = useRef(0);
 
   const loadFiles = useCallback(async () => {
     setError('');
@@ -85,12 +99,19 @@ export default function FilesPage({ isAdmin = false }) {
   useEffect(() => { loadFiles(); }, [loadFiles]);
   useEffect(() => () => {
     if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
   }, []);
 
   const replaceAudioUrl = (nextUrl = '') => {
     if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
     audioUrlRef.current = nextUrl;
     setAudioUrl(nextUrl);
+  };
+
+  const replacePreviewUrl = (nextUrl = '') => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = nextUrl;
+    setPreviewUrl(nextUrl);
   };
 
   const uploadOne = (file) => new Promise((resolve, reject) => {
@@ -158,6 +179,43 @@ export default function FilesPage({ isAdmin = false }) {
       setError('The file could not be downloaded. Please try again.');
     } finally {
       setActiveFile('');
+    }
+  };
+
+  const closePreview = () => {
+    previewRequestRef.current += 1;
+    setPreviewFile(null);
+    setPreviewText('');
+    replacePreviewUrl();
+    setPreviewLoading(false);
+  };
+
+  const handlePreview = async (file) => {
+    setError('');
+    setPreviewFile(file);
+    setPreviewText('');
+    replacePreviewUrl();
+    setPreviewLoading(true);
+    const requestId = previewRequestRef.current + 1;
+    previewRequestRef.current = requestId;
+    try {
+      const blob = await getBlob(ref(storage, file.fullPath));
+      const typedBlob = blob.slice(0, blob.size, file.contentType);
+      if (previewRequestRef.current !== requestId) return;
+      if (file.contentType.startsWith('text/')) {
+        const text = await typedBlob.text();
+        if (previewRequestRef.current !== requestId) return;
+        setPreviewText(text);
+      } else {
+        replacePreviewUrl(URL.createObjectURL(typedBlob));
+      }
+    } catch (err) {
+      if (previewRequestRef.current !== requestId) return;
+      console.error('Failed to preview file:', err);
+      closePreview();
+      setError('The file could not be previewed. Please try downloading it instead.');
+    } finally {
+      if (previewRequestRef.current === requestId) setPreviewLoading(false);
     }
   };
 
@@ -268,6 +326,7 @@ export default function FilesPage({ isAdmin = false }) {
             const busy = activeFile === file.fullPath;
             const isAudio = file.contentType.startsWith('audio/');
             const isPlaying = playingFile === file.fullPath;
+            const isPreviewable = isPreviewableType(file.contentType);
             return (
               <article className={s.fileCard} key={file.fullPath}>
                 <div className={s.fileIcon} aria-hidden="true">{isAudio ? '🎧' : file.contentType === 'application/pdf' ? '📄' : '📁'}</div>
@@ -276,6 +335,11 @@ export default function FilesPage({ isAdmin = false }) {
                   <p>{formatBytes(file.size)}{file.updated ? ` · Updated ${new Date(file.updated).toLocaleDateString()}` : ''}</p>
                 </div>
                 <div className={s.actions}>
+                  {isPreviewable && (
+                    <button onClick={() => handlePreview(file)} disabled={previewLoading}>
+                      {previewLoading && previewFile?.fullPath === file.fullPath ? 'Opening…' : 'View'}
+                    </button>
+                  )}
                   {isAudio && (
                     <button onClick={() => handlePlay(file)} disabled={audioLoading && isPlaying}>
                       {audioLoading && isPlaying ? 'Loading…' : isPlaying ? 'Close player' : 'Play'}
@@ -302,6 +366,42 @@ export default function FilesPage({ isAdmin = false }) {
             );
           })}
         </section>
+      )}
+
+      {previewFile && createPortal(
+        <div className={s.previewOverlay} role="presentation" onClick={closePreview}>
+          <section className={s.previewModal} role="dialog" aria-modal="true" aria-labelledby="file-preview-title" onClick={(event) => event.stopPropagation()}>
+            <header className={s.previewHeader}>
+              <div>
+                <span>File preview</span>
+                <h2 id="file-preview-title">{previewFile.name}</h2>
+              </div>
+              <button onClick={closePreview} aria-label="Close file preview">×</button>
+            </header>
+            <div className={s.previewBody}>
+              {previewLoading ? (
+                <p className={s.previewState}>Opening file…</p>
+              ) : previewFile.contentType === 'application/pdf' && previewUrl ? (
+                <iframe src={previewUrl} title={previewFile.name} />
+              ) : previewFile.contentType.startsWith('image/') && previewUrl ? (
+                <img src={previewUrl} alt={previewFile.name} />
+              ) : previewFile.contentType.startsWith('video/') && previewUrl ? (
+                <video controls preload="metadata">
+                  <source src={previewUrl} type={previewFile.contentType} />
+                </video>
+              ) : previewFile.contentType.startsWith('text/') ? (
+                <pre>{previewText}</pre>
+              ) : null}
+            </div>
+            <footer className={s.previewFooter}>
+              <button onClick={() => handleDownload(previewFile)} disabled={activeFile === previewFile.fullPath}>
+                {activeFile === previewFile.fullPath ? 'Working…' : 'Download'}
+              </button>
+              <button className={s.previewCloseButton} onClick={closePreview}>Close</button>
+            </footer>
+          </section>
+        </div>,
+        document.body
       )}
 
       <p className={s.hint}>Downloads are available only while signed in as an approved choir member.</p>

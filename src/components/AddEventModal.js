@@ -86,7 +86,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
 
           <div className={s.row}>
             <div className={s.field}>
-              <label>Arrive By <span className={s.opt}>(defaults to 30 minutes after performance/workshop time)</span></label>
+              <label>Arrive By <span className={s.opt}>(defaults to 30 minutes before performance/workshop time)</span></label>
               <input type="time" value={form.arriveBy} onChange={set('arriveBy')} />
             </div>
             <div className={s.field}>

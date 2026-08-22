@@ -145,7 +145,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
 
             <div className={s.formRow}>
               <div className={s.formGroup}>
-                <label htmlFor="arriveBy">Arrive By (defaults to 30 mins after performance/workshop time)</label>
+                <label htmlFor="arriveBy">Arrive By (defaults to 30 mins before performance/workshop time)</label>
                 <input
                   id="arriveBy"
                   type="time"

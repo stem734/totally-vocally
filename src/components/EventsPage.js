@@ -3,6 +3,7 @@ import { useSongs } from '../useSongs';
 import EditEventModal from './EditEventModal';
 import AllocateSongsModal from './AllocateSongsModal';
 import VoicePartBreakdown from './VoicePartBreakdown';
+import LinkedText from './LinkedText';
 import s from './EventsPage.module.css';
 import { ClockIcon, CheckIcon, MusicIcon } from '../icons';
 import { eventTypeLabel, formatDuration } from '../eventFields';
@@ -99,7 +100,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
                     )}
                   </p>
 
-                  {ev.desc && <p className={s.desc}>{ev.desc}</p>}
+                  {ev.desc && <LinkedText text={ev.desc} className={s.desc} />}
 
                   {ev.songIds && ev.songIds.length > 0 && (
                     <div className={s.songsSection}>

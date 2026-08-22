@@ -18,3 +18,17 @@ export const formatDuration = (minutes) => {
   if (h) return `${h}h`;
   return `${m}m`;
 };
+
+// Performances and workshops normally need a separate arrival time.
+export const usesArrivalTime = (type) => type === 'performance' || type === 'workshop';
+
+export const defaultArrivalTime = (time) => {
+  if (!time) return '';
+  const [hours, minutes] = time.split(':').map(Number);
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return '';
+
+  const totalMinutes = (hours * 60 + minutes + 30) % (24 * 60);
+  const arrivalHours = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+  const arrivalMinutes = String(totalMinutes % 60).padStart(2, '0');
+  return `${arrivalHours}:${arrivalMinutes}`;
+};

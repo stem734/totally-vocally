@@ -185,7 +185,10 @@
   color: var(--muted-light);
   line-height: 1.65;
   margin-bottom: 14px;
+  white-space: pre-wrap;
 }
+
+.desc a { color: var(--purple-light); text-decoration: underline; overflow-wrap: anywhere; }
 
 .attSection { margin-top: 12px; }
 

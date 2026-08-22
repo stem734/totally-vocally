@@ -3,6 +3,7 @@ import { useSongs } from '../useSongs';
 import AllocateSongsModal from './AllocateSongsModal';
 import EditEventModal from './EditEventModal';
 import VoicePartBreakdown from './VoicePartBreakdown';
+import LinkedText from './LinkedText';
 import s from './EventDetailModal.module.css';
 import { ClockIcon, CheckIcon } from '../icons';
 import { eventTypeLabel, formatDuration } from '../eventFields';
@@ -93,9 +94,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
               </p>
             )}
 
-            {event.desc && (
-              <p className={s.desc}>{event.desc}</p>
-            )}
+            {event.desc && <LinkedText text={event.desc} className={s.desc} />}
 
             {event.songIds && event.songIds.length > 0 && (
               <div className={s.songsSection}>

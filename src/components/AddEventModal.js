@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import s from './AddEventModal.module.css';
-import { EVENT_TYPES, DURATION_OPTIONS, formatDuration } from '../eventFields';
+import { EVENT_TYPES, DURATION_OPTIONS, formatDuration, defaultArrivalTime, usesArrivalTime } from '../eventFields';
 
 const EMPTY = { title: '', type: 'rehearsal', date: '', time: '', arriveBy: '', duration: '', location: '', desc: '' };
 
@@ -16,7 +16,19 @@ export default function AddEventModal({ open, onClose, onSave }) {
 
   if (!open) return null;
 
-  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+  const set = (field) => (e) => {
+    const value = e.target.value;
+    setForm((current) => {
+      const next = { ...current, [field]: value };
+      const selectedType = field === 'type' ? value : current.type;
+      const selectedTime = field === 'time' ? value : current.time;
+
+      if ((field === 'time' || field === 'type') && !current.arriveBy && usesArrivalTime(selectedType)) {
+        next.arriveBy = defaultArrivalTime(selectedTime);
+      }
+      return next;
+    });
+  };
 
   const handleSave = () => {
     if (!form.title.trim() || !form.date) {
@@ -74,7 +86,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
 
           <div className={s.row}>
             <div className={s.field}>
-              <label>Arrive By <span className={s.opt}>(optional)</span></label>
+              <label>Arrive By <span className={s.opt}>(defaults to 30 minutes after performance/workshop time)</span></label>
               <input type="time" value={form.arriveBy} onChange={set('arriveBy')} />
             </div>
             <div className={s.field}>
@@ -103,7 +115,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
             <textarea
               value={form.desc}
               onChange={set('desc')}
-              placeholder="Any extra details for members..."
+              placeholder="Any extra details or a https:// link for members..."
               rows={3}
             />
           </div>

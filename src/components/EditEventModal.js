@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import s from './EditEventModal.module.css';
-import { EVENT_TYPES, DURATION_OPTIONS, formatDuration } from '../eventFields';
+import { EVENT_TYPES, DURATION_OPTIONS, formatDuration, defaultArrivalTime, usesArrivalTime } from '../eventFields';
 
 export default function EditEventModal({ open, event, onClose, onSave, isSaving }) {
   const [title, setTitle] = useState('');
@@ -20,13 +20,23 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
       setType(event.type || 'rehearsal');
       setDate(event.date || '');
       setTime(event.time || '');
-      setArriveBy(event.arriveBy || '');
+      setArriveBy(event.arriveBy || (usesArrivalTime(event.type) ? defaultArrivalTime(event.time) : ''));
       setDuration(event.duration || '');
       setLocation(event.location || '');
       setDesc(event.desc || '');
       setError('');
     }
   }, [event, open]);
+
+  const handleTypeChange = (value) => {
+    setType(value);
+    if (!arriveBy && usesArrivalTime(value)) setArriveBy(defaultArrivalTime(time));
+  };
+
+  const handleTimeChange = (value) => {
+    setTime(value);
+    if (!arriveBy && usesArrivalTime(type)) setArriveBy(defaultArrivalTime(value));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,7 +95,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
                 <select
                   id="type"
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
+                  onChange={(e) => handleTypeChange(e.target.value)}
                   disabled={isSaving}
                   required
                 >
@@ -115,7 +125,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
                   id="time"
                   type="time"
                   value={time}
-                  onChange={(e) => setTime(e.target.value)}
+                  onChange={(e) => handleTimeChange(e.target.value)}
                   disabled={isSaving}
                 />
               </div>
@@ -135,7 +145,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
 
             <div className={s.formRow}>
               <div className={s.formGroup}>
-                <label htmlFor="arriveBy">Arrive By</label>
+                <label htmlFor="arriveBy">Arrive By (defaults to 30 mins after performance/workshop time)</label>
                 <input
                   id="arriveBy"
                   type="time"
@@ -169,7 +179,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
                 onChange={(e) => setDesc(e.target.value)}
                 disabled={isSaving}
                 rows={4}
-                placeholder="Optional event description"
+                placeholder="Optional event description — paste a https:// link to make it clickable"
               />
             </div>
           </div>

@@ -22,7 +22,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay, songs = [] }) {
+export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onOpenSongFolder, rehearsalDay, songs = [] }) {
   const [editingEventId, setEditingEventId] = useState(null);
   const [allocatingEventId, setAllocatingEventId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -109,7 +109,11 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
                           const song = songs.find(sg => sg.id === songId);
                           return (
                             <span key={songId} className={s.songTag}>
-                              {song?.title || 'Unknown Song'}
+                              {song ? (
+                                <button type="button" className={s.songFolderButton} onClick={() => onOpenSongFolder?.(song.id)}>
+                                  {song.title}
+                                </button>
+                              ) : 'Unknown Song'}
                               {safeExternalUrl(song?.url) && (
                                 <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink}>
                                   🔗

@@ -52,6 +52,7 @@
 .folder summary small { color: var(--muted); white-space: nowrap; }
 .folderContents { display: grid; gap: 10px; padding: 0 12px 12px 42px; border-top: 1px solid rgba(32, 98, 105, 0.32); }
 .folderContents > :first-child { margin-top: 12px; }
+.emptyFolder { margin: 12px 0 0; padding: 14px 16px; border: 1px dashed var(--teal-dark); border-radius: 12px; color: var(--muted-light); text-align: center; }
 .fileCard { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 16px; background: var(--ink-soft); border: 1px solid var(--teal-dark); border-radius: 14px; }
 .fileIcon { font-size: 1.8rem; }
 .fileDetails { min-width: 0; }

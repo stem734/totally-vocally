@@ -7,7 +7,7 @@ import { downloadICalendar } from '../calendarSubscription';
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, rehearsalDay, onCreateRehearsalBlock, songs = [] }) {
+export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onOpenSongFolder, rehearsalDay, onCreateRehearsalBlock, songs = [] }) {
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -106,6 +106,7 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
         onDelete={onDeleteEvent}
         onUpdate={onUpdateEvent}
         onAllocateSongs={onAllocateSongs}
+        onOpenSongFolder={onOpenSongFolder}
         songs={songs}
       />
 

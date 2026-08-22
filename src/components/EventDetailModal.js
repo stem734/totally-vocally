@@ -23,7 +23,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete, onUpdate, onAllocateSongs, songs = [] }) {
+export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete, onUpdate, onAllocateSongs, onOpenSongFolder, songs = [] }) {
   const [allocateModalOpen, setAllocateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -103,7 +103,11 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
                     const song = songs.find(s => s.id === songId);
                     return (
                       <div key={songId} className={s.songTag}>
-                        {song?.title || 'Unknown Song'}
+                        {song ? (
+                          <button type="button" className={s.songFolderButton} onClick={() => onOpenSongFolder?.(song.id)}>
+                            {song.title}
+                          </button>
+                        ) : 'Unknown Song'}
                         {safeExternalUrl(song?.url) && (
                           <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink}>
                             🔗

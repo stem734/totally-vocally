@@ -257,6 +257,20 @@
 }
 .songLink:hover { opacity: 1; }
 
+.songFolderButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.songFolderButton:hover,
+.songFolderButton:focus-visible { color: var(--warm-white); }
+
 .adminRow {
   display: flex;
   gap: 8px;

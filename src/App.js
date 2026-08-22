@@ -47,6 +47,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
   const [lastSeenEventsAt, setLastSeenEventsAt] = useState('');
+  const [openSongFolderId, setOpenSongFolderId] = useState('');
 
   useEffect(() => {
     if (!user) { setLastSeenEventsAt(''); return; }
@@ -133,8 +134,13 @@ export default function App() {
 
   // Logged in
   const navigate = (p) => {
+    if (p === 'files') setOpenSongFolderId('');
     setPage(p);
     if (p === 'calendar' || p === 'events') markEventsSeen();
+  };
+  const openSongFolder = (songId) => {
+    setOpenSongFolderId(songId);
+    setPage('files');
   };
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
@@ -162,6 +168,7 @@ export default function App() {
           onCreateRehearsalBlock={createRehearsalBlock}
           rehearsalDay={profile?.rehearsalDay}
           songs={songLibrary.songs}
+          onOpenSongFolder={openSongFolder}
         />
       )}
       {page === 'events' && (
@@ -176,10 +183,18 @@ export default function App() {
           onAllocateSongs={allocateSongs}
           rehearsalDay={profile?.rehearsalDay}
           songs={songLibrary.songs}
+          onOpenSongFolder={openSongFolder}
         />
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
-      {page === 'files' && <FilesPage key="files" isAdmin={isAdmin} songLibrary={songLibrary} />}
+      {page === 'files' && (
+        <FilesPage
+          key={`files-${openSongFolderId || 'all'}`}
+          isAdmin={isAdmin}
+          songLibrary={songLibrary}
+          initialSongId={openSongFolderId}
+        />
+      )}
       {page === 'attendance' && canViewAdminPages && (
         <AttendanceDashboard key="attendance" events={events} />
       )}

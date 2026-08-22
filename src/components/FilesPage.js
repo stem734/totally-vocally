@@ -58,7 +58,7 @@ function linkedPathsForSong(song) {
   return song.linkedFilePath ? [song.linkedFilePath] : [];
 }
 
-export default function FilesPage({ isAdmin = false, songLibrary }) {
+export default function FilesPage({ isAdmin = false, songLibrary, initialSongId = '' }) {
   const songs = songLibrary?.songs || [];
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,23 +91,25 @@ export default function FilesPage({ isAdmin = false, songLibrary }) {
       }).filter(Boolean);
       return {
         id: `song-${song.id}`,
+        songId: song.id,
         name: song.title,
         files: groupedFiles,
         externalUrl: safeExternalUrl(song.url),
       };
-    }).filter((group) => group.files.length > 0 || group.externalUrl);
+    }).filter((group) => group.files.length > 0 || group.externalUrl || group.songId === initialSongId);
 
     const generalFiles = files.filter((file) => !assignedPaths.has(file.fullPath));
     if (generalFiles.length > 0) {
       songGroups.push({
         id: 'general-resources',
+        songId: '',
         name: 'General Resources',
         files: generalFiles,
         externalUrl: '',
       });
     }
     return songGroups;
-  }, [files, songs]);
+  }, [files, initialSongId, songs]);
 
   const loadFiles = useCallback(async () => {
     setError('');
@@ -136,6 +138,15 @@ export default function FilesPage({ isAdmin = false, songLibrary }) {
 
   useEffect(() => { mainRef.current?.focus(); }, []);
   useEffect(() => { loadFiles(); }, [loadFiles]);
+  useEffect(() => {
+    if (!initialSongId || loading) return;
+    const folders = Array.from(mainRef.current?.querySelectorAll('[data-song-id]') || []);
+    const target = folders.find((folder) => folder.dataset.songId === initialSongId);
+    if (!target) return;
+    target.open = true;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.querySelector('summary')?.focus({ preventScroll: true });
+  }, [fileGroups, initialSongId, loading]);
   useEffect(() => () => {
     if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
@@ -364,13 +375,21 @@ export default function FilesPage({ isAdmin = false, songLibrary }) {
           {fileGroups.map((group) => {
             const itemCount = group.files.length + (group.externalUrl ? 1 : 0);
             return (
-              <details className={s.folder} key={group.id}>
+              <details
+                className={s.folder}
+                key={group.id}
+                data-song-id={group.songId || undefined}
+                defaultOpen={group.songId === initialSongId}
+              >
                 <summary>
                   <span className={s.folderIcon} aria-hidden="true">📁</span>
                   <strong>{group.name}</strong>
                   <small>{itemCount} resource{itemCount === 1 ? '' : 's'}</small>
                 </summary>
                 <div className={s.folderContents}>
+                  {itemCount === 0 && (
+                    <p className={s.emptyFolder}>No resources have been added to this song yet.</p>
+                  )}
                   {group.files.map((file) => {
                     const busy = activeFile === file.fullPath;
                     const isAudio = file.contentType.startsWith('audio/');

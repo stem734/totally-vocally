@@ -17,6 +17,10 @@ Admins use the same page to:
 A file can be linked to more than one song without uploading another copy. The
 separate Songs navigation item is intentionally not shown.
 
+Song names allocated to Calendar or Events entries link directly to their song
+folder in Files. The target folder opens automatically; if it has no resources
+yet, members see an empty-folder message.
+
 ## Access model
 
 - Approved members and admins can list and download files.

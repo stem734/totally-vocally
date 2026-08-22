@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import s from './AddEventModal.module.css';
-import { EVENT_TYPES, DURATION_OPTIONS, formatDuration, defaultArrivalTime, usesArrivalTime } from '../eventFields';
+import { EVENT_TYPES, DURATION_OPTIONS, formatDuration, defaultArrivalTime } from '../eventFields';
 
 const EMPTY = { title: '', type: 'rehearsal', date: '', time: '', arriveBy: '', duration: '', location: '', desc: '' };
 
@@ -20,10 +20,9 @@ export default function AddEventModal({ open, onClose, onSave }) {
     const value = e.target.value;
     setForm((current) => {
       const next = { ...current, [field]: value };
-      const selectedType = field === 'type' ? value : current.type;
       const selectedTime = field === 'time' ? value : current.time;
 
-      if ((field === 'time' || field === 'type') && !current.arriveBy && usesArrivalTime(selectedType)) {
+      if (field === 'time' && !current.arriveBy) {
         next.arriveBy = defaultArrivalTime(selectedTime);
       }
       return next;
@@ -86,7 +85,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
 
           <div className={s.row}>
             <div className={s.field}>
-              <label>Arrive By <span className={s.opt}>(defaults to 30 minutes before performance/workshop time)</span></label>
+              <label>Arrive By <span className={s.opt}>(defaults to 30 minutes before the start time)</span></label>
               <input type="time" value={form.arriveBy} onChange={set('arriveBy')} />
             </div>
             <div className={s.field}>

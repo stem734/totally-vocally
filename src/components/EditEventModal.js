@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import s from './EditEventModal.module.css';
-import { EVENT_TYPES, DURATION_OPTIONS, formatDuration, defaultArrivalTime, usesArrivalTime } from '../eventFields';
+import { EVENT_TYPES, DURATION_OPTIONS, formatDuration, defaultArrivalTime } from '../eventFields';
 
 export default function EditEventModal({ open, event, onClose, onSave, isSaving }) {
   const [title, setTitle] = useState('');
@@ -20,7 +20,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
       setType(event.type || 'rehearsal');
       setDate(event.date || '');
       setTime(event.time || '');
-      setArriveBy(event.arriveBy || (usesArrivalTime(event.type) ? defaultArrivalTime(event.time) : ''));
+      setArriveBy(event.arriveBy || defaultArrivalTime(event.time));
       setDuration(event.duration || '');
       setLocation(event.location || '');
       setDesc(event.desc || '');
@@ -28,14 +28,9 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
     }
   }, [event, open]);
 
-  const handleTypeChange = (value) => {
-    setType(value);
-    if (!arriveBy && usesArrivalTime(value)) setArriveBy(defaultArrivalTime(time));
-  };
-
   const handleTimeChange = (value) => {
     setTime(value);
-    if (!arriveBy && usesArrivalTime(type)) setArriveBy(defaultArrivalTime(value));
+    if (!arriveBy) setArriveBy(defaultArrivalTime(value));
   };
 
   const handleSubmit = async (e) => {
@@ -95,7 +90,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
                 <select
                   id="type"
                   value={type}
-                  onChange={(e) => handleTypeChange(e.target.value)}
+                  onChange={(e) => setType(e.target.value)}
                   disabled={isSaving}
                   required
                 >
@@ -145,7 +140,7 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
 
             <div className={s.formRow}>
               <div className={s.formGroup}>
-                <label htmlFor="arriveBy">Arrive By (defaults to 30 mins before performance/workshop time)</label>
+                <label htmlFor="arriveBy">Arrive By (defaults to 30 mins before the start time)</label>
                 <input
                   id="arriveBy"
                   type="time"

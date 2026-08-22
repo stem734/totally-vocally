@@ -19,9 +19,6 @@ export const formatDuration = (minutes) => {
   return `${m}m`;
 };
 
-// Performances and workshops normally need an arrival time before their start.
-export const usesArrivalTime = (type) => type === 'performance' || type === 'workshop';
-
 export const defaultArrivalTime = (time) => {
   if (!time) return '';
   const [hours, minutes] = time.split(':').map(Number);

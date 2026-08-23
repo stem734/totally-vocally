@@ -29,8 +29,13 @@ function getAuthErrorMessage(error) {
       return 'Too many unsuccessful attempts. Please wait a moment or reset your password.';
     case 'auth/network-request-failed':
       return 'Unable to connect. Please check your internet connection and try again.';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists. Try signing in instead.';
+    case 'auth/weak-password':
+      return 'Password is too weak. Please choose a longer password.';
     default:
-      return error?.message || 'Unable to sign in. Please try again.';
+      // Never surface raw SDK error text - it can leak internal details.
+      return 'Something went wrong. Please try again.';
   }
 }
 
@@ -83,12 +88,16 @@ export default function App() {
         success = await signUp(email, password, displayName);
         if (success) setAuthModalOpen(false);
       } else if (authMode === 'forgotPassword') {
-        success = await resetPassword(email);
-        if (success) {
-          alert(`Password reset link sent to ${email}. Check your email to reset your password.`);
-          setAuthModalOpen(false);
-          setAuthMode('signin');
+        try {
+          await resetPassword(email);
+        } catch (err) {
+          // Treat "no such account" the same as success so the reset form
+          // can't be used to probe which emails are registered.
+          if (err?.code !== 'auth/user-not-found') throw err;
         }
+        alert(`If an account exists for ${email}, a password reset link has been sent. Check your email to reset your password.`);
+        setAuthModalOpen(false);
+        setAuthMode('signin');
       }
     } catch (err) {
       setAuthError(getAuthErrorMessage(err));

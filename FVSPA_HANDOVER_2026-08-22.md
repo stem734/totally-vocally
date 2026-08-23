@@ -447,3 +447,10 @@ push to `main`. Vercel Git integration deploys automatically.
 - Deploy web code and Firebase rules from the same revision.
 - Do not weaken `/users` collection rules to restore a viewer dashboard; use a
   deliberately redacted collection or trusted server endpoint instead.
+
+## 12. Post-handover update — 23 August 2026
+
+- Swapped the Files and Info positions in the shared navigation.
+- Standard-member order is now **Calendar → Events → Files → Info**, leaving Info
+  as the final standard tab.
+- Admin-only Attendance and Members tabs continue after the shared tabs.

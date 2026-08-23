@@ -454,3 +454,10 @@ push to `main`. Vercel Git integration deploys automatically.
 - Standard-member order is now **Calendar → Events → Files → Info**, leaving Info
   as the final standard tab.
 - Admin-only Attendance and Members tabs continue after the shared tabs.
+- Events now shows the next 10 upcoming entries by default, with a **Show next
+  10** control for incremental disclosure.
+- Past events are collapsed by default and reveal the latest 5 at a time.
+- Calendar remains the interface for browsing distant dates. The shared app data
+  subscription remains unchanged because Calendar and attendance features also
+  use the event collection; this change limits rendering rather than introducing
+  a second competing Firestore event source.

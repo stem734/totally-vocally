@@ -9,6 +9,8 @@ import { eventTypeLabel, formatDuration } from '../eventFields';
 import { safeExternalUrl } from '../safeUrl';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const UPCOMING_PAGE_SIZE = 10;
+const PAST_PAGE_SIZE = 5;
 
 function attSummary(ev) {
   const vals = Object.values(ev.attendance || {});
@@ -27,6 +29,9 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
   const [allocatingEventId, setAllocatingEventId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingEvent, setDeletingEvent] = useState(null);
+  const [upcomingLimit, setUpcomingLimit] = useState(UPCOMING_PAGE_SIZE);
+  const [showPast, setShowPast] = useState(false);
+  const [pastLimit, setPastLimit] = useState(PAST_PAGE_SIZE);
   const mainRef = useRef(null);
 
   useEffect(() => { mainRef.current?.focus(); }, []);
@@ -34,10 +39,115 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
   const today = new Date().toISOString().split('T')[0];
   const upcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
   const past = [...events].filter(e => e.date < today).sort((a, b) => b.date.localeCompare(a.date));
-  const sorted = [...upcoming, ...past];
+  const visibleUpcoming = upcoming.slice(0, upcomingLimit);
+  const visiblePast = showPast ? past.slice(0, pastLimit) : [];
+  const remainingUpcoming = Math.max(0, upcoming.length - visibleUpcoming.length);
+  const remainingPast = Math.max(0, past.length - visiblePast.length);
 
   const editingEvent = events.find(e => e.id === editingEventId) || null;
   const allocatingEvent = events.find(e => e.id === allocatingEventId) || null;
+
+  const renderEventCard = (ev) => {
+    const d = new Date(ev.date + 'T12:00:00');
+    const myAtt = ev.myAttendance || null;
+    const isReh = ev.type === 'rehearsal';
+    const isDesignated = isReh && rehearsalDay && (ev.groupDay === rehearsalDay || ev.title?.startsWith(rehearsalDay));
+
+    return (
+      <div key={ev.id} className={`${s.card} ${isReh ? s.cardReh : ''} ${isDesignated ? s.designated : ''}`}>
+        <div className={`${s.dateBadge} ${isReh ? s.dateBadgeReh : ''}`}>
+          <span className={s.dayNum}>{d.getDate()}</span>
+          <span className={s.monthStr}>{MONTH_SHORT[d.getMonth()]}</span>
+        </div>
+
+        <div className={s.body}>
+          <div className={s.topRow}>
+            <span className={`${s.typePill} ${isReh ? s.pillReh : ''}`}>
+              {eventTypeLabel(ev.type)}
+            </span>
+            {isAdmin && <button className={s.delBtn} onClick={() => setDeletingEvent(ev)} title="Delete">×</button>}
+          </div>
+
+          <h2 className={s.evTitle}>{ev.title}</h2>
+
+          <p className={s.meta}>
+            {ev.time && <span><ClockIcon /> {ev.time}</span>}
+            {ev.arriveBy && <span><ClockIcon /> Arrive by {ev.arriveBy}</span>}
+            {ev.duration && <span><ClockIcon /> {formatDuration(ev.duration)}</span>}
+            {ev.location && (
+              <a
+                href={`https://www.google.com/maps/search/${encodeURIComponent(ev.location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{color: 'inherit', textDecoration: 'underline', cursor: 'pointer'}}
+              >
+                {ev.location}
+              </a>
+            )}
+          </p>
+
+          {ev.desc && <LinkedText text={ev.desc} className={s.desc} />}
+
+          {ev.songIds && ev.songIds.length > 0 && (
+            <div className={s.songsSection}>
+              <p className={s.attLabel}>Songs Allocated</p>
+              <div className={s.songsList}>
+                {ev.songIds.map((songId) => {
+                  const song = songs.find(sg => sg.id === songId);
+                  return (
+                    <span key={songId} className={s.songTag}>
+                      {song ? (
+                        <button type="button" className={s.songFolderButton} onClick={() => onOpenSongFolder?.(song.id)}>
+                          {song.title}
+                        </button>
+                      ) : 'Unknown Song'}
+                      {safeExternalUrl(song?.url) && (
+                        <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink}>🔗</a>
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {ev.type !== 'rehearsal' && (
+            <VoicePartBreakdown counts={ev.voicePartCounts || {}} checkMissing={isAdmin} />
+          )}
+
+          <div className={s.attSection}>
+            {!isAdmin && (
+              <>
+                <p className={s.attLabel}>Are you coming?</p>
+                <div className={s.attRow}>
+                  <button
+                    className={`${s.attBtn} ${myAtt === 'yes' ? s.attYes : ''}`}
+                    onClick={() => onSetAttendance(ev.id, 'yes')}
+                  ><CheckIcon /> Coming</button>
+                  <button
+                    className={`${s.attBtn} ${myAtt === 'maybe' ? s.attMaybe : ''}`}
+                    onClick={() => onSetAttendance(ev.id, 'maybe')}
+                  >? Maybe</button>
+                  <button
+                    className={`${s.attBtn} ${myAtt === 'no' ? s.attNo : ''}`}
+                    onClick={() => onSetAttendance(ev.id, 'no')}
+                  >× Can't make it</button>
+                </div>
+              </>
+            )}
+            <p className={s.attCount}>{attSummary(ev)}</p>
+          </div>
+
+          {isAdmin && (
+            <div className={s.adminRow}>
+              <button className={s.editBtn} onClick={() => setEditingEventId(ev.id)}>Edit Event</button>
+              <button className={s.allocateBtn} onClick={() => setAllocatingEventId(ev.id)}>Allocate Songs</button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <main className={s.page} id="main-content" ref={mainRef} tabIndex={-1}>
@@ -49,121 +159,68 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
         {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>}
       </div>
 
-      {sorted.length === 0 ? (
+      {events.length === 0 ? (
         <div className={s.empty}>
           <span><MusicIcon /></span>
           <p>No events yet — add one above!</p>
         </div>
       ) : (
-        <div className={s.list}>
-          {sorted.map(ev => {
-            const d = new Date(ev.date + 'T12:00:00');
-            const myAtt = ev.myAttendance || null;
-            const isReh = ev.type === 'rehearsal';
-            const isDesignated = isReh && rehearsalDay && (ev.groupDay === rehearsalDay || ev.title?.startsWith(rehearsalDay));
+        <>
+          <section aria-labelledby="upcoming-events-heading">
+            <div className={s.sectionHeader}>
+              <h2 id="upcoming-events-heading">Coming up</h2>
+              <span>{upcoming.length} upcoming</span>
+            </div>
 
-            return (
-              <div key={ev.id} className={`${s.card} ${isReh ? s.cardReh : ''} ${isDesignated ? s.designated : ''}`}>
-                <div className={`${s.dateBadge} ${isReh ? s.dateBadgeReh : ''}`}>
-                  <span className={s.dayNum}>{d.getDate()}</span>
-                  <span className={s.monthStr}>{MONTH_SHORT[d.getMonth()]}</span>
-                </div>
+            {visibleUpcoming.length > 0 ? (
+              <div className={s.list}>{visibleUpcoming.map(renderEventCard)}</div>
+            ) : (
+              <div className={s.noUpcoming}>No upcoming events are currently scheduled.</div>
+            )}
 
-                <div className={s.body}>
-                  <div className={s.topRow}>
-                    <span className={`${s.typePill} ${isReh ? s.pillReh : ''}`}>
-                      {eventTypeLabel(ev.type)}
-                    </span>
-                    {isAdmin && <button
-                      className={s.delBtn}
-                      onClick={() => setDeletingEvent(ev)}
-                      title="Delete"
-                    >×</button>}
-                  </div>
-
-                  <h2 className={s.evTitle}>{ev.title}</h2>
-
-                  <p className={s.meta}>
-                    {ev.time && <span><ClockIcon /> {ev.time}</span>}
-                    {ev.arriveBy && <span><ClockIcon /> Arrive by {ev.arriveBy}</span>}
-                    {ev.duration && <span><ClockIcon /> {formatDuration(ev.duration)}</span>}
-                    {ev.location && (
-                      <a
-                        href={`https://www.google.com/maps/search/${encodeURIComponent(ev.location)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{color: 'inherit', textDecoration: 'underline', cursor: 'pointer'}}
-                      >
-                        {ev.location}
-                      </a>
-                    )}
-                  </p>
-
-                  {ev.desc && <LinkedText text={ev.desc} className={s.desc} />}
-
-                  {ev.songIds && ev.songIds.length > 0 && (
-                    <div className={s.songsSection}>
-                      <p className={s.attLabel}>Songs Allocated</p>
-                      <div className={s.songsList}>
-                        {ev.songIds.map((songId) => {
-                          const song = songs.find(sg => sg.id === songId);
-                          return (
-                            <span key={songId} className={s.songTag}>
-                              {song ? (
-                                <button type="button" className={s.songFolderButton} onClick={() => onOpenSongFolder?.(song.id)}>
-                                  {song.title}
-                                </button>
-                              ) : 'Unknown Song'}
-                              {safeExternalUrl(song?.url) && (
-                                <a href={safeExternalUrl(song.url)} target="_blank" rel="noopener noreferrer" className={s.songLink}>
-                                  🔗
-                                </a>
-                              )}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {ev.type !== 'rehearsal' && (
-                    <VoicePartBreakdown counts={ev.voicePartCounts || {}} checkMissing={isAdmin} />
-                  )}
-
-                  <div className={s.attSection}>
-                    {!isAdmin && (
-                      <>
-                        <p className={s.attLabel}>Are you coming?</p>
-                        <div className={s.attRow}>
-                          <button
-                            className={`${s.attBtn} ${myAtt === 'yes' ? s.attYes : ''}`}
-                            onClick={() => onSetAttendance(ev.id, 'yes')}
-                          ><CheckIcon /> Coming</button>
-                          <button
-                            className={`${s.attBtn} ${myAtt === 'maybe' ? s.attMaybe : ''}`}
-                            onClick={() => onSetAttendance(ev.id, 'maybe')}
-                          >? Maybe</button>
-                          <button
-                            className={`${s.attBtn} ${myAtt === 'no' ? s.attNo : ''}`}
-                            onClick={() => onSetAttendance(ev.id, 'no')}
-                          >× Can't make it</button>
-                        </div>
-                      </>
-                    )}
-                    <p className={s.attCount}>{attSummary(ev)}</p>
-                  </div>
-
-                  {isAdmin && (
-                    <div className={s.adminRow}>
-                      <button className={s.editBtn} onClick={() => setEditingEventId(ev.id)}>Edit Event</button>
-                      <button className={s.allocateBtn} onClick={() => setAllocatingEventId(ev.id)}>Allocate Songs</button>
-                    </div>
-                  )}
-                </div>
+            {remainingUpcoming > 0 && (
+              <div className={s.loadMoreRow}>
+                <button
+                  className={s.loadMoreBtn}
+                  onClick={() => setUpcomingLimit((current) => current + UPCOMING_PAGE_SIZE)}
+                >
+                  Show next {Math.min(UPCOMING_PAGE_SIZE, remainingUpcoming)}
+                </button>
+                <span>{remainingUpcoming} later event{remainingUpcoming === 1 ? '' : 's'} hidden</span>
               </div>
-            );
-          })}
-        </div>
+            )}
+          </section>
+
+          {past.length > 0 && (
+            <section className={s.pastSection} aria-label="Past events">
+              <button
+                className={s.pastToggle}
+                onClick={() => setShowPast((current) => !current)}
+                aria-expanded={showPast}
+                aria-controls="past-events-list"
+              >
+                <span>{showPast ? 'Hide past events' : `Show past events (${past.length})`}</span>
+                <span aria-hidden="true">{showPast ? '−' : '+'}</span>
+              </button>
+
+              {showPast && (
+                <div id="past-events-list" className={s.pastContents}>
+                  <div className={s.list}>{visiblePast.map(renderEventCard)}</div>
+                  {remainingPast > 0 && (
+                    <div className={s.loadMoreRow}>
+                      <button
+                        className={s.loadMoreBtn}
+                        onClick={() => setPastLimit((current) => current + PAST_PAGE_SIZE)}
+                      >
+                        Show {Math.min(PAST_PAGE_SIZE, remainingPast)} more past events
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
+        </>
       )}
 
       {isAdmin && onUpdateEvent && (

@@ -127,20 +127,25 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
             <div className={s.attSection}>
               {!isAdmin && (
                 <>
-                  <p className={s.attLabel}>Are you coming?</p>
-                  <div className={s.attRow}>
+                  <p className={s.attLabel} id="att-label-detail">Are you coming?</p>
+                  {/* aria-pressed exposes the chosen response to screen readers -
+                      the selected state is otherwise only conveyed by colour. */}
+                  <div className={s.attRow} role="group" aria-labelledby="att-label-detail">
                     <button
                       className={`${s.attBtn} ${myAtt === 'yes' ? s.attYes : ''}`}
+                      aria-pressed={myAtt === 'yes'}
                       onClick={() => onSetAttendance(event.id, 'yes')}
-                    ><CheckIcon /> Coming</button>
+                    ><span aria-hidden="true"><CheckIcon /></span> Coming</button>
                     <button
                       className={`${s.attBtn} ${myAtt === 'maybe' ? s.attMaybe : ''}`}
+                      aria-pressed={myAtt === 'maybe'}
                       onClick={() => onSetAttendance(event.id, 'maybe')}
-                    >? Maybe</button>
+                    ><span aria-hidden="true">?</span> Maybe</button>
                     <button
                       className={`${s.attBtn} ${myAtt === 'no' ? s.attNo : ''}`}
+                      aria-pressed={myAtt === 'no'}
                       onClick={() => onSetAttendance(event.id, 'no')}
-                    >× Can't make it</button>
+                    ><span aria-hidden="true">×</span> Can't make it</button>
                   </div>
                 </>
               )}

@@ -124,7 +124,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
               <VoicePartBreakdown counts={event.voicePartCounts || {}} checkMissing={isAdmin} />
             )}
 
-            <div className={s.attSection}>
+            {!isReh && <div className={s.attSection}>
               {!isAdmin && (
                 <>
                   <p className={s.attLabel} id="att-label-detail">Are you coming?</p>
@@ -150,7 +150,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
                 </>
               )}
               <p className={s.attCount}>{attSummary(event)}</p>
-            </div>
+            </div>}
           </div>
         </div>
 

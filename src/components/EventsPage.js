@@ -116,7 +116,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
             <VoicePartBreakdown counts={ev.voicePartCounts || {}} checkMissing={isAdmin} />
           )}
 
-          <div className={s.attSection}>
+          {!isReh && <div className={s.attSection}>
             {!isAdmin && (
               <>
                 <p className={s.attLabel} id={`att-label-${ev.id}`}>Are you coming?</p>
@@ -142,7 +142,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
               </>
             )}
             <p className={s.attCount}>{attSummary(ev)}</p>
-          </div>
+          </div>}
 
           {isAdmin && (
             <div className={s.adminRow}>

@@ -36,7 +36,7 @@ export default function AttendanceDashboard({ events }) {
     return () => unsubscribe();
   }, []);
 
-  const filteredEvents = filterEvents(events, filters);
+  const filteredEvents = filterEvents(events, filters).filter((event) => event.type !== 'rehearsal');
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
 
   const nameFor = (userId) => members[userId]?.name || userId;

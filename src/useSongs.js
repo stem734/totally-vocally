@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteField, doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 export function useSongs(enabled = true) {
@@ -37,7 +37,7 @@ export function useSongs(enabled = true) {
     return () => unsubscribe();
   }, [enabled]);
 
-  const addSong = useCallback(async (title, url = '', choirs = [], linkedFiles = []) => {
+  const addSong = useCallback(async (title, url = '', choirs = [], linkedFiles = [], metadata = {}) => {
     try {
       await addDoc(collection(db, 'songs'), {
         title,
@@ -48,7 +48,11 @@ export function useSongs(enabled = true) {
           name: file.name,
           contentType: file.contentType,
         })),
+        resourceVersion: metadata.resourceVersion || '',
+        resourceDate: metadata.resourceDate || '',
+        rightsNotes: metadata.rightsNotes || '',
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     } catch (err) {
       console.error('Failed to add song:', err);
@@ -56,23 +60,38 @@ export function useSongs(enabled = true) {
     }
   }, []);
 
-  const deleteSong = useCallback(async (songId) => {
+  const archiveSong = useCallback(async (songId) => {
     try {
-      await deleteDoc(doc(db, 'songs', songId));
+      await updateDoc(doc(db, 'songs', songId), {
+        archivedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
     } catch (err) {
-      console.error('Failed to delete song:', err);
+      console.error('Failed to archive song:', err);
+      throw err;
+    }
+  }, []);
+
+  const restoreSong = useCallback(async (songId) => {
+    try {
+      await updateDoc(doc(db, 'songs', songId), {
+        archivedAt: deleteField(),
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error('Failed to restore song:', err);
       throw err;
     }
   }, []);
 
   const updateSong = useCallback(async (songId, updates) => {
     try {
-      await updateDoc(doc(db, 'songs', songId), updates);
+      await updateDoc(doc(db, 'songs', songId), { ...updates, updatedAt: new Date().toISOString() });
     } catch (err) {
       console.error('Failed to update song:', err);
       throw err;
     }
   }, []);
 
-  return { songs, loading, addSong, deleteSong, updateSong };
+  return { songs, loading, addSong, archiveSong, restoreSong, updateSong };
 }

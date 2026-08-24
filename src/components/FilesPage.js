@@ -3,17 +3,15 @@ import { createPortal } from 'react-dom';
 import {
   deleteObject,
   getBlob,
-  getMetadata,
-  listAll,
   ref,
-  uploadBytesResumable,
+  uploadBytes,
 } from 'firebase/storage';
 import { storage } from '../firebase';
+import { FILES_PATH, listSharedFiles } from '../sharedFiles';
 import { safeExternalUrl } from '../safeUrl';
 import SongsPage from './SongsPage';
 import s from './FilesPage.module.css';
 
-const FILES_PATH = 'shared';
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_TYPES = new Set([
   'application/pdf',
@@ -58,13 +56,12 @@ function linkedPathsForSong(song) {
   return song.linkedFilePath ? [song.linkedFilePath] : [];
 }
 
-export default function FilesPage({ isAdmin = false, songLibrary, initialSongId = '' }) {
+export default function FilesPage({ isAdmin = false, songLibrary, initialSongId = '', onFilesLoaded, newSince = '' }) {
   const songs = songLibrary?.songs || [];
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [activeFile, setActiveFile] = useState('');
   const [playingFile, setPlayingFile] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
@@ -83,7 +80,7 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
   const fileGroups = useMemo(() => {
     const filesByPath = new Map(files.map((file) => [file.fullPath, file]));
     const assignedPaths = new Set();
-    const songGroups = songs.map((song) => {
+    const songGroups = songs.filter((song) => !song.archivedAt).map((song) => {
       const groupedFiles = linkedPathsForSong(song).map((path) => {
         const file = filesByPath.get(path);
         if (file) assignedPaths.add(path);
@@ -115,26 +112,16 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
     setError('');
     setLoading(true);
     try {
-      const result = await listAll(ref(storage, FILES_PATH));
-      const nextFiles = await Promise.all(result.items.map(async (fileRef) => {
-        const metadata = await getMetadata(fileRef);
-        return {
-          fullPath: fileRef.fullPath,
-          name: metadata.customMetadata?.originalName || fileRef.name,
-          size: metadata.size,
-          contentType: metadata.contentType || 'application/octet-stream',
-          updated: metadata.updated,
-        };
-      }));
-      nextFiles.sort((a, b) => a.name.localeCompare(b.name));
+      const nextFiles = await listSharedFiles();
       setFiles(nextFiles);
+      onFilesLoaded?.(nextFiles);
     } catch (err) {
       console.error('Failed to list files:', err);
       setError('Files could not be loaded. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onFilesLoaded]);
 
   useEffect(() => { mainRef.current?.focus(); }, []);
   useEffect(() => { loadFiles(); }, [loadFiles]);
@@ -164,20 +151,14 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
     setPreviewUrl(nextUrl);
   };
 
-  const uploadOne = (file) => new Promise((resolve, reject) => {
+  const uploadOne = async (file) => {
     const uniqueName = `${Date.now()}-${crypto.randomUUID()}-${safeStorageName(file.name)}`;
-    const uploadTask = uploadBytesResumable(ref(storage, `${FILES_PATH}/${uniqueName}`), file, {
+    await uploadBytes(ref(storage, `${FILES_PATH}/${uniqueName}`), file, {
       contentType: file.type,
       customMetadata: { originalName: file.name },
     });
 
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => setUploadProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
-      reject,
-      resolve
-    );
-  });
+  };
 
   const handleUpload = async (event) => {
     const selected = Array.from(event.target.files || []);
@@ -192,7 +173,6 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
 
     setError('');
     setUploading(true);
-    setUploadProgress(0);
     try {
       for (const file of selected) {
         setActiveFile(file.name);
@@ -204,7 +184,6 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
       setError('The upload failed. Please check your connection and try again.');
     } finally {
       setUploading(false);
-      setUploadProgress(0);
       setActiveFile('');
     }
   };
@@ -355,8 +334,8 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
 
       {uploading && (
         <section className={s.uploadStatus} aria-live="polite">
-          <div><span>Uploading {activeFile}</span><strong>{uploadProgress}%</strong></div>
-          <progress value={uploadProgress} max="100">{uploadProgress}%</progress>
+          <div><span>Uploading {activeFile}</span><strong>Please wait…</strong></div>
+          <progress aria-label={`Uploading ${activeFile}`} />
         </section>
       )}
 
@@ -374,6 +353,7 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
         <section className={s.folderTree} aria-label="Choir resource folders">
           {fileGroups.map((group) => {
             const itemCount = group.files.length + (group.externalUrl ? 1 : 0);
+            const newFileCount = group.files.filter((file) => file.updated && file.updated > newSince).length;
             return (
               <details
                 className={s.folder}
@@ -384,7 +364,7 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
                 <summary>
                   <span className={s.folderIcon} aria-hidden="true">📁</span>
                   <strong>{group.name}</strong>
-                  <small>{itemCount} resource{itemCount === 1 ? '' : 's'}</small>
+                  <small>{itemCount} resource{itemCount === 1 ? '' : 's'}{newFileCount > 0 && <span className={s.folderNewCount}> · {newFileCount} new</span>}</small>
                 </summary>
                 <div className={s.folderContents}>
                   {itemCount === 0 && (
@@ -396,11 +376,12 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
                     const locationKey = `${group.id}:${file.fullPath}`;
                     const isPlaying = playingFile === locationKey;
                     const isPreviewable = isPreviewableType(file.contentType);
+                    const isNew = Boolean(file.updated && file.updated > newSince);
                     return (
                       <article className={s.fileCard} key={`${group.id}-${file.fullPath}`}>
                         <div className={s.fileIcon} aria-hidden="true">{isAudio ? '🎧' : file.contentType === 'application/pdf' ? '📄' : '📁'}</div>
                         <div className={s.fileDetails}>
-                          <h2>{file.name}</h2>
+                          <div className={s.fileHeading}><h2>{file.name}</h2>{isNew && <span className={s.fileNewBadge}>New</span>}</div>
                           <p>{formatBytes(file.size)}{file.updated ? ` · Updated ${new Date(file.updated).toLocaleDateString()}` : ''}</p>
                         </div>
                         <div className={s.actions}>

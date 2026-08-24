@@ -2,7 +2,7 @@ import React from 'react';
 import s from './Header.module.css';
 import { CalendarIcon, EventIcon, InfoIcon, FilesIcon } from '../icons';
 
-export default function Header({ activePage, onNavigate, onLogout, showAdminNav, hasNewEvents, pendingApprovalCount = 0 }) {
+export default function Header({ activePage, onNavigate, onLogout, showAdminNav, hasNewEvents, hasNewFiles, pendingApprovalCount = 0 }) {
   const TABS = [
     { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
     { id: 'events',   label: 'Events',   icon: EventIcon },
@@ -24,7 +24,7 @@ export default function Header({ activePage, onNavigate, onLogout, showAdminNav,
         <nav className={s.nav} aria-label="Main navigation">
           {TABS.map((tab) => {
             const Icon = tab.icon;
-            const showBadge = hasNewEvents && (tab.id === 'calendar' || tab.id === 'events');
+            const showBadge = (hasNewEvents && (tab.id === 'calendar' || tab.id === 'events')) || (hasNewFiles && tab.id === 'files');
             const showPendingBadge = tab.id === 'members' && pendingApprovalCount > 0;
             return (
               <button

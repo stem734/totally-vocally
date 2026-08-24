@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { setMemberAccess } from '../firebaseFunctions';
 import s from './MembersPage.module.css';
 
-const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
+const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected', inactive: 'Inactive' };
 const VOICE_PARTS = ['Soprano 1', 'Soprano 2', 'Alto', 'Tenor 1', 'Tenor 2', 'Bass'];
 const REHEARSAL_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 
@@ -12,8 +13,11 @@ export default function MembersPage({ isAdmin = true }) {
   const [members, setMembers] = useState([]);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
-  const [deletingMember, setDeletingMember] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const [accessMember, setAccessMember] = useState(null);
+  const [changingAccess, setChangingAccess] = useState(false);
+  const [dayFilter, setDayFilter] = useState('');
+  const [voicePartFilter, setVoicePartFilter] = useState('');
+  const [showInactive, setShowInactive] = useState(false);
 
   useEffect(() => onSnapshot(collection(db, 'users'), (snapshot) => {
     setMembers(snapshot.docs.map((member) => ({ id: member.id, ...member.data() })));
@@ -55,17 +59,29 @@ export default function MembersPage({ isAdmin = true }) {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deletingMember) return;
-    setDeleting(true);
+  const handleDeactivate = async () => {
+    if (!accessMember) return;
+    setChangingAccess(true);
     setError('');
     try {
-      await deleteDoc(doc(db, 'users', deletingMember.id));
-      setDeletingMember(null);
+      await setMemberAccess({ targetUid: accessMember.id, action: 'deactivate' });
+      setAccessMember(null);
     } catch (err) {
       setError(err.message);
     } finally {
-      setDeleting(false);
+      setChangingAccess(false);
+    }
+  };
+
+  const reactivateMember = async (member) => {
+    setUpdating(member.id);
+    setError('');
+    try {
+      await setMemberAccess({ targetUid: member.id, action: 'reactivate' });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUpdating('');
     }
   };
 
@@ -79,7 +95,10 @@ export default function MembersPage({ isAdmin = true }) {
     const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
     return status === 'pending';
   });
-  const otherMembers = ordered.filter((member) => !pendingMembers.includes(member));
+  const matchesFilters = (member) => (!dayFilter || member.rehearsalDay === dayFilter)
+    && (!voicePartFilter || member.voicePart === voicePartFilter);
+  const otherMembers = ordered.filter((member) => !pendingMembers.includes(member) && member.status !== 'inactive' && matchesFilters(member));
+  const inactiveMembers = ordered.filter((member) => member.role !== 'admin' && member.status === 'inactive' && matchesFilters(member));
 
   const renderMember = (member) => {
     const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
@@ -122,7 +141,11 @@ export default function MembersPage({ isAdmin = true }) {
           <div className={s.actions}>
             {status !== 'approved' && <button className={s.approve} disabled={updating === member.id || !member.voicePart || !member.rehearsalDay} title={!member.voicePart || !member.rehearsalDay ? 'Assign a voice part and rehearsal day before approval' : ''} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
             {status !== 'rejected' && <button className={s.reject} disabled={updating === member.id} onClick={() => setStatus(member.id, 'rejected')}>Reject</button>}
-            <button className={s.delete} disabled={updating === member.id} onClick={() => setDeletingMember({ id: member.id, displayName })}>Delete</button>
+            {status === 'inactive' ? (
+              <button className={s.approve} disabled={updating === member.id} onClick={() => reactivateMember(member)}>Reactivate</button>
+            ) : (
+              <button className={s.delete} disabled={updating === member.id} onClick={() => setAccessMember({ id: member.id, displayName })}>Deactivate</button>
+            )}
           </div>
         )}
       </article>
@@ -151,6 +174,10 @@ export default function MembersPage({ isAdmin = true }) {
           <h2 id="members-heading">Members</h2>
           <span>{otherMembers.length} account{otherMembers.length === 1 ? '' : 's'}</span>
         </div>
+        {isAdmin && <div className={s.filters} aria-label="Filter members">
+          <label>Rehearsal day<select value={dayFilter} onChange={(event) => setDayFilter(event.target.value)}><option value="">All days</option>{REHEARSAL_DAYS.map((day) => <option key={day} value={day}>{day}</option>)}</select></label>
+          <label>Voice part<select value={voicePartFilter} onChange={(event) => setVoicePartFilter(event.target.value)}><option value="">All voice parts</option>{VOICE_PARTS.map((part) => <option key={part} value={part}>{part}</option>)}</select></label>
+        </div>}
         <div className={s.tableHeader}>
           <span>Member</span>
           <span>Logins</span>
@@ -164,20 +191,26 @@ export default function MembersPage({ isAdmin = true }) {
         </div>
       </section>
 
-      {deletingMember && createPortal(
-        <div className={s.confirmOverlay} onClick={() => !deleting && setDeletingMember(null)}>
+      {inactiveMembers.length > 0 && <section className={`${s.memberSection} ${s.inactiveSection}`} aria-labelledby="inactive-members-heading">
+        <button type="button" className={s.inactiveToggle} onClick={() => setShowInactive((open) => !open)} aria-expanded={showInactive}>
+          <span><strong id="inactive-members-heading">Deactivated members</strong><small>Sign-in disabled; retained for audit and reactivation.</small></span>
+          <span>{inactiveMembers.length} {showInactive ? '⌃' : '⌄'}</span>
+        </button>
+        {showInactive && <div className={s.inactiveList}>{inactiveMembers.map(renderMember)}</div>}
+      </section>}
+
+      {accessMember && createPortal(
+        <div className={s.confirmOverlay} onClick={() => !changingAccess && setAccessMember(null)}>
           <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
-            <h3>Remove member?</h3>
+            <h3>Deactivate member?</h3>
             <p>
-              This removes "{deletingMember.displayName}" from the members list and revokes their
-              access to the app immediately. Their sign-in still technically works, but they'll be
-              stuck on the "Awaiting approval" screen with no way back in from here. To fully block
-              them from signing in, delete their account in the Firebase console too.
+              This disables "{accessMember.displayName}"'s sign-in and revokes access immediately.
+              Their profile and audit history are retained so an administrator can reactivate them later.
             </p>
             <div className={s.confirmActions}>
-              <button className={s.cancelBtn} onClick={() => setDeletingMember(null)} disabled={deleting}>Cancel</button>
-              <button className={s.confirmDeleteBtn} onClick={handleDelete} disabled={deleting}>
-                {deleting ? 'Removing...' : 'Remove'}
+              <button className={s.cancelBtn} onClick={() => setAccessMember(null)} disabled={changingAccess}>Cancel</button>
+              <button className={s.confirmDeleteBtn} onClick={handleDeactivate} disabled={changingAccess}>
+                {changingAccess ? 'Deactivating...' : 'Deactivate'}
               </button>
             </div>
           </div>

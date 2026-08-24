@@ -56,6 +56,10 @@
 .fileCard { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 16px; background: var(--ink-soft); border: 1px solid var(--teal-dark); border-radius: 14px; }
 .fileIcon { font-size: 1.8rem; }
 .fileDetails { min-width: 0; }
+.fileHeading { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fileNewBadge,.folderNewCount { color: #fff; background: var(--pink); border-radius: 999px; font-size: .64rem; font-weight: 900; text-transform: uppercase; white-space: nowrap; }
+.fileNewBadge { padding: 3px 7px; }
+.folderNewCount { padding: 2px 6px; }
 .fileDetails h2 { margin: 0; color: var(--warm-white); font-size: 1rem; overflow-wrap: anywhere; }
 .fileDetails p { margin: 5px 0 0; color: var(--muted); font-size: 0.82rem; }
 .actions { display: flex; gap: 8px; }

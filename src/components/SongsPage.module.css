@@ -399,6 +399,9 @@
 .eyebrow { color: var(--pink-light); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
 .closeBtn { border: 0; background: transparent; color: var(--muted-light); font-size: 1.7rem; cursor: pointer; line-height: 1; }
 .field { display: grid; gap: 7px; margin-bottom: 20px; }
+.metadataFields { display: grid; grid-template-columns: 1fr 180px; gap: 12px; }
+.textarea { min-height: 86px; resize: vertical; padding: 10px 12px; color: var(--warm-white); border: 1px solid rgba(78,171,216,.32); border-radius: 8px; background: var(--ink-soft); font: inherit; }
+.textarea:focus { outline: none; border-color: var(--blue-light); }
 .field > span, .fieldset legend, .resourceBox legend { color: var(--muted-light); font-size: 0.8rem; font-weight: 800; }
 .fieldset, .resourceBox { margin: 0 0 20px; padding: 0; border: 0; }
 .fieldset legend, .resourceBox legend { margin-bottom: 10px; }
@@ -415,6 +418,7 @@
 .orDivider::before, .orDivider::after { content: ''; height: 1px; flex: 1; background: rgba(255, 255, 255, 0.09); }
 .modalActions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
 .resourcesModal { width: min(640px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; padding: 24px; border: 1px solid rgba(78, 171, 216, 0.3); border-radius: 18px; background: var(--ink-mid); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45); }
+.resourceMetadata { display: grid; gap: 5px; margin-top: 12px; color: var(--muted-light); line-height: 1.4; }.resourceMetadata small { font-size: .78rem; }
 .resourceList { display: grid; gap: 10px; margin-bottom: 20px; }
 .resourceItem { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 13px; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 10px; background: var(--ink-soft); }
 .resourceItem > span { font-size: 1.3rem; }
@@ -449,6 +453,8 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+.archivedSection { margin-top: 32px; border: 1px solid rgba(197,197,212,.15); border-radius: 12px; overflow: hidden; }
+.archivedToggle { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; color: var(--warm-white); border: 0; background: rgba(197,197,212,.045); text-align: left; cursor: pointer; }.archivedToggle:hover { background: rgba(197,197,212,.08); }.archivedToggle span:first-child { display: grid; gap: 4px; }.archivedToggle small,.archivedToggle > span:last-child { color: var(--muted-light); font-size: .78rem; }.archivedList { display: grid; gap: 10px; padding: 0 14px 14px; }.archivedSong { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px; border: 1px solid rgba(255,255,255,.08); border-radius: 9px; background: var(--ink-soft); }.archivedSong > div { display: grid; gap: 4px; }.archivedSong small { color: var(--muted); font-size: .75rem; }.restoreBtn { padding: 8px 12px; border: 1px solid rgba(118,209,154,.45); border-radius: 7px; color: #76d19a; background: rgba(118,209,154,.08); font-weight: 700; cursor: pointer; }
 
 @media (max-width: 700px) {
   .page {
@@ -495,6 +501,7 @@
     grid-template-columns: 1fr;
     row-gap: 10px;
   }
+  .metadataFields { grid-template-columns: 1fr; gap: 0; }
 
   .editCard .titleCell {
     grid-column: 1;

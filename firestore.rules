@@ -96,13 +96,20 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Account lifecycle records are only written by the trusted Admin SDK
+    // function. Browser clients must not read, forge or delete them.
+    match /auditLogs/{logId} {
+      allow read, write: if false;
+    }
+
     // Songs collection - admin managed
     match /songs/{songId} {
       allow read: if isApproved();
       allow create, update: if isAdmin()
         && request.resource.data.keys().hasOnly([
           'title', 'url', 'choirs', 'linkedFilePath', 'linkedFileName',
-          'linkedFileContentType', 'linkedFiles', 'createdAt', 'updatedAt'
+          'linkedFileContentType', 'linkedFiles', 'createdAt', 'updatedAt',
+          'resourceVersion', 'resourceDate', 'rightsNotes', 'archivedAt'
         ])
         && request.resource.data.keys().hasAll(['title', 'url', 'choirs'])
         && request.resource.data.title is string
@@ -119,7 +126,15 @@ service cloud.firestore {
         && request.resource.data.get('linkedFileName', '') is string
         && request.resource.data.get('linkedFileName', '').size() <= 255
         && request.resource.data.get('linkedFileContentType', '') is string
-        && request.resource.data.get('linkedFileContentType', '').size() <= 150;
+        && request.resource.data.get('linkedFileContentType', '').size() <= 150
+        && request.resource.data.get('resourceVersion', '') is string
+        && request.resource.data.get('resourceVersion', '').size() <= 80
+        && request.resource.data.get('resourceDate', '') is string
+        && request.resource.data.get('resourceDate', '').matches('^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.get('rightsNotes', '') is string
+        && request.resource.data.get('rightsNotes', '').size() <= 1000
+        && request.resource.data.get('archivedAt', '') is string
+        && request.resource.data.get('archivedAt', '').size() <= 40;
       allow delete: if isAdmin();
     }
 

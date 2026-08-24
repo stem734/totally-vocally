@@ -30,7 +30,7 @@ export default function SongsPage({
   uploadedFiles = null,
   uploadedFilesLoading = false,
 }) {
-  const { songs, loading, addSong, deleteSong, updateSong } = songLibrary;
+  const { songs, loading, addSong, archiveSong, restoreSong, updateSong } = songLibrary;
   const [seeding, setSeeding] = useState(false);
   const [seedError, setSeedError] = useState('');
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -38,15 +38,22 @@ export default function SongsPage({
   const [newSongUrl, setNewSongUrl] = useState('');
   const [newLinkedFilePaths, setNewLinkedFilePaths] = useState([]);
   const [newSongChoirs, setNewSongChoirs] = useState([]);
+  const [newResourceVersion, setNewResourceVersion] = useState('');
+  const [newResourceDate, setNewResourceDate] = useState('');
+  const [newRightsNotes, setNewRightsNotes] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editUrl, setEditUrl] = useState('');
   const [editLinkedFilePaths, setEditLinkedFilePaths] = useState([]);
   const [editChoirs, setEditChoirs] = useState([]);
+  const [editResourceVersion, setEditResourceVersion] = useState('');
+  const [editResourceDate, setEditResourceDate] = useState('');
+  const [editRightsNotes, setEditRightsNotes] = useState('');
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState('');
-  const [deletingSong, setDeletingSong] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const [archivingSong, setArchivingSong] = useState(null);
+  const [archiving, setArchiving] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [availableFiles, setAvailableFiles] = useState([]);
   const [filesLoading, setFilesLoading] = useState(false);
   const [openingFile, setOpeningFile] = useState('');
@@ -128,12 +135,16 @@ export default function SongsPage({
         newSongTitle.trim(),
         requireSafeExternalUrl(newSongUrl),
         newSongChoirs,
-        filesForPaths(newLinkedFilePaths)
+        filesForPaths(newLinkedFilePaths),
+        { resourceVersion: newResourceVersion.trim(), resourceDate: newResourceDate, rightsNotes: newRightsNotes.trim() }
       );
       setNewSongTitle('');
       setNewSongUrl('');
       setNewLinkedFilePaths([]);
       setNewSongChoirs([]);
+      setNewResourceVersion('');
+      setNewResourceDate('');
+      setNewRightsNotes('');
       setAddModalOpen(false);
     } catch (err) {
       setError(err.message);
@@ -148,6 +159,9 @@ export default function SongsPage({
     setEditUrl(song.url || '');
     setEditLinkedFilePaths(songLinkedFiles(song).map((file) => file.fullPath));
     setEditChoirs(song.choirs || []);
+    setEditResourceVersion(song.resourceVersion || '');
+    setEditResourceDate(song.resourceDate || '');
+    setEditRightsNotes(song.rightsNotes || '');
   };
 
   const handleSaveEdit = async () => {
@@ -169,12 +183,18 @@ export default function SongsPage({
         linkedFilePath: '',
         linkedFileName: '',
         linkedFileContentType: '',
+        resourceVersion: editResourceVersion.trim(),
+        resourceDate: editResourceDate,
+        rightsNotes: editRightsNotes.trim(),
       });
       setEditingId(null);
       setEditTitle('');
       setEditUrl('');
       setEditLinkedFilePaths([]);
       setEditChoirs([]);
+      setEditResourceVersion('');
+      setEditResourceDate('');
+      setEditRightsNotes('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -204,18 +224,18 @@ export default function SongsPage({
     }
   };
 
-  const handleConfirmDelete = async () => {
-    if (!deletingSong) return;
+  const handleConfirmArchive = async () => {
+    if (!archivingSong) return;
 
-    setDeleting(true);
+    setArchiving(true);
     setError('');
     try {
-      await deleteSong(deletingSong.id);
-      setDeletingSong(null);
+      await archiveSong(archivingSong.id);
+      setArchivingSong(null);
     } catch (err) {
       setError(err.message);
     } finally {
-      setDeleting(false);
+      setArchiving(false);
     }
   };
 
@@ -243,6 +263,8 @@ export default function SongsPage({
 
   const Root = embedded ? 'section' : 'main';
   const Heading = embedded ? 'h2' : 'h1';
+  const activeSongs = songs.filter((song) => !song.archivedAt);
+  const archivedSongs = songs.filter((song) => song.archivedAt);
 
   return (
     <Root className={`${s.page} ${embedded ? s.embedded : ''}`} aria-labelledby={embedded ? 'song-folder-management-title' : undefined}>
@@ -254,7 +276,7 @@ export default function SongsPage({
           <p>{embedded ? 'Create song folders and choose which uploaded resources members see inside them.' : 'Manage the song catalogue for allocating to events.'}</p>
         </div>
         <div className={s.headerActions}>
-          {isAdmin && songs.length === 0 && (
+          {isAdmin && activeSongs.length === 0 && (
             <button
               className={s.seedBtn}
               onClick={handleSeedSongs}
@@ -268,13 +290,13 @@ export default function SongsPage({
               + Add Song
             </button>
           )}
-          <span className={s.count}>{songs.length} songs</span>
+          <span className={s.count}>{activeSongs.length} songs</span>
         </div>
       </header>
 
       {(error || seedError) && <div className={s.error}>{error || seedError}</div>}
 
-      {songs.length === 0 ? (
+      {activeSongs.length === 0 ? (
         <p className={s.empty}>No songs yet. Add one to get started.</p>
       ) : (
         <>
@@ -285,12 +307,12 @@ export default function SongsPage({
             {isAdmin && <span>Actions</span>}
           </div>
           <div className={s.list}>
-            {songs.map((song) => {
+            {activeSongs.map((song) => {
               const linkedFiles = songLinkedFiles(song);
               const resourceCount = linkedFiles.length + (safeExternalUrl(song.url) ? 1 : 0);
               return (
                 <article className={s.card} key={song.id}>
-                  <span className={s.titleCell}>{song.title}</span>
+                  <div className={s.titleCell}><strong>{song.title}</strong>{(song.resourceVersion || song.resourceDate) && <small>{song.resourceVersion || 'Unversioned'}{song.resourceDate ? ` · ${song.resourceDate}` : ''}</small>}</div>
                   <div className={s.choirsCell}>
                     {song.choirs && song.choirs.length > 0 && (
                       <div className={s.choirTags}>
@@ -325,8 +347,8 @@ export default function SongsPage({
                       </button>
                       <button
                         className={s.deleteBtn}
-                        onClick={() => setDeletingSong(song)}
-                        title="Delete song"
+                        onClick={() => setArchivingSong(song)}
+                        title="Archive song"
                       >
                         ×
                       </button>
@@ -338,6 +360,14 @@ export default function SongsPage({
           </div>
         </>
       )}
+
+      {isAdmin && archivedSongs.length > 0 && <section className={s.archivedSection}>
+        <button className={s.archivedToggle} type="button" onClick={() => setShowArchived((open) => !open)} aria-expanded={showArchived}>
+          <span><strong>Archived songs</strong><small>Hidden from members and event allocation.</small></span>
+          <span>{archivedSongs.length} {showArchived ? '⌃' : '⌄'}</span>
+        </button>
+        {showArchived && <div className={s.archivedList}>{archivedSongs.map((song) => <article className={s.archivedSong} key={song.id}><div><strong>{song.title}</strong><small>{song.resourceVersion || 'No version'}{song.resourceDate ? ` · ${song.resourceDate}` : ''}</small></div><button className={s.restoreBtn} onClick={() => restoreSong(song.id)}>Restore</button></article>)}</div>}
+      </section>}
 
       {editingId && createPortal(
         <div className={s.confirmOverlay} onClick={() => updating !== editingId && setEditingId(null)}>
@@ -354,6 +384,11 @@ export default function SongsPage({
               <span>Song title</span>
               <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} disabled={updating === editingId} className={s.input} autoFocus />
             </label>
+            <div className={s.metadataFields}>
+              <label className={s.field}><span>Resource version</span><input type="text" value={editResourceVersion} onChange={(e) => setEditResourceVersion(e.target.value)} disabled={updating === editingId} className={s.input} placeholder="e.g. v2.1" /></label>
+              <label className={s.field}><span>Resource date</span><input type="date" value={editResourceDate} onChange={(e) => setEditResourceDate(e.target.value)} disabled={updating === editingId} className={s.input} /></label>
+            </div>
+            <label className={s.field}><span>Arrangement licensing / ownership</span><textarea value={editRightsNotes} onChange={(e) => setEditRightsNotes(e.target.value)} disabled={updating === editingId} className={s.textarea} maxLength="1000" placeholder="Optional licensing or ownership notes" /></label>
 
             <fieldset className={s.fieldset}>
               <legend>Choirs</legend>
@@ -420,6 +455,11 @@ export default function SongsPage({
               disabled={updating === 'add'}
               className={s.input}
             />
+            <div className={s.metadataFields}>
+              <label className={s.field}><span>Resource version</span><input type="text" value={newResourceVersion} onChange={(e) => setNewResourceVersion(e.target.value)} disabled={updating === 'add'} className={s.input} placeholder="e.g. v2.1" /></label>
+              <label className={s.field}><span>Resource date</span><input type="date" value={newResourceDate} onChange={(e) => setNewResourceDate(e.target.value)} disabled={updating === 'add'} className={s.input} /></label>
+            </div>
+            <label className={s.field}><span>Arrangement licensing / ownership</span><textarea value={newRightsNotes} onChange={(e) => setNewRightsNotes(e.target.value)} disabled={updating === 'add'} className={s.textarea} maxLength="1000" placeholder="Optional licensing or ownership notes" /></label>
             <div className={s.fileChecklist} aria-label="Uploaded files">
               {filesLoading ? <span className={s.checklistState}>Loading uploaded files…</span> : availableFiles.length === 0 ? <span className={s.checklistState}>No files have been uploaded yet.</span> : availableFiles.map((file) => (
                 <label key={file.fullPath} className={s.fileChoice}>
@@ -467,6 +507,10 @@ export default function SongsPage({
               <div>
                 <span className={s.eyebrow}>Practice resources</span>
                 <h3 id="song-resources-title">{resourceSong.title}</h3>
+                {(resourceSong.resourceVersion || resourceSong.resourceDate || resourceSong.rightsNotes) && <div className={s.resourceMetadata}>
+                  {(resourceSong.resourceVersion || resourceSong.resourceDate) && <small>{resourceSong.resourceVersion || 'Unversioned'}{resourceSong.resourceDate ? ` · ${resourceSong.resourceDate}` : ''}</small>}
+                  {resourceSong.rightsNotes && <small>{resourceSong.rightsNotes}</small>}
+                </div>}
               </div>
               <button type="button" className={s.closeBtn} onClick={() => setResourceSong(null)} aria-label="Close resources">×</button>
             </div>
@@ -499,25 +543,25 @@ export default function SongsPage({
         document.body
       )}
 
-      {deletingSong && createPortal(
-        <div className={s.confirmOverlay} onClick={() => !deleting && setDeletingSong(null)}>
+      {archivingSong && createPortal(
+        <div className={s.confirmOverlay} onClick={() => !archiving && setArchivingSong(null)}>
           <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
-            <h3>Remove song?</h3>
-            <p>Are you sure you want to remove "{deletingSong.title}" from the library?</p>
+            <h3>Archive song?</h3>
+            <p>Archive "{archivingSong.title}"? Its files and record are retained and can be restored later.</p>
             <div className={s.confirmActions}>
               <button
                 className={s.cancelBtn}
-                onClick={() => setDeletingSong(null)}
-                disabled={deleting}
+                onClick={() => setArchivingSong(null)}
+                disabled={archiving}
               >
                 Cancel
               </button>
               <button
                 className={s.confirmDeleteBtn}
-                onClick={handleConfirmDelete}
-                disabled={deleting}
+                onClick={handleConfirmArchive}
+                disabled={archiving}
               >
-                {deleting ? 'Removing...' : 'Remove'}
+                {archiving ? 'Archiving...' : 'Archive'}
               </button>
             </div>
           </div>

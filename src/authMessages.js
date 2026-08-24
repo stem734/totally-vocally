@@ -13,6 +13,8 @@ export function getAuthErrorMessage(error) {
       return 'Unable to connect. Please check your internet connection and try again.';
     case 'auth/email-already-in-use':
       return 'An account with this email already exists. Sign in or reset the password for that account.';
+    case 'auth/user-disabled':
+      return 'This account has been disabled and cannot sign in. Please contact the choir administrator if you think this is a mistake.';
     case 'auth/weak-password':
       return 'Password is too weak. Please choose a password at least 6 characters long.';
     default:

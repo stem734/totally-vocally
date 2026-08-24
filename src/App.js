@@ -17,8 +17,12 @@ import { useSongs } from './useSongs';
 import { db } from './firebase';
 import { getAuthErrorMessage } from './authMessages';
 import { eventMatchesSection } from './filterUtils';
+import { latestFileUpdatedAt } from './fileUpdates';
+import { listSharedFiles } from './sharedFiles';
 
 const LAST_SEEN_EVENTS_KEY_PREFIX = 'tv_last_seen_events_';
+const LAST_SEEN_FILES_KEY_PREFIX = 'tv_last_seen_files_';
+const FILE_UPDATE_POLL_MS = 2 * 60 * 1000;
 
 export default function App() {
   const { user, profile, isAdmin, isApproved, loading, sessionExpired, signIn, signUp, resetPassword, logout } = useAuth();
@@ -34,20 +38,51 @@ export default function App() {
   const [authError, setAuthError] = useState('');
   const [authErrorCode, setAuthErrorCode] = useState('');
   const [lastSeenEventsAt, setLastSeenEventsAt] = useState('');
+  const [lastSeenFilesAt, setLastSeenFilesAt] = useState('');
+  const [latestFileAt, setLatestFileAt] = useState('');
+  const [filesNewSince, setFilesNewSince] = useState('');
   const [openSongFolderId, setOpenSongFolderId] = useState('');
   const [eventSectionFilter, setEventSectionFilter] = useState('all');
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
 
+  // Navigation state survives while the sign-in screen is shown. Always give
+  // the next account a safe, available landing page after authentication.
   useEffect(() => {
-    if (!user) { setLastSeenEventsAt(''); return; }
+    if (user?.uid) setPage('calendar');
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user) { setLastSeenEventsAt(''); setLastSeenFilesAt(''); setFilesNewSince(''); return; }
     setLastSeenEventsAt(localStorage.getItem(LAST_SEEN_EVENTS_KEY_PREFIX + user.uid) || '');
+    setLastSeenFilesAt(localStorage.getItem(LAST_SEEN_FILES_KEY_PREFIX + user.uid) || '');
   }, [user]);
+
+  useEffect(() => {
+    if (!isApproved) return undefined;
+    let active = true;
+    const refresh = async () => {
+      try { const files = await listSharedFiles(); if (active) setLatestFileAt(latestFileUpdatedAt(files)); } catch (err) { console.error('Failed to check for new files:', err); }
+    };
+    const refreshWhenVisible = () => { if (document.visibilityState === 'visible') refresh(); };
+    refresh();
+    const interval = window.setInterval(refresh, FILE_UPDATE_POLL_MS);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => { active = false; window.clearInterval(interval); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refreshWhenVisible); };
+  }, [isApproved]);
 
   const markEventsSeen = useCallback(() => {
     if (!user) return;
     const now = new Date().toISOString();
     localStorage.setItem(LAST_SEEN_EVENTS_KEY_PREFIX + user.uid, now);
     setLastSeenEventsAt(now);
+  }, [user]);
+
+  const markFilesSeen = useCallback(() => {
+    if (!user) return;
+    const now = new Date().toISOString();
+    localStorage.setItem(LAST_SEEN_FILES_KEY_PREFIX + user.uid, now);
+    setLastSeenFilesAt(now);
   }, [user]);
 
   useEffect(() => {
@@ -76,6 +111,9 @@ export default function App() {
     isAdmin ? eventSectionFilter : profile?.rehearsalDay
   ));
   const hasNewEvents = visibleEvents.some((ev) => ev.createdAt && ev.createdAt > lastSeenEventsAt);
+  const hasNewFiles = Boolean(latestFileAt && latestFileAt > lastSeenFilesAt);
+
+  const handleFilesLoaded = useCallback((files) => { setLatestFileAt(latestFileUpdatedAt(files)); markFilesSeen(); }, [markFilesSeen]);
 
   const closeAuthModal = useCallback(() => {
     setAuthModalOpen(false);
@@ -158,13 +196,16 @@ export default function App() {
 
   // Logged in
   const navigate = (p) => {
-    if (p === 'files') setOpenSongFolderId('');
+    if (p === 'files') { setOpenSongFolderId(''); setFilesNewSince(lastSeenFilesAt); }
     setPage(p);
     if (p === 'calendar' || p === 'events') markEventsSeen();
+    if (p === 'files') markFilesSeen();
   };
   const openSongFolder = (songId) => {
     setOpenSongFolderId(songId);
+    setFilesNewSince(lastSeenFilesAt);
     setPage('files');
+    markFilesSeen();
   };
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
@@ -177,6 +218,7 @@ export default function App() {
         onLogout={logout}
         showAdminNav={canViewAdminPages}
         hasNewEvents={hasNewEvents}
+        hasNewFiles={hasNewFiles}
         pendingApprovalCount={pendingApprovalCount}
       />
 
@@ -222,6 +264,8 @@ export default function App() {
           isAdmin={isAdmin}
           songLibrary={songLibrary}
           initialSongId={openSongFolderId}
+          onFilesLoaded={handleFilesLoaded}
+          newSince={filesNewSince}
         />
       )}
       {page === 'attendance' && canViewAdminPages && (

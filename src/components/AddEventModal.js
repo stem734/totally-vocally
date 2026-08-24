@@ -138,9 +138,9 @@ export default function AddEventModal({ open, onClose, onSave, songs = [] }) {
 
           <fieldset className={s.checkboxField}>
             <legend>Songs <span className={s.opt}>(optional)</span></legend>
-            {songs.length > 0 ? (
+            {songs.filter((song) => !song.archivedAt).length > 0 ? (
               <div className={`${s.checkboxGroup} ${s.songGroup}`}>
-                {songs.map((song) => (
+                {songs.filter((song) => !song.archivedAt).map((song) => (
                   <label key={song.id} className={s.checkboxOption}>
                     <input
                       type="checkbox"

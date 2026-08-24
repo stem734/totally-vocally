@@ -10,7 +10,7 @@ export default function AllocateSongsModal({ open, event, onClose, onSave, isSav
   }, [songs, selectedSongIds]);
 
   const availableSongs = useMemo(() => {
-    return songs.filter(song => !selectedSongIds.includes(song.id));
+    return songs.filter(song => !song.archivedAt && !selectedSongIds.includes(song.id));
   }, [songs, selectedSongIds]);
 
   const handleAddSong = (songId) => {

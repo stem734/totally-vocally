@@ -55,6 +55,28 @@
   font-size: 0.85rem;
 }
 
+.authErrorActions {
+  display: flex;
+  gap: 8px;
+  margin: -4px 0 16px;
+}
+
+.authErrorActions button {
+  flex: 1;
+  padding: 8px 10px;
+  color: #f5d7e7;
+  border: 1px solid rgba(193,60,133,.55);
+  border-radius: 7px;
+  background: rgba(193,60,133,.12);
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.authErrorActions button:hover:not(:disabled) { background: rgba(193,60,133,.24); }
+.authErrorActions button:disabled { opacity: .55; cursor: not-allowed; }
+
 .authSubmitBtn {
   width: 100%;
   padding: 10px 20px;

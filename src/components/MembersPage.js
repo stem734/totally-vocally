@@ -75,6 +75,60 @@ export default function MembersPage({ isAdmin = true }) {
     return (a.displayName || a.email || '').localeCompare(b.displayName || b.email || '');
   });
 
+  const pendingMembers = ordered.filter((member) => {
+    const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
+    return status === 'pending';
+  });
+  const otherMembers = ordered.filter((member) => !pendingMembers.includes(member));
+
+  const renderMember = (member) => {
+    const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
+    const displayName = member.displayName || 'Unnamed member';
+    const email = member.email;
+    const locked = !isAdmin || updating === member.id;
+    return (
+      <article className={`${s.card} ${status === 'pending' ? s.pendingCard : ''}`} key={member.id}>
+        <div className={s.identity}>
+          <strong title={displayName}>{displayName}</strong>
+          <span title={email}>{email}</span>
+          <small>{member.role === 'admin' ? 'Administrator' : 'Choir member'}</small>
+        </div>
+        <div className={s.logins}>
+          <strong>{member.loginCount || 0}</strong>
+          <small>{member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleDateString() : 'Never'}</small>
+        </div>
+        <select
+          className={s.voiceSelect}
+          value={member.voicePart || ''}
+          disabled={locked}
+          onChange={(event) => setVoicePart(member.id, event.target.value)}
+          aria-label={`Voice part for ${displayName}`}
+        >
+          <option value="">Assign voice part</option>
+          {VOICE_PARTS.map((part) => <option key={part} value={part}>{part}</option>)}
+        </select>
+        <select
+          className={s.voiceSelect}
+          value={member.rehearsalDay || ''}
+          disabled={locked}
+          onChange={(event) => setRehearsalDay(member.id, event.target.value)}
+          aria-label={`Rehearsal day for ${displayName}`}
+        >
+          <option value="">Assign rehearsal day</option>
+          {REHEARSAL_DAYS.map((day) => <option key={day} value={day}>{day}</option>)}
+        </select>
+        <span className={`${s.status} ${s[status]}`}>{STATUS_LABELS[status]}</span>
+        {isAdmin && member.role !== 'admin' && (
+          <div className={s.actions}>
+            {status !== 'approved' && <button className={s.approve} disabled={updating === member.id || !member.voicePart || !member.rehearsalDay} title={!member.voicePart || !member.rehearsalDay ? 'Assign a voice part and rehearsal day before approval' : ''} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
+            {status !== 'rejected' && <button className={s.reject} disabled={updating === member.id} onClick={() => setStatus(member.id, 'rejected')}>Reject</button>}
+            <button className={s.delete} disabled={updating === member.id} onClick={() => setDeletingMember({ id: member.id, displayName })}>Delete</button>
+          </div>
+        )}
+      </article>
+    );
+  };
+
   return (
     <main className={s.page}>
       <header className={s.header}>
@@ -82,63 +136,33 @@ export default function MembersPage({ isAdmin = true }) {
         <span className={s.count}>{members.length} members</span>
       </header>
       {error && <div className={s.error}>{error}</div>}
-      <div className={s.tableHeader}>
-        <span>Member</span>
-        <span>Logins</span>
-        <span>Voice Part</span>
-        <span>Rehearsal Day</span>
-        <span>Status</span>
-        <span>Actions</span>
-      </div>
-      <div className={s.list}>
-        {ordered.map((member) => {
-          const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
-          const displayName = member.displayName || 'Unnamed member';
-          const email = member.email;
-          const locked = !isAdmin || updating === member.id;
-          return (
-            <article className={s.card} key={member.id}>
-              <div className={s.identity}>
-                <strong title={displayName}>{displayName}</strong>
-                <span title={email}>{email}</span>
-                <small>{member.role === 'admin' ? 'Administrator' : 'Choir member'}</small>
-              </div>
-              <div className={s.logins}>
-                <strong>{member.loginCount || 0}</strong>
-                <small>{member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleDateString() : 'Never'}</small>
-              </div>
-              <select
-                className={s.voiceSelect}
-                value={member.voicePart || ''}
-                disabled={locked}
-                onChange={(event) => setVoicePart(member.id, event.target.value)}
-                aria-label={`Voice part for ${displayName}`}
-              >
-                <option value="">Assign voice part</option>
-                {VOICE_PARTS.map((part) => <option key={part} value={part}>{part}</option>)}
-              </select>
-              <select
-                className={s.voiceSelect}
-                value={member.rehearsalDay || ''}
-                disabled={locked}
-                onChange={(event) => setRehearsalDay(member.id, event.target.value)}
-                aria-label={`Rehearsal day for ${displayName}`}
-              >
-                <option value="">Assign rehearsal day</option>
-                {REHEARSAL_DAYS.map((day) => <option key={day} value={day}>{day}</option>)}
-              </select>
-              <span className={`${s.status} ${s[status]}`}>{STATUS_LABELS[status]}</span>
-              {isAdmin && member.role !== 'admin' && (
-                <div className={s.actions}>
-                  {status !== 'approved' && <button className={s.approve} disabled={updating === member.id || !member.voicePart || !member.rehearsalDay} title={!member.voicePart || !member.rehearsalDay ? 'Assign a voice part and rehearsal day before approval' : ''} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
-                  {status !== 'rejected' && <button className={s.reject} disabled={updating === member.id} onClick={() => setStatus(member.id, 'rejected')}>Reject</button>}
-                  <button className={s.delete} disabled={updating === member.id} onClick={() => setDeletingMember({ id: member.id, displayName })}>Delete</button>
-                </div>
-              )}
-            </article>
-          );
-        })}
-      </div>
+      {pendingMembers.length > 0 && (
+        <section className={s.memberSection} aria-labelledby="pending-approvals-heading">
+          <div className={s.sectionHeading}>
+            <h2 id="pending-approvals-heading">Pending approvals</h2>
+            <span>{pendingMembers.length} awaiting review</span>
+          </div>
+          <div className={`${s.list} ${s.pendingList}`}>{pendingMembers.map(renderMember)}</div>
+        </section>
+      )}
+
+      <section className={s.memberSection} aria-labelledby="members-heading">
+        <div className={s.sectionHeading}>
+          <h2 id="members-heading">Members</h2>
+          <span>{otherMembers.length} account{otherMembers.length === 1 ? '' : 's'}</span>
+        </div>
+        <div className={s.tableHeader}>
+          <span>Member</span>
+          <span>Logins</span>
+          <span>Voice Part</span>
+          <span>Rehearsal Day</span>
+          <span>Status</span>
+          <span>Actions</span>
+        </div>
+        <div className={s.list}>
+          {otherMembers.length > 0 ? otherMembers.map(renderMember) : <p className={s.empty}>No approved, rejected, or administrator accounts yet.</p>}
+        </div>
+      </section>
 
       {deletingMember && createPortal(
         <div className={s.confirmOverlay} onClick={() => !deleting && setDeletingMember(null)}>

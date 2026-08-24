@@ -10,34 +10,15 @@ import AuthModal from './components/AuthModal';
 import PendingApproval from './components/PendingApproval';
 import MembersPage from './components/MembersPage';
 import AttendanceDashboard from './components/AttendanceDashboard';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import { useEventsFirestore } from './useEventsFirestore';
 import { useSongs } from './useSongs';
+import { db } from './firebase';
+import { getAuthErrorMessage } from './authMessages';
+import { eventMatchesSection } from './filterUtils';
 
 const LAST_SEEN_EVENTS_KEY_PREFIX = 'tv_last_seen_events_';
-
-function getAuthErrorMessage(error) {
-  switch (error?.code) {
-    case 'auth/invalid-credential':
-    case 'auth/invalid-login-credentials':
-    case 'auth/user-not-found':
-    case 'auth/wrong-password':
-      return 'Incorrect email or password. Please try again.';
-    case 'auth/invalid-email':
-      return 'Please enter a valid email address.';
-    case 'auth/too-many-requests':
-      return 'Too many unsuccessful attempts. Please wait a moment or reset your password.';
-    case 'auth/network-request-failed':
-      return 'Unable to connect. Please check your internet connection and try again.';
-    case 'auth/email-already-in-use':
-      return 'An account with this email already exists. Try signing in instead.';
-    case 'auth/weak-password':
-      return 'Password is too weak. Please choose a longer password.';
-    default:
-      // Never surface raw SDK error text - it can leak internal details.
-      return 'Something went wrong. Please try again.';
-  }
-}
 
 export default function App() {
   const { user, profile, isAdmin, isApproved, loading, sessionExpired, signIn, signUp, resetPassword, logout } = useAuth();
@@ -51,8 +32,11 @@ export default function App() {
   const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'forgotPassword'
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [authErrorCode, setAuthErrorCode] = useState('');
   const [lastSeenEventsAt, setLastSeenEventsAt] = useState('');
   const [openSongFolderId, setOpenSongFolderId] = useState('');
+  const [eventSectionFilter, setEventSectionFilter] = useState('all');
+  const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
 
   useEffect(() => {
     if (!user) { setLastSeenEventsAt(''); return; }
@@ -66,17 +50,44 @@ export default function App() {
     setLastSeenEventsAt(now);
   }, [user]);
 
-  const hasNewEvents = events.some((ev) => ev.createdAt && ev.createdAt > lastSeenEventsAt);
+  useEffect(() => {
+    if (!isAdmin) {
+      setPendingApprovalCount(0);
+      return undefined;
+    }
+
+    return onSnapshot(collection(db, 'users'), (snapshot) => {
+      setPendingApprovalCount(snapshot.docs.filter((member) => {
+        const data = member.data();
+        return data.role !== 'admin' && data.status === 'pending';
+      }).length);
+    }, (err) => {
+      console.error('Failed to fetch pending approval count:', err);
+      setPendingApprovalCount(0);
+    });
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) setEventSectionFilter('all');
+  }, [isAdmin]);
+
+  const visibleEvents = events.filter((event) => eventMatchesSection(
+    event,
+    isAdmin ? eventSectionFilter : profile?.rehearsalDay
+  ));
+  const hasNewEvents = visibleEvents.some((ev) => ev.createdAt && ev.createdAt > lastSeenEventsAt);
 
   const closeAuthModal = useCallback(() => {
     setAuthModalOpen(false);
     setAuthError('');
+    setAuthErrorCode('');
     setAuthMode('signin');
   }, []);
 
   const handleAuth = async (email, password, displayName) => {
     setAuthLoading(true);
     setAuthError('');
+    setAuthErrorCode('');
     try {
       let success = false;
       if (authMode === 'signin') {
@@ -101,6 +112,7 @@ export default function App() {
       }
     } catch (err) {
       setAuthError(getAuthErrorMessage(err));
+      setAuthErrorCode(err?.code || '');
     } finally {
       setAuthLoading(false);
     }
@@ -131,7 +143,10 @@ export default function App() {
           onSubmit={handleAuth}
           loading={authLoading}
           error={authError}
-          onForgotPassword={() => setAuthMode('forgotPassword')}
+          errorCode={authErrorCode}
+          onForgotPassword={() => { setAuthError(''); setAuthErrorCode(''); setAuthMode('forgotPassword'); }}
+          onSignIn={() => { setAuthError(''); setAuthErrorCode(''); setAuthMode('signin'); }}
+          onResetPassword={() => { setAuthError(''); setAuthErrorCode(''); setAuthMode('forgotPassword'); }}
         />
       </>
     );
@@ -162,12 +177,13 @@ export default function App() {
         onLogout={logout}
         showAdminNav={canViewAdminPages}
         hasNewEvents={hasNewEvents}
+        pendingApprovalCount={pendingApprovalCount}
       />
 
       {page === 'calendar' && (
         <CalendarPage
           key="calendar"
-          events={events}
+          events={visibleEvents}
           isAdmin={isAdmin}
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
@@ -178,12 +194,14 @@ export default function App() {
           rehearsalDay={profile?.rehearsalDay}
           songs={songLibrary.songs}
           onOpenSongFolder={openSongFolder}
+          sectionFilter={eventSectionFilter}
+          onSectionFilterChange={setEventSectionFilter}
         />
       )}
       {page === 'events' && (
         <EventsPage
           key="events"
-          events={events}
+          events={visibleEvents}
           isAdmin={isAdmin}
           onAddEvent={openModal}
           onDeleteEvent={deleteEvent}
@@ -193,6 +211,8 @@ export default function App() {
           rehearsalDay={profile?.rehearsalDay}
           songs={songLibrary.songs}
           onOpenSongFolder={openSongFolder}
+          sectionFilter={eventSectionFilter}
+          onSectionFilterChange={setEventSectionFilter}
         />
       )}
       {page === 'info' && <InfoPage key="info" isAdmin={isAdmin} />}
@@ -218,6 +238,7 @@ export default function App() {
           addEvent(ev);
           navigate('events');
         }}
+        songs={songLibrary.songs}
       />
     </>
   );

@@ -7,7 +7,30 @@ export function getDefaultFilters() {
   };
 }
 
-export function filterEvents(events, filters) {
+export function getEventSections(event) {
+  // Prefer the current field when it contains values, while retaining
+  // compatibility with older events that used `choirs` or `section`.
+  const raw = event?.sections?.length
+    ? event.sections
+    : event?.choirs?.length
+      ? event.choirs
+      : event?.section ?? event?.groupDay ?? [];
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  return raw ? [raw] : [];
+}
+
+export function eventMatchesSection(event, section) {
+  if (!section || section === 'all') return true;
+  const sections = getEventSections(event);
+  // Events without an explicit section are shared choir-wide events.
+  return sections.length === 0 || sections.includes(section);
+}
+
+export function filterEventsBySection(events, section) {
+  return events.filter((event) => eventMatchesSection(event, section));
+}
+
+export function filterEvents(events, filters, section = 'all') {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -29,6 +52,6 @@ export function filterEvents(events, filters) {
 
     if (!matchesMonthYear) return false;
 
-    return true;
+    return eventMatchesSection(event, section);
   });
 }

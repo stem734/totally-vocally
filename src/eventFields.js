@@ -4,6 +4,8 @@ export const EVENT_TYPES = [
   { value: 'workshop', label: 'Workshop' },
 ];
 
+export const CHOIR_SECTIONS = ['Monday', 'Tuesday', 'Wednesday'];
+
 export const eventTypeLabel = (type) =>
   EVENT_TYPES.find(t => t.value === type)?.label || 'Performance';
 

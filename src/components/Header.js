@@ -2,7 +2,7 @@ import React from 'react';
 import s from './Header.module.css';
 import { CalendarIcon, EventIcon, InfoIcon, FilesIcon } from '../icons';
 
-export default function Header({ activePage, onNavigate, onLogout, showAdminNav, hasNewEvents }) {
+export default function Header({ activePage, onNavigate, onLogout, showAdminNav, hasNewEvents, pendingApprovalCount = 0 }) {
   const TABS = [
     { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
     { id: 'events',   label: 'Events',   icon: EventIcon },
@@ -25,6 +25,7 @@ export default function Header({ activePage, onNavigate, onLogout, showAdminNav,
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const showBadge = hasNewEvents && (tab.id === 'calendar' || tab.id === 'events');
+            const showPendingBadge = tab.id === 'members' && pendingApprovalCount > 0;
             return (
               <button
                 key={tab.id}
@@ -34,11 +35,11 @@ export default function Header({ activePage, onNavigate, onLogout, showAdminNav,
               >
                 <span className={s.navIcon}>
                   <Icon />
-                  {showBadge && <span className={s.navBadge} aria-hidden="true" />}
                 </span>
                 <span className={s.navLabel}>
                   {tab.label}
-                  {showBadge && <span className={s.srOnly}> (new)</span>}
+                  {showBadge && <span className={s.navBadge}>NEW</span>}
+                  {showPendingBadge && <span className={s.pendingBadge} aria-label={`${pendingApprovalCount} pending approvals`}>{pendingApprovalCount}</span>}
                 </span>
               </button>
             );

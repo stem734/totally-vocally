@@ -107,6 +107,55 @@
 
 .field select option { background: var(--ink-mid); }
 
+.checkboxField {
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid rgba(78,171,216,0.22);
+  border-radius: 10px;
+  background: rgba(78,171,216,0.04);
+}
+
+.checkboxField legend {
+  padding: 0 6px;
+  color: var(--teal-light);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.checkboxGroup {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.songGroup {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.checkboxOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  color: var(--muted-light);
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.checkboxOption:hover { border-color: var(--teal-light); color: var(--warm-white); }
+.checkboxOption input { accent-color: var(--coral); flex-shrink: 0; }
+.checkboxOption span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.emptyOptions { margin: 4px 0 0; color: var(--muted); font-size: 0.84rem; }
+
 /* Date/time inputs colour fix for dark mode */
 .field input[type="date"],
 .field input[type="time"] {
@@ -153,3 +202,8 @@
 }
 .saveBtn:hover { opacity: 0.9; transform: translateY(-1px); }
 .saveBtn:active { transform: scale(0.98); }
+
+@media (max-width: 640px) {
+  .checkboxGroup,
+  .songGroup { grid-template-columns: 1fr; }
+}

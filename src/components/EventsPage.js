@@ -7,6 +7,7 @@ import s from './EventsPage.module.css';
 import { ClockIcon, CheckIcon, MusicIcon } from '../icons';
 import { eventTypeLabel, formatDuration } from '../eventFields';
 import { safeExternalUrl } from '../safeUrl';
+import SectionFilter from './SectionFilter';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const UPCOMING_PAGE_SIZE = 10;
@@ -24,7 +25,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onOpenSongFolder, rehearsalDay, songs = [] }) {
+export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onOpenSongFolder, rehearsalDay, songs = [], sectionFilter = 'all', onSectionFilterChange }) {
   const [editingEventId, setEditingEventId] = useState(null);
   const [allocatingEventId, setAllocatingEventId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -161,7 +162,10 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
           <h1 className={s.title}>Upcoming <span>Events</span></h1>
           <p className={s.sub}>Let us know if you're coming!</p>
         </div>
-        {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>}
+        <div className={s.headerActions}>
+          <SectionFilter isAdmin={isAdmin} value={sectionFilter} onChange={onSectionFilterChange} />
+          {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>＋ Add Event</button>}
+        </div>
       </div>
 
       {events.length === 0 ? (
@@ -243,6 +247,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
             }
           }}
           isSaving={isSaving}
+          songs={songs}
         />
       )}
 

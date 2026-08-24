@@ -46,6 +46,14 @@
 }
 .addBtn:hover { background: var(--coral-light); transform: translateY(-1px); }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .empty {
   text-align: center;
   padding: 80px 0;
@@ -419,4 +427,5 @@
   .card { grid-template-columns: 60px 1fr; gap: 12px; padding: 16px 14px; }
   .dayNum { font-size: 1.5rem; }
   .dateBadge { height: 70px; }
+  .headerActions { width: 100%; justify-content: stretch; }
 }

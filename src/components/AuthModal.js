@@ -5,7 +5,7 @@ import './AuthModal.css';
 
 const TERMS_URL = 'https://mailchi.mp/535857a27c03/terms-and-conditions';
 
-export default function AuthModal({ open, mode, onClose, onSubmit, loading, error, onForgotPassword }) {
+export default function AuthModal({ open, mode, onClose, onSubmit, loading, error, errorCode, onForgotPassword, onSignIn, onResetPassword }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -112,6 +112,13 @@ export default function AuthModal({ open, mode, onClose, onSubmit, loading, erro
 
             {error && (
               <div className="authError" role="alert">{error}</div>
+            )}
+
+            {errorCode === 'auth/email-already-in-use' && (
+              <div className="authErrorActions" aria-label="Existing account actions">
+                <button type="button" onClick={onSignIn} disabled={loading}>Sign in</button>
+                <button type="button" onClick={onResetPassword} disabled={loading}>Reset password</button>
+              </div>
             )}
 
             <button

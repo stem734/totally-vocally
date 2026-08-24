@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import s from './AddEventModal.module.css';
-import { EVENT_TYPES, DURATION_OPTIONS, formatDuration, defaultArrivalTime } from '../eventFields';
+import { EVENT_TYPES, DURATION_OPTIONS, CHOIR_SECTIONS, formatDuration, defaultArrivalTime } from '../eventFields';
 
-const EMPTY = { title: '', type: 'rehearsal', date: '', time: '', arriveBy: '', duration: '', location: '', desc: '' };
+const EMPTY = { title: '', type: 'rehearsal', date: '', time: '', arriveBy: '', duration: '', location: '', desc: '', sections: [], songIds: [] };
 
-export default function AddEventModal({ open, onClose, onSave }) {
+export default function AddEventModal({ open, onClose, onSave, songs = [] }) {
   const [form, setForm] = useState(EMPTY);
 
   useEffect(() => {
@@ -29,6 +29,15 @@ export default function AddEventModal({ open, onClose, onSave }) {
     });
   };
 
+  const toggleListValue = (field, value) => {
+    setForm((current) => ({
+      ...current,
+      [field]: current[field].includes(value)
+        ? current[field].filter((item) => item !== value)
+        : [...current[field], value],
+    }));
+  };
+
   const handleSave = () => {
     if (!form.title.trim() || !form.date) {
       alert('Please enter a title and date.');
@@ -39,6 +48,8 @@ export default function AddEventModal({ open, onClose, onSave }) {
       title: form.title.trim(),
       location: form.location.trim(),
       desc: form.desc.trim(),
+      sections: form.sections,
+      songIds: form.songIds,
       duration: form.duration ? Number(form.duration) : '',
     });
     onClose();
@@ -108,6 +119,40 @@ export default function AddEventModal({ open, onClose, onSave }) {
               placeholder="e.g. Hockley, Nottingham"
             />
           </div>
+
+          <fieldset className={s.checkboxField}>
+            <legend>Choir sections <span className={s.opt}>(optional — leave empty for everyone)</span></legend>
+            <div className={s.checkboxGroup}>
+              {CHOIR_SECTIONS.map((section) => (
+                <label key={section} className={s.checkboxOption}>
+                  <input
+                    type="checkbox"
+                    checked={form.sections.includes(section)}
+                    onChange={() => toggleListValue('sections', section)}
+                  />
+                  <span>{section}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className={s.checkboxField}>
+            <legend>Songs <span className={s.opt}>(optional)</span></legend>
+            {songs.length > 0 ? (
+              <div className={`${s.checkboxGroup} ${s.songGroup}`}>
+                {songs.map((song) => (
+                  <label key={song.id} className={s.checkboxOption}>
+                    <input
+                      type="checkbox"
+                      checked={form.songIds.includes(song.id)}
+                      onChange={() => toggleListValue('songIds', song.id)}
+                    />
+                    <span>{song.title}</span>
+                  </label>
+                ))}
+              </div>
+            ) : <p className={s.emptyOptions}>No songs have been added yet.</p>}
+          </fieldset>
 
           <div className={s.field}>
             <label>Description <span className={s.opt}>(optional)</span></label>

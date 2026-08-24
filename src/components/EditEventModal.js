@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import s from './EditEventModal.module.css';
-import { EVENT_TYPES, DURATION_OPTIONS, formatDuration, defaultArrivalTime } from '../eventFields';
+import { EVENT_TYPES, DURATION_OPTIONS, CHOIR_SECTIONS, formatDuration, defaultArrivalTime } from '../eventFields';
 
-export default function EditEventModal({ open, event, onClose, onSave, isSaving }) {
+export default function EditEventModal({ open, event, onClose, onSave, isSaving, songs = [] }) {
   const [title, setTitle] = useState('');
   const [type, setType] = useState('rehearsal');
   const [date, setDate] = useState('');
@@ -12,6 +12,8 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
   const [duration, setDuration] = useState('');
   const [location, setLocation] = useState('');
   const [desc, setDesc] = useState('');
+  const [sections, setSections] = useState([]);
+  const [songIds, setSongIds] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -24,6 +26,8 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
       setDuration(event.duration || '');
       setLocation(event.location || '');
       setDesc(event.desc || '');
+      setSections(Array.isArray(event.sections) ? event.sections : (Array.isArray(event.choirs) ? event.choirs : (event.section ? [event.section] : [])));
+      setSongIds(Array.isArray(event.songIds) ? event.songIds : []);
       setError('');
     }
   }, [event, open]);
@@ -31,6 +35,12 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
   const handleTimeChange = (value) => {
     setTime(value);
     if (!arriveBy) setArriveBy(defaultArrivalTime(value));
+  };
+
+  const toggleListValue = (setter) => (value) => {
+    setter((current) => current.includes(value)
+      ? current.filter((item) => item !== value)
+      : [...current, value]);
   };
 
   const handleSubmit = async (e) => {
@@ -52,6 +62,8 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
         duration: duration ? Number(duration) : '',
         location: location.trim(),
         desc: desc.trim(),
+        sections,
+        songIds,
       });
     } catch (err) {
       setError(err.message);
@@ -177,6 +189,42 @@ export default function EditEventModal({ open, event, onClose, onSave, isSaving 
                 placeholder="Optional event description — paste a https:// link to make it clickable"
               />
             </div>
+
+            <fieldset className={s.checkboxField}>
+              <legend>Choir sections <span className={s.opt}>(optional — leave empty for everyone)</span></legend>
+              <div className={s.checkboxGroup}>
+                {CHOIR_SECTIONS.map((section) => (
+                  <label key={section} className={s.checkboxOption}>
+                    <input
+                      type="checkbox"
+                      checked={sections.includes(section)}
+                      onChange={() => toggleListValue(setSections)(section)}
+                      disabled={isSaving}
+                    />
+                    <span>{section}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className={s.checkboxField}>
+              <legend>Songs <span className={s.opt}>(optional)</span></legend>
+              {songs.length > 0 ? (
+                <div className={`${s.checkboxGroup} ${s.songGroup}`}>
+                  {songs.map((song) => (
+                    <label key={song.id} className={s.checkboxOption}>
+                      <input
+                        type="checkbox"
+                        checked={songIds.includes(song.id)}
+                        onChange={() => toggleListValue(setSongIds)(song.id)}
+                        disabled={isSaving}
+                      />
+                      <span>{song.title}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : <p className={s.emptyOptions}>No songs have been added yet.</p>}
+            </fieldset>
           </div>
 
           <div className={s.footer}>

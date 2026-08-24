@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import s from './CalendarPage.module.css';
 import EventDetailModal from './EventDetailModal';
 import RehearsalBlockModal from './RehearsalBlockModal';
+import SectionFilter from './SectionFilter';
 import { downloadICalendar } from '../calendarSubscription';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onOpenSongFolder, rehearsalDay, onCreateRehearsalBlock, songs = [] }) {
+export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onOpenSongFolder, rehearsalDay, onCreateRehearsalBlock, songs = [], sectionFilter = 'all', onSectionFilterChange }) {
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -53,6 +54,7 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDeleteEven
           <h1 className={s.title}>Rehearsal <span>Calendar</span></h1>
         </div>
         <div className={s.headerBtns}>
+          <SectionFilter isAdmin={isAdmin} value={sectionFilter} onChange={onSectionFilterChange} />
           <button className={s.exportBtn} onClick={() => downloadICalendar(events)}>Subscribe (iCal)</button>
           {isAdmin && <button className={s.addBtn} onClick={onAddEvent}>Add Event</button>}
           {isAdmin && <button className={s.addBtn} onClick={() => setRehearsalBlockModalOpen(true)}>Create Rehearsal Block</button>}

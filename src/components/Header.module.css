@@ -81,27 +81,31 @@
 .navIcon { position: relative; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; }
 .navIcon svg { width: 100%; height: 100%; }
 
-.navBadge {
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--pink);
-  box-shadow: 0 0 0 2px var(--ink-mid);
+.navBadge,
+.pendingBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  min-height: 16px;
+  border-radius: 999px;
+  font-size: 0.56rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.navBadge {
+  padding: 3px 5px;
+  color: white;
+  background: var(--pink);
+}
+
+.pendingBadge {
+  min-width: 18px;
+  padding: 3px 5px;
+  color: var(--ink);
+  background: var(--teal-light);
 }
 
 .navBtn:hover {

@@ -25,7 +25,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onOpenSongFolder, rehearsalDay, songs = [], sectionFilter = 'all', onSectionFilterChange }) {
+export default function EventsPage({ events, isAdmin, onAddEvent, onDuplicateEvent, onDeleteEvent, onUpdateEvent, onSetAttendance, onAllocateSongs, onOpenSongFolder, rehearsalDay, songs = [], sectionFilter = 'all', onSectionFilterChange }) {
   const [editingEventId, setEditingEventId] = useState(null);
   const [allocatingEventId, setAllocatingEventId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -147,6 +147,7 @@ export default function EventsPage({ events, isAdmin, onAddEvent, onDeleteEvent,
           {isAdmin && (
             <div className={s.adminRow}>
               <button className={s.editBtn} onClick={() => setEditingEventId(ev.id)}>Edit Event</button>
+              <button className={s.duplicateBtn} onClick={() => onDuplicateEvent?.(ev)}>Duplicate</button>
               <button className={s.allocateBtn} onClick={() => setAllocatingEventId(ev.id)}>Allocate Songs</button>
             </div>
           )}

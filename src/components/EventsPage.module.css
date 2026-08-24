@@ -357,6 +357,7 @@
 }
 
 .editBtn,
+.duplicateBtn,
 .allocateBtn {
   flex: 1;
   background: rgba(255,255,255,0.05);
@@ -369,6 +370,7 @@
   transition: all 0.18s;
 }
 .editBtn:hover { border-color: var(--coral); color: var(--coral-light); }
+.duplicateBtn:hover { border-color: var(--blue-light); color: var(--blue-light); }
 .allocateBtn:hover { border-color: var(--teal-light); color: var(--teal-light); }
 
 .confirmOverlay {

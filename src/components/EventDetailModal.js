@@ -23,7 +23,7 @@ function attSummary(ev) {
   return parts.length ? parts.join(' · ') : 'No responses yet';
 }
 
-export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDelete, onUpdate, onAllocateSongs, onOpenSongFolder, songs = [] }) {
+export default function EventDetailModal({ open, event, isAdmin, onClose, onSetAttendance, onDuplicate, onDelete, onUpdate, onAllocateSongs, onOpenSongFolder, songs = [] }) {
   const [allocateModalOpen, setAllocateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -160,6 +160,7 @@ export default function EventDetailModal({ open, event, isAdmin, onClose, onSetA
               className={s.editBtn}
               onClick={() => setEditModalOpen(true)}
             >Edit Event</button>
+            <button className={s.duplicateBtn} onClick={() => onDuplicate?.(event)}>Duplicate</button>
             <button
               className={s.allocateBtn}
               onClick={() => setAllocateModalOpen(true)}

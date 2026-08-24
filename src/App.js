@@ -32,6 +32,7 @@ export default function App() {
 
   const [page, setPage] = useState('calendar');
   const [modalOpen, setModalOpen] = useState(false);
+  const [eventToDuplicate, setEventToDuplicate] = useState(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'forgotPassword'
   const [authLoading, setAuthLoading] = useState(false);
@@ -207,8 +208,9 @@ export default function App() {
     setPage('files');
     markFilesSeen();
   };
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const openModal = () => { setEventToDuplicate(null); setModalOpen(true); };
+  const duplicateEvent = (event) => { setEventToDuplicate(event); setModalOpen(true); };
+  const closeModal = () => { setModalOpen(false); setEventToDuplicate(null); };
 
   return (
     <>
@@ -228,6 +230,7 @@ export default function App() {
           events={visibleEvents}
           isAdmin={isAdmin}
           onAddEvent={openModal}
+          onDuplicateEvent={duplicateEvent}
           onDeleteEvent={deleteEvent}
           onUpdateEvent={updateEvent}
           onSetAttendance={setAttendance}
@@ -246,6 +249,7 @@ export default function App() {
           events={visibleEvents}
           isAdmin={isAdmin}
           onAddEvent={openModal}
+          onDuplicateEvent={duplicateEvent}
           onDeleteEvent={deleteEvent}
           onUpdateEvent={updateEvent}
           onSetAttendance={setAttendance}
@@ -278,6 +282,7 @@ export default function App() {
       <AddEventModal
         open={modalOpen}
         onClose={closeModal}
+        initialEvent={eventToDuplicate}
         onSave={(ev) => {
           addEvent(ev);
           navigate('events');

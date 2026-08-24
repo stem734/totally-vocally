@@ -4,15 +4,31 @@ import { EVENT_TYPES, DURATION_OPTIONS, CHOIR_SECTIONS, formatDuration, defaultA
 
 const EMPTY = { title: '', type: 'rehearsal', date: '', time: '', arriveBy: '', duration: '', location: '', desc: '', sections: [], songIds: [] };
 
-export default function AddEventModal({ open, onClose, onSave, songs = [] }) {
+export default function AddEventModal({ open, onClose, onSave, songs = [], initialEvent = null }) {
   const [form, setForm] = useState(EMPTY);
 
   useEffect(() => {
     if (open) {
       const today = new Date().toISOString().split('T')[0];
-      setForm({ ...EMPTY, date: today });
+      if (initialEvent) {
+        setForm({
+          ...EMPTY,
+          title: initialEvent.title ? `Copy of ${initialEvent.title}` : '',
+          type: initialEvent.type || EMPTY.type,
+          date: initialEvent.date || today,
+          time: initialEvent.time || '',
+          arriveBy: initialEvent.arriveBy || '',
+          duration: initialEvent.duration || '',
+          location: initialEvent.location || '',
+          desc: initialEvent.desc || '',
+          sections: Array.isArray(initialEvent.sections) ? initialEvent.sections : [],
+          songIds: Array.isArray(initialEvent.songIds) ? initialEvent.songIds : [],
+        });
+      } else {
+        setForm({ ...EMPTY, date: today });
+      }
     }
-  }, [open]);
+  }, [open, initialEvent]);
 
   if (!open) return null;
 
@@ -59,7 +75,7 @@ export default function AddEventModal({ open, onClose, onSave, songs = [] }) {
     <div className={s.overlay}>
       <div className={s.modal}>
         <div className={s.modalHeader}>
-          <h2 className={s.modalTitle}>Add New Event</h2>
+          <h2 className={s.modalTitle}>{initialEvent ? 'Duplicate Event' : 'Add New Event'}</h2>
           <button className={s.closeBtn} onClick={onClose} aria-label="Close">×</button>
         </div>
 
@@ -167,7 +183,7 @@ export default function AddEventModal({ open, onClose, onSave, songs = [] }) {
 
         <div className={s.footer}>
           <button className={s.cancelBtn} onClick={onClose}>Cancel</button>
-          <button className={s.saveBtn} onClick={handleSave}>Add Event</button>
+          <button className={s.saveBtn} onClick={handleSave}>{initialEvent ? 'Create Duplicate' : 'Add Event'}</button>
         </div>
       </div>
     </div>

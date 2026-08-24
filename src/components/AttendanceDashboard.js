@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import AdminSidebar from './AdminSidebar';
 import VoicePartBreakdown from './VoicePartBreakdown';
-import { getDefaultFilters, filterEvents } from '../filterUtils';
 import { eventTypeLabel } from '../eventFields';
 import s from './AttendanceDashboard.module.css';
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const REHEARSAL_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
+const VOICE_PARTS = ['Soprano 1', 'Soprano 2', 'Alto', 'Tenor 1', 'Tenor 2', 'Bass'];
 
 export default function AttendanceDashboard({ events }) {
   const [members, setMembers] = useState({});
   const [error, setError] = useState('');
-  const [filters, setFilters] = useState(getDefaultFilters());
+  const [search, setSearch] = useState('');
+  const [eventType, setEventType] = useState('');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
+  const [rehearsalDay, setRehearsalDay] = useState('');
+  const [voicePart, setVoicePart] = useState('');
   const [copiedEventId, setCopiedEventId] = useState('');
 
   useEffect(() => {
@@ -26,6 +31,8 @@ export default function AttendanceDashboard({ events }) {
           memberMap[doc.id] = {
             name: data.displayName || data.email || 'Unknown',
             approved,
+            rehearsalDay: data.rehearsalDay || '',
+            voicePart: data.voicePart || '',
           };
         });
         setMembers(memberMap);
@@ -36,10 +43,20 @@ export default function AttendanceDashboard({ events }) {
     return () => unsubscribe();
   }, []);
 
-  const filteredEvents = filterEvents(events, filters).filter((event) => event.type !== 'rehearsal');
+  const filteredEvents = events.filter((event) => {
+    if (event.type === 'rehearsal') return false;
+    const date = new Date(`${event.date}T00:00:00`);
+    return (!search || event.title?.toLowerCase().includes(search.toLowerCase()))
+      && (!eventType || event.type === eventType)
+      && (!month || date.getMonth() === Number(month))
+      && (!year || date.getFullYear() === Number(year));
+  });
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
 
   const nameFor = (userId) => members[userId]?.name || userId;
+  const memberMatches = (member) => member?.approved
+    && (!rehearsalDay || member.rehearsalDay === rehearsalDay)
+    && (!voicePart || member.voicePart === voicePart);
 
   const getAttendanceGroups = (event) => {
     const attendance = event.attendance || {};
@@ -50,7 +67,7 @@ export default function AttendanceDashboard({ events }) {
     };
 
     Object.entries(attendance).forEach(([userId, status]) => {
-      if (groups[status]) {
+      if (groups[status] && memberMatches(members[userId])) {
         groups[status].push({ id: userId, name: nameFor(userId) });
       }
     });
@@ -65,7 +82,7 @@ export default function AttendanceDashboard({ events }) {
   const getNotResponded = (event) => {
     const attendance = event.attendance || {};
     return Object.entries(members)
-      .filter(([userId, member]) => member.approved && !(userId in attendance))
+      .filter(([userId, member]) => memberMatches(member) && !(userId in attendance))
       .map(([userId]) => ({ id: userId, name: nameFor(userId) }))
       .sort((a, b) => a.name.localeCompare(b.name));
   };
@@ -81,9 +98,7 @@ export default function AttendanceDashboard({ events }) {
   };
 
   return (
-    <div className={s.container}>
-      <AdminSidebar filters={filters} onFiltersChange={setFilters} />
-      <main className={s.page}>
+    <main className={s.page} id="main-content">
         <header className={s.header}>
           <div>
             <h1>Event <span>Attendance</span></h1>
@@ -91,6 +106,16 @@ export default function AttendanceDashboard({ events }) {
           </div>
           <span className={s.count}>{sortedEvents.length} event{sortedEvents.length !== 1 ? 's' : ''}</span>
         </header>
+
+        <div className={s.filters} aria-label="Filter attendance">
+          <label>Search events<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Event name" /></label>
+          <label>Event type<select value={eventType} onChange={(event) => setEventType(event.target.value)}><option value="">All types</option><option value="performance">Performance</option><option value="workshop">Workshop</option></select></label>
+          <label>Month<select value={month} onChange={(event) => setMonth(event.target.value)}><option value="">All months</option>{MONTH_SHORT.map((label, index) => <option key={label} value={index}>{label}</option>)}</select></label>
+          <label>Year<select value={year} onChange={(event) => setYear(event.target.value)}><option value="">All years</option>{[new Date().getFullYear(), new Date().getFullYear() + 1].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label>Rehearsal day<select value={rehearsalDay} onChange={(event) => setRehearsalDay(event.target.value)}><option value="">All days</option>{REHEARSAL_DAYS.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label>Voice part<select value={voicePart} onChange={(event) => setVoicePart(event.target.value)}><option value="">All voice parts</option>{VOICE_PARTS.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <button type="button" className={s.resetBtn} onClick={() => { setSearch(''); setEventType(''); setMonth(''); setYear(''); setRehearsalDay(''); setVoicePart(''); }}>Reset filters</button>
+        </div>
 
         {error && <div className={s.error}>{error}</div>}
 
@@ -210,7 +235,6 @@ export default function AttendanceDashboard({ events }) {
             })
           )}
         </div>
-      </main>
-    </div>
+    </main>
   );
 }

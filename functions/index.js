@@ -43,11 +43,34 @@ exports.setMemberAccess = onCall(async (request) => {
     ? { status: nextStatus, previousStatus: target.status || 'approved', accessChangedAt: now, accessChangedBy: request.auth.uid }
     : { status: nextStatus, previousStatus: null, accessChangedAt: now, accessChangedBy: request.auth.uid };
 
-  await auth.updateUser(targetUid, { disabled: action === 'deactivate' });
+  // Most profile IDs are Firebase Auth UIDs. Older imported profiles can have
+  // a different document ID, so fall back to the stored email before deciding
+  // there is no Authentication account to disable.
+  let authUid = targetUid;
+  let authAccountFound = true;
+  try {
+    await auth.updateUser(authUid, { disabled: action === 'deactivate' });
+  } catch (err) {
+    if (err.code !== 'auth/user-not-found') throw err;
+    if (typeof target.email === 'string' && target.email) {
+      try {
+        const authUser = await auth.getUserByEmail(target.email);
+        authUid = authUser.uid;
+        await auth.updateUser(authUid, { disabled: action === 'deactivate' });
+      } catch (lookupErr) {
+        if (lookupErr.code !== 'auth/user-not-found') throw lookupErr;
+        authAccountFound = false;
+      }
+    } else {
+      authAccountFound = false;
+    }
+  }
   await targetRef.set(profileUpdate, { merge: true });
   await db.collection('auditLogs').add({
     action: action === 'deactivate' ? 'member_deactivated' : 'member_reactivated',
     targetUid,
+    authUid,
+    authAccountFound,
     actorUid: request.auth.uid,
     createdAt: now,
   });

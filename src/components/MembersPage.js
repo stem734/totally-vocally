@@ -17,6 +17,7 @@ export default function MembersPage({ isAdmin = true }) {
   const [changingAccess, setChangingAccess] = useState(false);
   const [dayFilter, setDayFilter] = useState('');
   const [voicePartFilter, setVoicePartFilter] = useState('');
+  const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
 
   useEffect(() => onSnapshot(collection(db, 'users'), (snapshot) => {
@@ -95,7 +96,8 @@ export default function MembersPage({ isAdmin = true }) {
     const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
     return status === 'pending';
   });
-  const matchesFilters = (member) => (!dayFilter || member.rehearsalDay === dayFilter)
+  const matchesFilters = (member) => (!search || `${member.displayName || ''} ${member.email || ''}`.toLowerCase().includes(search.toLowerCase()))
+    && (!dayFilter || member.rehearsalDay === dayFilter)
     && (!voicePartFilter || member.voicePart === voicePartFilter);
   const otherMembers = ordered.filter((member) => !pendingMembers.includes(member) && member.status !== 'inactive' && matchesFilters(member));
   const inactiveMembers = ordered.filter((member) => member.role !== 'admin' && member.status === 'inactive' && matchesFilters(member));
@@ -175,8 +177,10 @@ export default function MembersPage({ isAdmin = true }) {
           <span>{otherMembers.length} account{otherMembers.length === 1 ? '' : 's'}</span>
         </div>
         {isAdmin && <div className={s.filters} aria-label="Filter members">
+          <label>Search members<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Name or email" /></label>
           <label>Rehearsal day<select value={dayFilter} onChange={(event) => setDayFilter(event.target.value)}><option value="">All days</option>{REHEARSAL_DAYS.map((day) => <option key={day} value={day}>{day}</option>)}</select></label>
           <label>Voice part<select value={voicePartFilter} onChange={(event) => setVoicePartFilter(event.target.value)}><option value="">All voice parts</option>{VOICE_PARTS.map((part) => <option key={part} value={part}>{part}</option>)}</select></label>
+          <button type="button" className={s.resetFilters} onClick={() => { setSearch(''); setDayFilter(''); setVoicePartFilter(''); }}>Reset filters</button>
         </div>}
         <div className={s.tableHeader}>
           <span>Member</span>

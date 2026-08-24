@@ -33,8 +33,15 @@ export function useAuth() {
       unsubscribeProfile();
       if (firebaseUser) {
         setUser(firebaseUser);
+        // Do not briefly render the approval screen while Firestore is
+        // resolving the current profile. The first snapshot may be cached
+        // and stale (for example, before an administrator's approval update
+        // has reached this browser).
+        setProfile(null);
+        setIsAdmin(false);
+        setLoading(true);
         // Keep approval and role changes in sync while the user is logged in.
-        unsubscribeProfile = onSnapshot(doc(db, 'users', firebaseUser.uid), (userDoc) => {
+        unsubscribeProfile = onSnapshot(doc(db, 'users', firebaseUser.uid), { includeMetadataChanges: true }, (userDoc) => {
           if (userDoc.exists()) {
             const profileData = userDoc.data();
             setProfile(profileData);
@@ -43,9 +50,13 @@ export function useAuth() {
             setProfile(null);
             setIsAdmin(false);
           }
-          setLoading(false);
+          // Wait for the server snapshot on initial auth. Cached data can be
+          // stale and must not decide whether an approved member is blocked.
+          if (!userDoc.metadata.fromCache) setLoading(false);
         }, (err) => {
           console.error('Failed to fetch user role:', err);
+          setProfile(null);
+          setIsAdmin(false);
           setLoading(false);
         });
       } else {

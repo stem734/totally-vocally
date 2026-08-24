@@ -60,6 +60,8 @@
 .filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 0 0 24px; padding: 16px; border: 1px solid rgba(255,255,255,.09); border-radius: 12px; background: var(--ink-mid); }
 .filters label { display: grid; gap: 6px; min-width: 140px; flex: 1 1 150px; color: var(--muted-light); font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .filters input,.filters select { width: 100%; padding: 9px 10px; color: var(--warm-white); border: 1px solid rgba(78,171,216,.32); border-radius: 7px; background: var(--ink-soft); font: inherit; letter-spacing: normal; text-transform: none; }
+.filters .pastEventsToggle { display: flex; flex: 0 1 auto; align-items: center; gap: 8px; min-width: auto; padding: 10px 0; color: var(--muted-light); font-size: .78rem; letter-spacing: normal; text-transform: none; white-space: nowrap; }
+.pastEventsToggle input { width: 16px; height: 16px; margin: 0; accent-color: var(--blue-light); }
 .resetBtn { padding: 10px 14px; color: var(--muted-light); border: 1px solid rgba(255,255,255,.14); border-radius: 7px; background: rgba(255,255,255,.06); font-weight: 700; cursor: pointer; white-space: nowrap; }.resetBtn:hover { background: rgba(255,255,255,.1); color: var(--warm-white); }
 
 .eventsList {

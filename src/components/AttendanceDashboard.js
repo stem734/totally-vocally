@@ -18,6 +18,7 @@ export default function AttendanceDashboard({ events }) {
   const [year, setYear] = useState('');
   const [rehearsalDay, setRehearsalDay] = useState('');
   const [voicePart, setVoicePart] = useState('');
+  const [showPastEvents, setShowPastEvents] = useState(false);
   const [copiedEventId, setCopiedEventId] = useState('');
 
   useEffect(() => {
@@ -43,10 +44,13 @@ export default function AttendanceDashboard({ events }) {
     return () => unsubscribe();
   }, []);
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const filteredEvents = events.filter((event) => {
     if (event.type === 'rehearsal') return false;
     const date = new Date(`${event.date}T00:00:00`);
-    return (!search || event.title?.toLowerCase().includes(search.toLowerCase()))
+    return (showPastEvents || date >= today)
+      && (!search || event.title?.toLowerCase().includes(search.toLowerCase()))
       && (!eventType || event.type === eventType)
       && (!month || date.getMonth() === Number(month))
       && (!year || date.getFullYear() === Number(year));
@@ -114,7 +118,8 @@ export default function AttendanceDashboard({ events }) {
           <label>Year<select value={year} onChange={(event) => setYear(event.target.value)}><option value="">All years</option>{[new Date().getFullYear(), new Date().getFullYear() + 1].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
           <label>Rehearsal day<select value={rehearsalDay} onChange={(event) => setRehearsalDay(event.target.value)}><option value="">All days</option>{REHEARSAL_DAYS.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
           <label>Voice part<select value={voicePart} onChange={(event) => setVoicePart(event.target.value)}><option value="">All voice parts</option>{VOICE_PARTS.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
-          <button type="button" className={s.resetBtn} onClick={() => { setSearch(''); setEventType(''); setMonth(''); setYear(''); setRehearsalDay(''); setVoicePart(''); }}>Reset filters</button>
+          <label className={s.pastEventsToggle}><input type="checkbox" checked={showPastEvents} onChange={(event) => setShowPastEvents(event.target.checked)} />Include past events</label>
+          <button type="button" className={s.resetBtn} onClick={() => { setSearch(''); setEventType(''); setMonth(''); setYear(''); setRehearsalDay(''); setVoicePart(''); setShowPastEvents(false); }}>Reset filters</button>
         </div>
 
         {error && <div className={s.error}>{error}</div>}

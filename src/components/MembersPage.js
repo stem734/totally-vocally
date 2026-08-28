@@ -9,6 +9,22 @@ const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', rejected: 'Rej
 const VOICE_PARTS = ['Soprano 1', 'Soprano 2', 'Alto', 'Tenor 1', 'Tenor 2', 'Bass'];
 const REHEARSAL_DAYS = ['Monday', 'Tuesday', 'Wednesday'];
 
+const AVATAR_TONES = ['blue', 'pink', 'gold', 'green', 'purple', 'coral'];
+
+function memberInitials(name, email) {
+  const source = (name || email || '').trim();
+  if (!source) return '?';
+  const words = source.split(/\s+/).filter(Boolean);
+  if (words.length > 1) return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+  return source.slice(0, 2).toUpperCase();
+}
+
+function avatarTone(memberId, name) {
+  const source = `${memberId || ''}${name || ''}`;
+  const score = [...source].reduce((total, character) => total + character.charCodeAt(0), 0);
+  return AVATAR_TONES[score % AVATAR_TONES.length];
+}
+
 export default function MembersPage({ isAdmin = true }) {
   const [members, setMembers] = useState([]);
   const [error, setError] = useState('');
@@ -19,6 +35,10 @@ export default function MembersPage({ isAdmin = true }) {
   const [voicePartFilter, setVoicePartFilter] = useState('');
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [editDisplayName, setEditDisplayName] = useState('');
+  const [editVoicePart, setEditVoicePart] = useState('');
+  const [editRehearsalDay, setEditRehearsalDay] = useState('');
 
   useEffect(() => onSnapshot(collection(db, 'users'), (snapshot) => {
     setMembers(snapshot.docs.map((member) => ({ id: member.id, ...member.data() })));
@@ -86,6 +106,37 @@ export default function MembersPage({ isAdmin = true }) {
     }
   };
 
+  const startEditing = (member) => {
+    setEditingMember(member);
+    setEditDisplayName(member.displayName || '');
+    setEditVoicePart(member.voicePart || '');
+    setEditRehearsalDay(member.rehearsalDay || '');
+    setError('');
+  };
+
+  const closeEditor = () => {
+    if (updating !== editingMember?.id) setEditingMember(null);
+  };
+
+  const saveMember = async (event) => {
+    event.preventDefault();
+    if (!editingMember || !editDisplayName.trim()) return;
+    setUpdating(editingMember.id);
+    setError('');
+    try {
+      await updateDoc(doc(db, 'users', editingMember.id), {
+        displayName: editDisplayName.trim(),
+        voicePart: editVoicePart,
+        rehearsalDay: editRehearsalDay,
+      });
+      setEditingMember(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUpdating('');
+    }
+  };
+
   const ordered = [...members].sort((a, b) => {
     if ((a.status || 'approved') === 'pending' && (b.status || 'approved') !== 'pending') return -1;
     if ((b.status || 'approved') === 'pending' && (a.status || 'approved') !== 'pending') return 1;
@@ -108,12 +159,16 @@ export default function MembersPage({ isAdmin = true }) {
     const displayName = member.displayName || 'Unnamed member';
     const email = member.email;
     const locked = !isAdmin || updating === member.id;
+    const initials = memberInitials(member.displayName, email);
+    const tone = avatarTone(member.id, displayName);
     return (
       <article className={`${s.card} ${status === 'pending' ? s.pendingCard : ''}`} key={member.id}>
         <div className={s.identity}>
-          <strong title={displayName}>{displayName}</strong>
-          <span title={email}>{email}</span>
-          <small>{member.role === 'admin' ? 'Administrator' : 'Choir member'}</small>
+          <span className={`${s.avatar} ${s[`avatar${tone[0].toUpperCase()}${tone.slice(1)}`]}`} aria-hidden="true">{initials}</span>
+          <div className={s.identityDetails}>
+            <strong title={displayName}>{displayName}</strong>
+            <small>{member.role === 'admin' ? 'Administrator' : 'Choir member'}</small>
+          </div>
         </div>
         <div className={s.logins}>
           <strong>{member.loginCount || 0}</strong>
@@ -140,8 +195,10 @@ export default function MembersPage({ isAdmin = true }) {
           {REHEARSAL_DAYS.map((day) => <option key={day} value={day}>{day}</option>)}
         </select>
         <span className={`${s.status} ${s[status]}`}>{STATUS_LABELS[status]}</span>
-        {isAdmin && member.role !== 'admin' && (
+        {isAdmin && (
           <div className={s.actions}>
+            <button className={s.editBtn} disabled={updating === member.id} onClick={() => startEditing(member)}>Edit</button>
+            {member.role !== 'admin' && <>
             {status !== 'approved' && <button className={s.approve} disabled={updating === member.id || !member.voicePart || !member.rehearsalDay} title={!member.voicePart || !member.rehearsalDay ? 'Assign a voice part and rehearsal day before approval' : ''} onClick={() => setStatus(member.id, 'approved')}>Approve</button>}
             {status !== 'rejected' && <button className={s.reject} disabled={updating === member.id} onClick={() => setStatus(member.id, 'rejected')}>Reject</button>}
             {status === 'inactive' ? (
@@ -149,6 +206,7 @@ export default function MembersPage({ isAdmin = true }) {
             ) : (
               <button className={s.delete} disabled={updating === member.id} onClick={() => setAccessMember({ id: member.id, displayName })}>Deactivate</button>
             )}
+            </>}
           </div>
         )}
       </article>
@@ -224,6 +282,49 @@ export default function MembersPage({ isAdmin = true }) {
               </button>
             </div>
           </div>
+        </div>,
+        document.body
+      )}
+
+      {editingMember && createPortal(
+        <div className={s.confirmOverlay} onClick={closeEditor}>
+          <form className={s.memberModal} onClick={(event) => event.stopPropagation()} onSubmit={saveMember}>
+            <div className={s.memberModalHeader}>
+              <div>
+                <span className={s.modalEyebrow}>Member details</span>
+                <h3>Edit member</h3>
+              </div>
+              <button type="button" className={s.closeBtn} onClick={closeEditor} aria-label="Close editor" disabled={updating === editingMember.id}>×</button>
+            </div>
+            <div className={s.memberModalBody}>
+              <label className={s.memberField}>
+                <span>Name</span>
+                <input type="text" value={editDisplayName} onChange={(event) => setEditDisplayName(event.target.value)} autoFocus required disabled={updating === editingMember.id} />
+              </label>
+              <label className={s.memberField}>
+                <span>Email</span>
+                <input type="email" value={editingMember.email || ''} readOnly aria-readonly="true" />
+              </label>
+              <label className={s.memberField}>
+                <span>Voice part</span>
+                <select value={editVoicePart} onChange={(event) => setEditVoicePart(event.target.value)} disabled={updating === editingMember.id}>
+                  <option value="">Assign voice part</option>
+                  {VOICE_PARTS.map((part) => <option key={part} value={part}>{part}</option>)}
+                </select>
+              </label>
+              <label className={s.memberField}>
+                <span>Rehearsal day</span>
+                <select value={editRehearsalDay} onChange={(event) => setEditRehearsalDay(event.target.value)} disabled={updating === editingMember.id}>
+                  <option value="">Assign rehearsal day</option>
+                  {REHEARSAL_DAYS.map((day) => <option key={day} value={day}>{day}</option>)}
+                </select>
+              </label>
+            </div>
+            <div className={s.memberModalActions}>
+              <button type="button" className={s.cancelBtn} onClick={closeEditor} disabled={updating === editingMember.id}>Cancel</button>
+              <button type="submit" className={s.saveBtn} disabled={updating === editingMember.id || !editDisplayName.trim()}>{updating === editingMember.id ? 'Saving…' : 'Save changes'}</button>
+            </div>
+          </form>
         </div>,
         document.body
       )}

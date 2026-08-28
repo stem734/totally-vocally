@@ -101,6 +101,7 @@ export default function MembersPage({ isAdmin = true }) {
     && (!voicePartFilter || member.voicePart === voicePartFilter);
   const otherMembers = ordered.filter((member) => !pendingMembers.includes(member) && member.status !== 'inactive' && matchesFilters(member));
   const inactiveMembers = ordered.filter((member) => member.role !== 'admin' && member.status === 'inactive' && matchesFilters(member));
+  const activeMemberCount = members.filter((member) => member.role !== 'admin' && (member.status || 'approved') === 'approved').length;
 
   const renderMember = (member) => {
     const status = member.role === 'admin' ? 'approved' : (member.status || 'approved');
@@ -160,6 +161,11 @@ export default function MembersPage({ isAdmin = true }) {
         <div><h1>Choir <span>Members</span></h1><p>Review access requests and membership status.</p></div>
         <span className={s.count}>{members.length} members</span>
       </header>
+      <div className={s.summaryGrid} aria-label="Membership summary">
+        <div className={s.summaryCard}><span>Total accounts</span><strong>{members.length}</strong></div>
+        <div className={`${s.summaryCard} ${s.summaryPending}`}><span>Pending approvals</span><strong>{pendingMembers.length}</strong></div>
+        <div className={`${s.summaryCard} ${s.summaryActive}`}><span>Active members</span><strong>{activeMemberCount}</strong></div>
+      </div>
       {error && <div className={s.error}>{error}</div>}
       {pendingMembers.length > 0 && (
         <section className={s.memberSection} aria-labelledby="pending-approvals-heading">

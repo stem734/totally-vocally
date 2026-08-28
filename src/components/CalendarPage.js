@@ -47,6 +47,12 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDuplicateE
   const rem = (7 - (cells.length % 7)) % 7;
   for (let d = 1; d <= rem; d++) cells.push({ d, mo: 1, other: true });
 
+  const todayKey = new Date().toISOString().split('T')[0];
+  const upcomingEvents = [...events]
+    .filter((event) => event.date >= todayKey)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''))
+    .slice(0, 5);
+
   return (
     <main className={s.page} id="main-content" ref={mainRef} tabIndex={-1}>
       <div className={s.pageHeader}>
@@ -61,42 +67,63 @@ export default function CalendarPage({ events, isAdmin, onAddEvent, onDuplicateE
         </div>
       </div>
 
-      <div className={s.nav}>
-        <button className={s.arrow} onClick={prev} aria-label="Previous month">‹</button>
-        <span className={s.monthLabel}>{MONTHS[month]} {year}</span>
-        <button className={s.arrow} onClick={next} aria-label="Next month">›</button>
-      </div>
+      <div className={s.calendarLayout}>
+        <div className={s.calendarMain}>
+          <div className={s.nav}>
+            <button className={s.arrow} onClick={prev} aria-label="Previous month">‹</button>
+            <span className={s.monthLabel}>{MONTHS[month]} {year}</span>
+            <button className={s.arrow} onClick={next} aria-label="Next month">›</button>
+          </div>
 
-      <div className={s.grid}>
-        {DAYS.map(d => <div key={d} className={s.dayHdr}>{d}</div>)}
-        {cells.map((cell, i) => {
-          const key = cellDate(cell);
-          const evs = events.filter(e => e.date === key);
-          return (
-            <div key={i} className={`${s.cell} ${cell.other ? s.other : ''} ${cell.isToday ? s.today : ''}`}>
-              <span className={s.num}>{cell.d}</span>
-              {evs.map(ev => {
-                const isDesignated = ev.type === 'rehearsal' && rehearsalDay && (ev.groupDay === rehearsalDay || ev.title?.startsWith(rehearsalDay));
-                return (
-                  <button
-                    type="button"
-                    key={ev.id}
-                    className={`${s.chip} ${ev.type === 'rehearsal' ? s.chipReh : ''} ${isDesignated ? s.designated : ''}`}
-                    onClick={() => setSelectedEventId(ev.id)}
-                    title={`${ev.time ? ev.time+' — ' : ''}${ev.title}`}
-                  >
-                    {ev.title}
-                  </button>
-                );
-              })}
+          <div className={s.grid}>
+            {DAYS.map(d => <div key={d} className={s.dayHdr}>{d}</div>)}
+            {cells.map((cell, i) => {
+              const key = cellDate(cell);
+              const evs = events.filter(e => e.date === key);
+              return (
+                <div key={i} className={`${s.cell} ${cell.other ? s.other : ''} ${cell.isToday ? s.today : ''}`}>
+                  <span className={s.num}>{cell.d}</span>
+                  {evs.map(ev => {
+                    const isDesignated = ev.type === 'rehearsal' && rehearsalDay && (ev.groupDay === rehearsalDay || ev.title?.startsWith(rehearsalDay));
+                    return (
+                      <button
+                        type="button"
+                        key={ev.id}
+                        className={`${s.chip} ${ev.type === 'rehearsal' ? s.chipReh : ''} ${isDesignated ? s.designated : ''}`}
+                        onClick={() => setSelectedEventId(ev.id)}
+                        title={`${ev.time ? ev.time+' — ' : ''}${ev.title}`}
+                      >
+                        {ev.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={s.legend}>
+            <span className={`${s.dot} ${s.dotEvent}`} /> Performance / Workshop
+            <span className={`${s.dot} ${s.dotReh}`} /> Rehearsal
+          </div>
+        </div>
+
+        <aside className={s.upNext} aria-labelledby="up-next-heading">
+          <div className={s.upNextHeader}>
+            <div>
+              <p className={s.upNextLabel}>Coming up</p>
+              <h2 id="up-next-heading">Up next</h2>
             </div>
-          );
-        })}
-      </div>
-
-      <div className={s.legend}>
-        <span className={`${s.dot} ${s.dotEvent}`} /> Performance / Workshop
-        <span className={`${s.dot} ${s.dotReh}`} /> Rehearsal
+            <span className={s.upNextCount}>{upcomingEvents.length}</span>
+          </div>
+          {upcomingEvents.length > 0 ? upcomingEvents.map((event) => (
+            <button type="button" key={event.id} className={s.upNextEvent} onClick={() => setSelectedEventId(event.id)}>
+              <span>{new Date(`${event.date}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+              <strong>{event.title}</strong>
+              <small>{[event.time, event.location].filter(Boolean).join(' · ') || 'Details to follow'}</small>
+            </button>
+          )) : <p className={s.upNextEmpty}>No upcoming events scheduled.</p>}
+        </aside>
       </div>
 
       <EventDetailModal

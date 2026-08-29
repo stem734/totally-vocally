@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import { doc, increment, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import { clearFileCache } from './fileCache';
 
 // Automatically sign a user out after this much inactivity, so an
 // unattended session can't be left open indefinitely.
@@ -60,6 +61,7 @@ export function useAuth() {
           setLoading(false);
         });
       } else {
+        clearFileCache().catch((err) => console.warn('Failed to clear cached files:', err));
         setUser(null);
         setProfile(null);
         setIsAdmin(false);
@@ -187,6 +189,7 @@ export function useAuth() {
     setError('');
     try {
       await signOut(auth);
+      await clearFileCache();
       setUser(null);
       setProfile(null);
       setIsAdmin(false);

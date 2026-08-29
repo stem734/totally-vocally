@@ -2,12 +2,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom';
 import {
   deleteObject,
-  getBlob,
   ref,
   uploadBytes,
 } from 'firebase/storage';
 import { storage } from '../firebase';
 import { FILES_PATH, listSharedFiles } from '../sharedFiles';
+import { getCachedFileBlob, getCachedFileIndex } from '../fileCache';
 import { safeExternalUrl } from '../safeUrl';
 import SongsPage from './SongsPage';
 import s from './FilesPage.module.css';
@@ -116,8 +116,15 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
       setFiles(nextFiles);
       onFilesLoaded?.(nextFiles);
     } catch (err) {
-      console.error('Failed to list files:', err);
-      setError('Files could not be loaded. Please try again.');
+      const cachedFiles = await getCachedFileIndex();
+      if (cachedFiles?.length) {
+        setFiles(cachedFiles);
+        onFilesLoaded?.(cachedFiles);
+        setError('You are offline. Showing files previously available on this device.');
+      } else {
+        console.error('Failed to list files:', err);
+        setError('Files could not be loaded. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -194,7 +201,7 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
     try {
       // Authenticated SDK download keeps Storage Rules in the access path;
       // unlike a persistent token URL, it cannot be shared to bypass login.
-      const blob = await getBlob(ref(storage, file.fullPath));
+      const blob = await getCachedFileBlob(file);
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -228,7 +235,7 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
     const requestId = previewRequestRef.current + 1;
     previewRequestRef.current = requestId;
     try {
-      const blob = await getBlob(ref(storage, file.fullPath));
+      const blob = await getCachedFileBlob(file);
       const typedBlob = blob.slice(0, blob.size, file.contentType);
       if (previewRequestRef.current !== requestId) return;
       if (file.contentType.startsWith('text/')) {
@@ -268,13 +275,9 @@ export default function FilesPage({ isAdmin = false, songLibrary, initialSongId 
     const requestId = audioRequestRef.current + 1;
     audioRequestRef.current = requestId;
     try {
-      // Fetch through the authenticated SDK so playback remains protected by
-      // Storage Rules instead of exposing a shareable download-token URL.
-      const blob = await getBlob(ref(storage, file.fullPath));
-      // Firebase responses may arrive as application/octet-stream. Chromium
-      // refuses an untyped blob under nosniff/CSP, even when the bytes are a
-      // valid MP3, so preserve the trusted MIME type stored in metadata.
-      const playableBlob = blob.slice(0, blob.size, file.contentType);
+      // getCachedFileBlob checks authenticated Storage metadata first and only
+      // downloads bytes when this device has no matching server version.
+      const playableBlob = await getCachedFileBlob(file);
       const nextUrl = URL.createObjectURL(playableBlob);
       if (audioRequestRef.current !== requestId) {
         URL.revokeObjectURL(nextUrl);

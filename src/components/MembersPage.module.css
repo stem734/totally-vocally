@@ -11,6 +11,15 @@
 .summaryActive { border-color: rgba(118,209,154,.24); background: rgba(118,209,154,.05); }
 .summaryActive strong { color: #76d19a; }
 .memberSection { margin-top: 24px; }
+.sectionHeader { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.sectionHeader h2 { margin: 0; color: var(--warm-white); font-size: 1.2rem; }
+.sectionHeader p { margin: 4px 0 0; color: var(--muted); font-size: .82rem; }
+.sectionCount { color: var(--muted); font-size: .82rem; }
+.emptySection { padding: 18px; color: var(--muted); text-align: center; font-style: italic; }
+.adminSection {
+  padding-top: 20px;
+  border-top: 1px solid rgba(168, 128, 31, .2);
+}
 .sectionHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .sectionHeading h2 { margin: 0; color: var(--warm-white); font-size: 1.2rem; }
 .sectionHeading span { color: var(--muted); font-size: .82rem; }

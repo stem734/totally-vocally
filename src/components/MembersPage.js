@@ -150,7 +150,13 @@ export default function MembersPage({ isAdmin = true }) {
   const matchesFilters = (member) => (!search || `${member.displayName || ''} ${member.email || ''}`.toLowerCase().includes(search.toLowerCase()))
     && (!dayFilter || member.rehearsalDay === dayFilter)
     && (!voicePartFilter || member.voicePart === voicePartFilter);
-  const otherMembers = ordered.filter((member) => !pendingMembers.includes(member) && member.status !== 'inactive' && matchesFilters(member));
+  const adminMembers = ordered
+    .filter((member) => member.role === 'admin')
+    .filter(matchesFilters);
+  const otherMembers = ordered
+    .filter((member) => member.role !== 'admin')
+    .filter((member) => member.status !== 'pending')
+    .filter((member) => member.status !== 'inactive' && matchesFilters(member));
   const inactiveMembers = ordered.filter((member) => member.role !== 'admin' && member.status === 'inactive' && matchesFilters(member));
   const activeMemberCount = members.filter((member) => member.role !== 'admin' && (member.status || 'approved') === 'approved').length;
 
@@ -213,6 +219,17 @@ export default function MembersPage({ isAdmin = true }) {
     );
   };
 
+  const renderTableHeader = () => (
+    <div className={s.tableHeader}>
+      <span>Member</span>
+      <span>Logins</span>
+      <span>Voice Part</span>
+      <span>Rehearsal Day</span>
+      <span>Status</span>
+      <span>Actions</span>
+    </div>
+  );
+
   return (
     <main className={s.page}>
       <header className={s.header}>
@@ -236,9 +253,12 @@ export default function MembersPage({ isAdmin = true }) {
       )}
 
       <section className={s.memberSection} aria-labelledby="members-heading">
-        <div className={s.sectionHeading}>
-          <h2 id="members-heading">Members</h2>
-          <span>{otherMembers.length} account{otherMembers.length === 1 ? '' : 's'}</span>
+        <div className={s.sectionHeader}>
+          <div>
+            <h2 id="members-heading">Members</h2>
+            <p>Approved and rejected choir member accounts.</p>
+          </div>
+          <span className={s.sectionCount}>{otherMembers.length}</span>
         </div>
         {isAdmin && <div className={s.filters} aria-label="Filter members">
           <label>Search members<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Name or email" /></label>
@@ -246,17 +266,28 @@ export default function MembersPage({ isAdmin = true }) {
           <label>Voice part<select value={voicePartFilter} onChange={(event) => setVoicePartFilter(event.target.value)}><option value="">All voice parts</option>{VOICE_PARTS.map((part) => <option key={part} value={part}>{part}</option>)}</select></label>
           <button type="button" className={s.resetFilters} onClick={() => { setSearch(''); setDayFilter(''); setVoicePartFilter(''); }}>Reset filters</button>
         </div>}
-        <div className={s.tableHeader}>
-          <span>Member</span>
-          <span>Logins</span>
-          <span>Voice Part</span>
-          <span>Rehearsal Day</span>
-          <span>Status</span>
-          <span>Actions</span>
-        </div>
+        {renderTableHeader()}
         <div className={s.list}>
-          {otherMembers.length > 0 ? otherMembers.map(renderMember) : <p className={s.empty}>No approved, rejected, or administrator accounts yet.</p>}
+          {otherMembers.length > 0 ? otherMembers.map(renderMember) : <p className={s.empty}>No approved or rejected choir member accounts yet.</p>}
         </div>
+      </section>
+
+      <section className={`${s.memberSection} ${s.adminSection}`} aria-labelledby="admin-members-title">
+        <div className={s.sectionHeader}>
+          <div>
+            <h2 id="admin-members-title">Administrators</h2>
+            <p>Accounts with choir administration access.</p>
+          </div>
+          <span className={s.sectionCount}>{adminMembers.length}</span>
+        </div>
+        {adminMembers.length === 0 ? (
+          <p className={s.emptySection}>No administrator accounts.</p>
+        ) : (
+          <>
+            {renderTableHeader()}
+            <div className={s.list}>{adminMembers.map(renderMember)}</div>
+          </>
+        )}
       </section>
 
       {inactiveMembers.length > 0 && <section className={`${s.memberSection} ${s.inactiveSection}`} aria-labelledby="inactive-members-heading">

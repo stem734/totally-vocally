@@ -5,3 +5,5 @@ dist
 .vercel
 .env.local
 .env*.local
+CHOIR_LEADER_BRIEFING.md
+FILE_CACHE_AND_COST_ESTIMATE.md
